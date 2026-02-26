@@ -2,104 +2,76 @@ package system
 
 import (
 	consts "DevSpace/Consts"
-	"fmt"
-	"io/fs"
+	"log"
 	"os"
+	"strconv"
 
-	"github.com/BurntSushi/toml"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Port uint
+	// API
+	APIPort uint
+
+	// Database
+	DBPort     uint
+	DBHost     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	SSLMode    string
+
+	// Features
+	EnableGORMLogger bool
+	DebugMode        bool
 }
 
-func NullConfig() Config {
-	return Config{Port: 0}
-}
+func LoadConfig() (*Config, error) {
 
-func DefaultConfig() Config {
-	return Config{Port: consts.APIPortDefault}
-}
-
-func GetConfig() (Config, error) {
-	user := os.Getenv("USER")
-	pathToDir := fmt.Sprintf("/home/%s/.config/DevSpace", user)
-	pathToConf := fmt.Sprintf("%s/%s.toml", pathToDir, consts.ConfigName)
-
-	if user == "" {
-		return NullConfig(), EnvError{VarName: "USER"}
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env не найден... Использую системное окружение")
 	}
 
-	_, err := os.Stat(pathToDir)
+	cfg := &Config{
+		// API с дефолтом из consts
+		APIPort: getEnvAsUint("API_PORT", consts.APIPortDefault),
 
-	//то бишь такой папки нет
-	if err != nil {
-		mkdirError := os.Mkdir(pathToDir, fs.FileMode(0755)) // владелец может все, остальные читают
-		//технически это невозхможно, но на всякий
-		if mkdirError != nil {
-			return NullConfig(), OSError{Err: fmt.Sprintf("Ошибка создания папки для конфига по пути: %s : %s", pathToDir, mkdirError.Error())}
+		// DB с дефолтами
+		DBPort:     getEnvAsUint("DB_PORT", 5432),
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBUser:     getEnv("DB_USER", "postgres"),
+		DBPassword: getEnv("DB_PASSWORD", "postgres"),
+		DBName:     getEnv("DB_NAME", "devspace"),
+		SSLMode:    getEnv("DB_SSLMODE", "disable"),
+
+		// Фичи
+		EnableGORMLogger: getEnvAsBool("GORM_LOGGER", false),
+		DebugMode:        getEnvAsBool("DEBUG", false),
+	}
+
+	return cfg, nil
+}
+
+// Вспомогательные функции
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+
+func getEnvAsUint(key string, fallback uint) uint {
+	if value := os.Getenv(key); value != "" {
+		if intVal, err := strconv.ParseUint(value, 10, 32); err == nil {
+			return uint(intVal)
 		}
 	}
-
-	info, err := os.Stat(pathToConf)
-	if err != nil {
-		config, mkconfErr := CreateConfig(pathToConf)
-		if mkconfErr != nil {
-			return NullConfig(), OSError{Err: fmt.Sprintf("Ошибка создания конфига по пути %s : %s", pathToConf, mkconfErr.Error())}
-		}
-
-		return config, nil
-	}
-
-	//чем черт не шутит
-	if info.IsDir() {
-		rmdirErr := os.RemoveAll(pathToDir)
-		if rmdirErr != nil {
-			return NullConfig(), OSError{Err: fmt.Sprintf("Ошибка удаления непредвиденного каталога по пути %s : %s", pathToConf, rmdirErr.Error())}
-		}
-		_, mkconfErr := os.Create(pathToConf)
-		if mkconfErr != nil {
-			return NullConfig(), OSError{Err: fmt.Sprintf("Ошибка создания конфига по пути %s : %s", pathToConf, mkconfErr.Error())}
-		}
-	}
-
-	var config Config
-
-	_, parceError := toml.DecodeFile(pathToConf, &config)
-	if parceError != nil {
-		return NullConfig(), ParseError{}
-	}
-
-	return config, nil
+	return fallback
 }
 
-func CreateConfig(path string) (Config, error) {
-	file, err := os.Create(path)
-	defer file.Close()
-	if err != nil {
-		return NullConfig(), OSError{Err: fmt.Sprintf("Ошибка создания конфига по пути %s : %s", path, err.Error())}
+func getEnvAsBool(key string, fallback bool) bool {
+	if value := os.Getenv(key); value != "" {
+		return value == "true" || value == "1" || value == "yes"
 	}
-
-	encoder := toml.NewEncoder(file)
-	encErr := encoder.Encode(DefaultConfig())
-	if encErr != nil {
-		return NullConfig(), encErr
-	}
-
-	return DefaultConfig(), nil
-}
-
-func DebugPrintConfigFile() {
-	user := os.Getenv("USER")
-	pathToConf := fmt.Sprintf("/home/%s/.config/DevSpace/%s.toml", user, consts.ConfigName)
-
-	fmt.Println("Читаю файл:", pathToConf)
-	data, err := os.ReadFile(pathToConf)
-	if err != nil {
-		fmt.Println("Ошибка чтения файла:", err)
-		return
-	}
-
-	fmt.Println("Содержимое файла:")
-	fmt.Println(string(data))
+	return fallback
 }

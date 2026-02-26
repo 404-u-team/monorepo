@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	config, err := system.GetConfig()
+	config, err := system.LoadConfig()
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -18,9 +18,9 @@ func main() {
 	}
 
 	fmt.Printf("Загружен конфиг: %+v\n", config)
-	fmt.Printf("Порт из конфига: %d\n", config.Port)
+	fmt.Printf("Порт из конфига: %d\n", config.APIPort)
 
-	port := fmt.Sprintf(":%d", config.Port)
+	port := fmt.Sprintf(":%d", config.APIPort)
 	router := gin.Default()
 	router.Use(cors.Default())
 
