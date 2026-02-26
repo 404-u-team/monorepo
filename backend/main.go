@@ -1,6 +1,7 @@
 package main
 
 import (
+	db "DevSpace/DB"
 	system "DevSpace/System"
 	"fmt"
 
@@ -13,14 +14,28 @@ func main() {
 	config, err := system.LoadConfig()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Ошибка создания конфига: ", err.Error())
 		return
 	}
 
-	fmt.Printf("Загружен конфиг: %+v\n", config)
-	fmt.Printf("Порт из конфига: %d\n", config.APIPort)
+	db, err := db.InitDB(config)
+	if err != nil {
+		fmt.Println("Ошибка подключения к БД: ", err.Error())
+		return
+	}
+
+	err = db.AutoMigrate()
+
+	if err != nil {
+		fmt.Println("Ошибка миграции: ", err.Error())
+		return
+	}
+
+	//	fmt.Printf("Загружен конфиг: %+v\n", config)
+	//  fmt.Printf("Порт из конфига: %d\n", config.APIPort)
 
 	port := fmt.Sprintf(":%d", config.APIPort)
+
 	router := gin.Default()
 	router.Use(cors.Default())
 

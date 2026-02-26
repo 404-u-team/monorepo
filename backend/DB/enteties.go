@@ -1,6 +1,15 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
+type DBEntety interface {
+	WriteToDB(*gorm.DB)
+	TableName() string
+}
 
 type User struct {
 	ID           uint   `gorm:"primaryKey; column:id"`
@@ -12,6 +21,12 @@ type User struct {
 	Bio          string `gorm:"column:bio; not null"`
 }
 
+func (u *User) WriteToDB(d *gorm.DB) {
+	d.Create(&u)
+}
+
+func (u *User) TableName() string { return "User" }
+
 type Notification struct {
 	Id        uint      `gorm:"primaryKey; column:id"`
 	UserId    uint      `gorm:"column:user_id; not null"`
@@ -21,6 +36,12 @@ type Notification struct {
 
 	User User `gorm:"foreignKey:UserId"`
 }
+
+func (n *Notification) WriteToDB(d *gorm.DB) {
+	d.Create(&n)
+}
+
+func (n *Notification) TableName() string { return "Notification" }
 
 type Idea struct {
 	Id             uint   `gorm:"primaryKey; column:id"`
@@ -32,6 +53,12 @@ type Idea struct {
 
 	Author User `gorm:"foreignKey:AuthorId"`
 }
+
+func (i *Idea) WriteToDB(d *gorm.DB) {
+	d.Create(&i)
+}
+
+func (i *Idea) TableName() string { return "Idea" }
 
 type Project struct {
 	Id          uint      `gorm:"primaryKey; column:id"`
@@ -46,6 +73,11 @@ type Project struct {
 	Idea   Idea `gorm:"foreignKey:IdeaId"`
 }
 
+func (p *Project) WriteToDB(d *gorm.DB) {
+	d.Create(&p)
+}
+func (p *Project) TableName() string { return "Project" }
+
 type Skill_Category struct {
 	Id       uint   `gorm:"primaryKey; column:id"`
 	ParentId uint   `gorm:"column:parent_id"`
@@ -54,6 +86,12 @@ type Skill_Category struct {
 	Parent *Skill_Category `gorm:"foreignKey:ParentId"`
 }
 
+func (sc *Skill_Category) WriteToDB(d *gorm.DB) {
+	d.Create(&sc)
+}
+
+func (sc *Skill_Category) TableName() string { return "Skill_Category" }
+
 type User_Skill struct {
 	UserId  uint `gorm:"column:user_id; primaryKey"`
 	SkillId uint `gorm:"column:skill_id; primaryKey"`
@@ -61,6 +99,12 @@ type User_Skill struct {
 	User  User           `gorm:"foreignKey:UserId"`
 	Skill Skill_Category `gorm:"foreignKey:SkillId"`
 }
+
+func (us *User_Skill) WriteToDB(d *gorm.DB) {
+	d.Create(&us)
+}
+
+func (us *User_Skill) TableName() string { return "User_Skill" }
 
 type Chat struct {
 	Id        uint      `gorm:"primaryKey; column:id"`
@@ -72,6 +116,11 @@ type Chat struct {
 	Project Project `gorm:"foreignKey:ProjectId"`
 }
 
+func (c *Chat) WriteToDB(d *gorm.DB) {
+	d.Create(&c)
+}
+func (c *Chat) TableName() string { return "Chat" }
+
 type Chat_Member struct {
 	ChatId     uint      `gorm:"column:chat_id; primaryKey"`
 	UserId     uint      `gorm:"column:user_id; primaryKey"`
@@ -81,6 +130,12 @@ type Chat_Member struct {
 	Chat Chat `gorm:"foreignKey:ChatId"`
 	User User `gorm:"foreignKey:UserId"`
 }
+
+func (cm *Chat_Member) WriteToDB(d *gorm.DB) {
+	d.Create(&cm)
+}
+
+func (cm *Chat_Member) TableName() string { return "Chat_Member" }
 
 type Project_Slot struct {
 	Id              uint   `gorm:"primaryKey; column:id"`
@@ -94,6 +149,12 @@ type Project_Slot struct {
 	User    User           `gorm:"foreignKey:UserId"`
 }
 
+func (ps *Project_Slot) WriteToDB(d *gorm.DB) {
+	d.Create(&ps)
+}
+
+func (ps *Project_Slot) TableName() string { return "Project_Slot" }
+
 type Request struct {
 	Id          uint   `gorm:"primaryKey; column:id"`
 	SlotId      uint   `gorm:"column:slot_id; not null"`
@@ -106,6 +167,11 @@ type Request struct {
 	User User         `gorm:"foreignKey:UserId"`
 }
 
+func (r *Request) WriteToDB(d *gorm.DB) {
+	d.Create(&r)
+}
+func (r *Request) TableName() string { return "Request" }
+
 type Message struct {
 	Id       uint      `gorm:"primaryKey; column:id"`
 	ChatId   uint      `gorm:"column:chat_id; not null"`
@@ -117,3 +183,9 @@ type Message struct {
 	Chat   Chat `gorm:"foreignKey:ChatId"`
 	Sender User `gorm:"foreignKey:SenderId"`
 }
+
+func (m *Message) WriteToDB(d *gorm.DB) {
+	d.Create(&m)
+}
+
+func (m *Message) TableName() string { return "Message" }
