@@ -24,6 +24,13 @@ type Config struct {
 	// Features
 	EnableGORMLogger bool
 	DebugMode        bool
+
+	// Argon
+	Memory      uint
+	Iterations  uint
+	Parallelism uint
+	SaltLength  uint
+	KeyLength   uint
 }
 
 func LoadConfig() (*Config, error) {
@@ -47,12 +54,18 @@ func LoadConfig() (*Config, error) {
 		// Фичи
 		EnableGORMLogger: getEnvAsBool("GORM_LOGGER", false),
 		DebugMode:        getEnvAsBool("DEBUG", false),
+
+		// Аргон
+		Memory:      getEnvAsUint("ARGON_MEMORY_USAGE", 54),
+		Iterations:  getEnvAsUint("ARGON_ITERATIONS", 5),
+		Parallelism: getEnvAsUint("ARGON_PARALL", 5),
+		SaltLength:  getEnvAsUint("ARGON_SALT_LEN", 16),
+		KeyLength:   getEnvAsUint("ARGON_KEY_LEN", 32),
 	}
 
 	return cfg, nil
 }
 
-// Вспомогательные функции
 func getEnv(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

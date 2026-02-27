@@ -58,12 +58,23 @@ func (m *DBManager) InsertNewEntity(e DBEntety) {
 	e.WriteToDB(m.Connection)
 }
 
-func (m *DBManager) SelectFieldsAll(e DBEntety, fields ...string) ([]map[string]interface{}, error) {
-	var results []map[string]interface{}
+// берет поля и структуру. Возвращает хэштаблицы со связкой поле-значение
+func (m *DBManager) SelectFieldsAll(e DBEntety, fields ...string) ([]map[string]any, error) {
+	var results []map[string]any
 	res := m.Connection.Table(e.TableName()).Select(fields).Find(&results)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
 	return results, nil
+}
+
+func (m *DBManager) DeleteByID(e DBEntety, id uint) (bool, error) {
+	result := m.Connection.Delete(e, id)
+
+	if result.Error != nil {
+		return false, result.Error
+	}
+
+	return result.RowsAffected > 0, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	db "DevSpace/DB"
+	net "DevSpace/Net"
 	system "DevSpace/System"
 	"fmt"
 
@@ -31,6 +32,7 @@ func main() {
 		return
 	}
 
+	rest := net.Rest{Config: config, DB: &db}
 	//	fmt.Printf("Загружен конфиг: %+v\n", config)
 	//  fmt.Printf("Порт из конфига: %d\n", config.APIPort)
 
@@ -38,6 +40,9 @@ func main() {
 
 	router := gin.Default()
 	router.Use(cors.Default())
+
+	router.POST("/users/create", rest.RegisterUser)
+	router.GET("/users/auth", rest.AuthUser)
 
 	err = router.Run(port)
 
