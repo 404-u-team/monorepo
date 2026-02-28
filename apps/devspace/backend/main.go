@@ -41,8 +41,8 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.POST("/users/create", rest.RegisterUser)
-	router.GET("/users/auth", rest.AuthUser)
+	router.POST("/api/users/create", rest.RegisterUser)
+	router.GET("/api/users/auth", rest.AuthUser)
 
 	err = router.Run(port)
 

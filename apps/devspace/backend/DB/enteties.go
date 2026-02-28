@@ -1,14 +1,33 @@
 package db
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type DBEntety interface {
-	WriteToDB(*gorm.DB)
+	WriteToDB(*gorm.DB) error
 	TableName() string
+}
+
+// Утилитарная функция для создания любой сущности
+func createEntity(db *gorm.DB, entity any, entityName string) error {
+	res := db.Create(entity)
+	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrDuplicatedKey) {
+			return UniqueKeyDuplErr{}
+		}
+		return fmt.Errorf("failed to create %s: %w", entityName, res.Error)
+	}
+
+	if res.RowsAffected == 0 {
+		return UniqueKeyDuplErr{}
+	}
+
+	return nil
 }
 
 type User struct {
@@ -21,8 +40,8 @@ type User struct {
 	Bio          string `gorm:"column:bio; not null"`
 }
 
-func (u *User) WriteToDB(d *gorm.DB) {
-	d.Create(&u)
+func (u *User) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, u, "user")
 }
 
 func (u *User) TableName() string { return "User" }
@@ -37,8 +56,8 @@ type Notification struct {
 	User User `gorm:"foreignKey:UserId"`
 }
 
-func (n *Notification) WriteToDB(d *gorm.DB) {
-	d.Create(&n)
+func (n *Notification) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, n, "notification")
 }
 
 func (n *Notification) TableName() string { return "Notification" }
@@ -54,8 +73,8 @@ type Idea struct {
 	Author User `gorm:"foreignKey:AuthorId"`
 }
 
-func (i *Idea) WriteToDB(d *gorm.DB) {
-	d.Create(&i)
+func (i *Idea) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, i, "idea")
 }
 
 func (i *Idea) TableName() string { return "Idea" }
@@ -73,9 +92,10 @@ type Project struct {
 	Idea   Idea `gorm:"foreignKey:IdeaId"`
 }
 
-func (p *Project) WriteToDB(d *gorm.DB) {
-	d.Create(&p)
+func (p *Project) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, p, "project")
 }
+
 func (p *Project) TableName() string { return "Project" }
 
 type Skill_Category struct {
@@ -86,8 +106,8 @@ type Skill_Category struct {
 	Parent *Skill_Category `gorm:"foreignKey:ParentId"`
 }
 
-func (sc *Skill_Category) WriteToDB(d *gorm.DB) {
-	d.Create(&sc)
+func (sc *Skill_Category) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, sc, "skill_category")
 }
 
 func (sc *Skill_Category) TableName() string { return "Skill_Category" }
@@ -100,8 +120,8 @@ type User_Skill struct {
 	Skill Skill_Category `gorm:"foreignKey:SkillId"`
 }
 
-func (us *User_Skill) WriteToDB(d *gorm.DB) {
-	d.Create(&us)
+func (us *User_Skill) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, us, "user_skill")
 }
 
 func (us *User_Skill) TableName() string { return "User_Skill" }
@@ -116,9 +136,10 @@ type Chat struct {
 	Project Project `gorm:"foreignKey:ProjectId"`
 }
 
-func (c *Chat) WriteToDB(d *gorm.DB) {
-	d.Create(&c)
+func (c *Chat) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, c, "chat")
 }
+
 func (c *Chat) TableName() string { return "Chat" }
 
 type Chat_Member struct {
@@ -131,8 +152,8 @@ type Chat_Member struct {
 	User User `gorm:"foreignKey:UserId"`
 }
 
-func (cm *Chat_Member) WriteToDB(d *gorm.DB) {
-	d.Create(&cm)
+func (cm *Chat_Member) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, cm, "chat_member")
 }
 
 func (cm *Chat_Member) TableName() string { return "Chat_Member" }
@@ -149,8 +170,8 @@ type Project_Slot struct {
 	User    User           `gorm:"foreignKey:UserId"`
 }
 
-func (ps *Project_Slot) WriteToDB(d *gorm.DB) {
-	d.Create(&ps)
+func (ps *Project_Slot) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, ps, "project_slot")
 }
 
 func (ps *Project_Slot) TableName() string { return "Project_Slot" }
@@ -167,9 +188,10 @@ type Request struct {
 	User User         `gorm:"foreignKey:UserId"`
 }
 
-func (r *Request) WriteToDB(d *gorm.DB) {
-	d.Create(&r)
+func (r *Request) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, r, "request")
 }
+
 func (r *Request) TableName() string { return "Request" }
 
 type Message struct {
@@ -184,8 +206,24 @@ type Message struct {
 	Sender User `gorm:"foreignKey:SenderId"`
 }
 
-func (m *Message) WriteToDB(d *gorm.DB) {
-	d.Create(&m)
+func (m *Message) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, m, "message")
 }
 
 func (m *Message) TableName() string { return "Message" }
+
+type Device struct {
+	Id           uint      `gorm:"primaryKey; column:id"`
+	UserId       uint      `gorm:"column:user_id; not null"`
+	DeviceName   string    `gorm:"column:device_name; not null"`
+	Ip           string    `gorm:"column:ip; not null"`
+	RefreshToken string    `gorm:"column:refresh_token; not null"`
+	CreatedAt    time.Time `gorm:"column:created_at; not null"`
+	ValidUntil   time.Time `gorm:"column:valid_until; not null"`
+}
+
+func (de *Device) WriteToDB(db *gorm.DB) error {
+	return createEntity(db, de, "device")
+}
+
+func (de *Device) TableName() string { return "Device" }

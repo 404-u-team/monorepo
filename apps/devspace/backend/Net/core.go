@@ -4,6 +4,7 @@ import (
 	crypto "DevSpace/Crypto"
 	db "DevSpace/DB"
 	system "DevSpace/System"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,8 +32,16 @@ func (r *Rest) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	r.DB.InsertNewEntity(&db.User{Email: req.Email, Nickname: req.Nickname, PasswordHash: hash, AvatarUrl: "ЗАГЛУШКА", Status: "ЗАГЛУШКА", Bio: "ЗАГЛУШКА"})
+	err = r.DB.InsertNewEntity(&db.User{Email: req.Email, Nickname: req.Nickname, PasswordHash: hash, AvatarUrl: "ЗАГЛУШКА", Status: "ЗАГЛУШКА", Bio: "ЗАГЛУШКА"})
 
+	if err != nil {
+		if errors.Is(err, db.UniqueKeyDuplErr{}) {
+			c.JSON(409, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(400, gin.H{"error": err.Error()})
+		}
+		return
+	}
 	c.JSON(200, nil)
 
 }
@@ -49,7 +58,7 @@ func (r *Rest) AuthUser(c *gin.Context) {
 		return
 	}
 
-	if req.Email == nil && req.Login == nil {
+	if req.Email == nil && req.Nickname == nil {
 		c.JSON(400, gin.H{
 			"error": "no email and login",
 		})
@@ -58,14 +67,15 @@ func (r *Rest) AuthUser(c *gin.Context) {
 	}
 
 	var userHash string
+	var notFoundErr error
 
-	if req.Login != nil {
-		r.DB.Connection.Table("User").Select("password_hash").Where("login = ?", req.Login).First(&userHash)
+	if req.Nickname != nil {
+		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("nickname = ?", req.Nickname).First(&userHash).Error
 	} else {
-		r.DB.Connection.Table("User").Select("password_hash").Where("email = ?", req.Email).First(&userHash)
+		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("email = ?", req.Email).First(&userHash).Error
 	}
 
-	if len(userHash) == 0 {
+	if notFoundErr != nil {
 		c.JSON(404, nil)
 		return
 	}

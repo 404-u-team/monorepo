@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 type DBManager struct {
@@ -30,6 +31,9 @@ func connectDB(loggerEnabled bool, dsn string) (*gorm.DB, error) {
 		)
 
 		return gorm.Open(postgres.Open(dsn), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy{
+				SingularTable: true,
+			},
 			Logger: gormLogger,
 		})
 
@@ -54,8 +58,8 @@ func (m *DBManager) AutoMigrate() error {
 	return m.Connection.AutoMigrate(&User{}, &Idea{}, &Notification{}, &Project{}, &Skill_Category{}, &User_Skill{}, &Chat{}, &Project_Slot{}, &Request{}, &Message{}, &Chat_Member{})
 }
 
-func (m *DBManager) InsertNewEntity(e DBEntety) {
-	e.WriteToDB(m.Connection)
+func (m *DBManager) InsertNewEntity(e DBEntety) error {
+	return e.WriteToDB(m.Connection)
 }
 
 // берет поля и структуру. Возвращает хэштаблицы со связкой поле-значение
