@@ -1,5 +1,4 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-// eslint-disable-next-line import-x/no-named-as-default-member
 import storybook from "eslint-plugin-storybook";
 
 import { defineConfig, globalIgnores } from 'eslint/config'
@@ -148,5 +147,6 @@ export default defineConfig([
       ],
     },
   },
+  // eslint-disable-next-line import-x/no-named-as-default-member
   ...storybook.configs["flat/recommended"]
 ])

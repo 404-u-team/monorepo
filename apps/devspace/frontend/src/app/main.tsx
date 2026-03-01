@@ -5,9 +5,11 @@ import { configure } from 'mobx';
 import '@/app/styles/index.scss'
 
 // Import the generated route tree
+// eslint-disable-next-line import-x/no-unresolved
 import { routeTree } from '@/app/generated/routeTree.gen'
 
 // Create a new router instance
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const router = createRouter({ routeTree })
 
 // Register the router instance for type safety
