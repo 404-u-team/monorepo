@@ -31,7 +31,9 @@
   },
   "include": [
     "vite.config.ts",
-    "scripts/**/*.ts"
+    "vitest.shims.d.ts",
+    "scripts/**/*.ts",
+    ".storybook/**/*.ts"
   ],
   "references": []
 }

@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.tanstack
+
+src/app/generated
+
+
+*storybook.log
+storybook-static
