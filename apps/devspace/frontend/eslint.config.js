@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import { defineConfig, globalIgnores } from 'eslint/config'
 import js from '@eslint/js'
 import globals from 'globals'
@@ -20,11 +23,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default defineConfig([
-
-  globalIgnores(['dist', 'build', 'node_modules', 'src/routeTree.gen.ts']),
-
+  globalIgnores(['dist', 'build', 'node_modules', 'src/app/generated/routeTree.gen.ts']),
   js.configs.recommended,
-
   ...tsEslint.config({
     extends: [
       ...tsConfigs.strictTypeChecked,
@@ -32,10 +32,8 @@ export default defineConfig([
     ],
     files: ['**/*.{ts,tsx}'],
   }),
-
   importXFlatConfigs.recommended,
   importXFlatConfigs.typescript,
-
   {
     files: ['**/*.{ts,tsx}'],
 
@@ -84,6 +82,35 @@ export default defineConfig([
       'import-x/no-self-import': 'error',
       'import-x/no-useless-path-segments': 'error',
       'import-x/no-relative-parent-imports': 'error',
+      'import-x/no-restricted-paths': ['error', {
+        zones: [
+          {
+            target: './src/shared',
+            from: ['./src/entities', './src/features', './src/widgets', './src/routes', './src/app'],
+            message: '[FSD] "shared" cannot import from layers above it.',
+          },
+          {
+            target: './src/entities',
+            from: ['./src/features', './src/widgets', './src/routes', './src/app'],
+            message: '[FSD] "entities" cannot import from layers above it.',
+          },
+          {
+            target: './src/features',
+            from: ['./src/widgets', './src/routes', './src/app'],
+            message: '[FSD] "features" cannot import from layers above it.',
+          },
+          {
+            target: './src/widgets',
+            from: ['./src/routes', './src/app'],
+            message: '[FSD] "widgets" cannot import from layers above it.',
+          },
+          {
+            target: './src/routes',
+            from: ['./src/app'],
+            message: '[FSD] "routes" cannot import from "app" layer.',
+          },
+        ],
+      }],
 
       'eqeqeq': ['error', 'always'],
       'no-console': ['error', { allow: ['warn', 'error'] }],
@@ -120,5 +147,5 @@ export default defineConfig([
       ],
     },
   },
-
+  ...storybook.configs["flat/recommended"]
 ])
