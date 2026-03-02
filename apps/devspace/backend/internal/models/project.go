@@ -5,7 +5,7 @@ import (
 )
 
 type Project struct {
-	Id          uint      `gorm:"primaryKey; column:id"`
+	ID          uint      `gorm:"primaryKey; column:id"`
 	LeaderId    uint      `gorm:"column:leader_id; not null"`
 	IdeaId      uint      `gorm:"column:idea_id"`
 	Title       string    `gorm:"column:title; not null"`

@@ -1,7 +1,7 @@
 package models
 
-type Project_Slot struct {
-	Id              uint   `gorm:"primaryKey; column:id"`
+type ProjectSlot struct {
+	ID              uint   `gorm:"primaryKey; column:id"`
 	ProjectId       uint   `gorm:"column:project_id; not null"`
 	SkillCategoryId uint   `gorm:"column:skill_category_id; not null"`
 	UserId          uint   `gorm:"column:user_id"`
@@ -12,4 +12,4 @@ type Project_Slot struct {
 	User    User          `gorm:"foreignKey:UserId"`
 }
 
-func (ps *Project_Slot) TableName() string { return "Project_Slot" }
+func (ps *ProjectSlot) TableName() string { return "Project_Slot" }

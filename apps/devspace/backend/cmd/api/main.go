@@ -16,7 +16,7 @@ func main() {
 
 	db.Migrate(dbConn)
 
-	router := routes.SetupRoutes(dbConn)
+	router := routes.SetupRoutes(dbConn, config)
 
 	log.Printf("Server starting on :%s", config.APIPort)
 	log.Fatal(http.ListenAndServe(":"+config.APIPort, router))

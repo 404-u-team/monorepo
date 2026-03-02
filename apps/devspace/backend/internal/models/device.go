@@ -5,7 +5,7 @@ import (
 )
 
 type Device struct {
-	Id           uint      `gorm:"primaryKey; column:id"`
+	ID           uint      `gorm:"primaryKey; column:id"`
 	UserId       uint      `gorm:"column:user_id; not null"`
 	DeviceName   string    `gorm:"column:device_name; not null"`
 	Ip           string    `gorm:"column:ip; not null"`

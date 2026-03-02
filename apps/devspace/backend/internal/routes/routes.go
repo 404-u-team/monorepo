@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/handlers"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
@@ -9,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(dbConn *gorm.DB) *gin.Engine {
+func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.Default())
@@ -21,7 +22,7 @@ func SetupRoutes(dbConn *gorm.DB) *gin.Engine {
 	authService := services.NewAuthService(userRepo)
 
 	// создание хендлеров
-	authHandler := handlers.NewAuthHandler(authService)
+	authHandler := handlers.NewAuthHandler(authService, config)
 
 	api := router.Group("/api")
 	{

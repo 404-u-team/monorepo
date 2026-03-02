@@ -52,7 +52,7 @@ func newPostgresConnection(loggerEnabled bool, dsn string) *gorm.DB {
 }
 
 func InitDB(c *config.Config) *gorm.DB {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.SSLMode)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.SSLMode)
 
 	db := newPostgresConnection(c.EnableGORMLogger, dsn)
 	return db
@@ -62,13 +62,13 @@ func CreateEntity(db *gorm.DB, entity any) error {
 	res := db.Create(entity)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrDuplicatedKey) {
-			return UniqueKeyDuplErr
+			return ErrUniqueKeyDupl
 		}
 		log.Println("failed to create %v: %v", entity, res.Error)
 	}
 
 	if res.RowsAffected == 0 {
-		return UniqueKeyDuplErr
+		return ErrUniqueKeyDupl
 	}
 
 	return nil

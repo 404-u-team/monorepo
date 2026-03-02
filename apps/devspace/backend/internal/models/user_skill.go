@@ -1,7 +1,7 @@
 package models
 
 type UserSkill struct {
-	UserId  uint `gorm:"column:user_id; primaryKey"`
+	UserID  uint `gorm:"column:user_id; primaryKey"`
 	SkillId uint `gorm:"column:skill_id; primaryKey"`
 
 	User  User          `gorm:"foreignKey:UserId"`

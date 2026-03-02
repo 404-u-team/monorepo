@@ -5,7 +5,7 @@ import (
 )
 
 type Chat struct {
-	Id        uint      `gorm:"primaryKey; column:id"`
+	ID        uint      `gorm:"primaryKey; column:id"`
 	ProjectId uint      `gorm:"column:project_id"`
 	Title     string    `gorm:"column:title"`
 	Type      string    `gorm:"column:type; not null"`

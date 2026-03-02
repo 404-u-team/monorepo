@@ -1,98 +1,98 @@
-package net
+// package net
 
-import (
-	"errors"
+// import (
+// 	"errors"
 
-	crypto "github.com/404-u-team/monorepo/apps/devspace/backend/Crypto"
-	db "github.com/404-u-team/monorepo/apps/devspace/backend/DB"
-	system "github.com/404-u-team/monorepo/apps/devspace/backend/System"
+// 	crypto "github.com/404-u-team/monorepo/apps/devspace/backend/Crypto"
+// 	db "github.com/404-u-team/monorepo/apps/devspace/backend/DB"
+// 	system "github.com/404-u-team/monorepo/apps/devspace/backend/System"
 
-	"github.com/gin-gonic/gin"
-)
+// 	"github.com/gin-gonic/gin"
+// )
 
-type Rest struct {
-	Config *system.Config
-	DB     *db.DBManager
-}
+// type Rest struct {
+// 	Config *system.Config
+// 	DB     *db.DBManager
+// }
 
-func (r *Rest) RegisterUser(c *gin.Context) {
-	var req RegisterUserRequest
-	bindErr := c.ShouldBindJSON(&req)
+// func (r *Rest) RegisterUser(c *gin.Context) {
+// 	var req RegisterUserRequest
+// 	bindErr := c.ShouldBindJSON(&req)
 
-	if bindErr != nil {
-		c.JSON(400, gin.H{
-			"error": "json error",
-		})
+// 	if bindErr != nil {
+// 		c.JSON(400, gin.H{
+// 			"error": "json error",
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	hash, err := crypto.EncodePassword(req.Password, r.Config)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "error occured while hashing"})
-		return
-	}
+// 	hash, err := crypto.EncodePassword(req.Password, r.Config)
+// 	if err != nil {
+// 		c.JSON(500, gin.H{"error": "error occured while hashing"})
+// 		return
+// 	}
 
-	err = r.DB.InsertNewEntity(&db.User{Email: req.Email, Nickname: req.Nickname, PasswordHash: hash, AvatarUrl: "ЗАГЛУШКА", Status: "ЗАГЛУШКА", Bio: "ЗАГЛУШКА"})
+// 	err = r.DB.InsertNewEntity(&db.User{Email: req.Email, Nickname: req.Nickname, PasswordHash: hash, AvatarUrl: "ЗАГЛУШКА", Status: "ЗАГЛУШКА", Bio: "ЗАГЛУШКА"})
 
-	if err != nil {
-		if errors.Is(err, db.UniqueKeyDuplErr{}) {
-			c.JSON(409, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(400, gin.H{"error": err.Error()})
-		}
-		return
-	}
-	c.JSON(200, nil)
+// 	if err != nil {
+// 		if errors.Is(err, db.UniqueKeyDuplErr{}) {
+// 			c.JSON(409, gin.H{"error": err.Error()})
+// 		} else {
+// 			c.JSON(400, gin.H{"error": err.Error()})
+// 		}
+// 		return
+// 	}
+// 	c.JSON(200, nil)
 
-}
+// }
 
-func (r *Rest) AuthUser(c *gin.Context) {
-	var req AuthUserRequest
+// func (r *Rest) AuthUser(c *gin.Context) {
+// 	var req AuthUserRequest
 
-	bindErr := c.ShouldBindJSON(&req)
-	if bindErr != nil {
-		c.JSON(400, gin.H{
-			"error": "json error",
-		})
+// 	bindErr := c.ShouldBindJSON(&req)
+// 	if bindErr != nil {
+// 		c.JSON(400, gin.H{
+// 			"error": "json error",
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	if req.Email == nil && req.Nickname == nil {
-		c.JSON(400, gin.H{
-			"error": "no email and login",
-		})
+// 	if req.Email == nil && req.Nickname == nil {
+// 		c.JSON(400, gin.H{
+// 			"error": "no email and login",
+// 		})
 
-		return
-	}
+// 		return
+// 	}
 
-	var userHash string
-	var notFoundErr error
+// 	var userHash string
+// 	var notFoundErr error
 
-	if req.Nickname != nil {
-		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("nickname = ?", req.Nickname).First(&userHash).Error
-	} else {
-		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("email = ?", req.Email).First(&userHash).Error
-	}
+// 	if req.Nickname != nil {
+// 		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("nickname = ?", req.Nickname).First(&userHash).Error
+// 	} else {
+// 		notFoundErr = r.DB.Connection.Model(&db.User{}).Select("password_hash").Where("email = ?", req.Email).First(&userHash).Error
+// 	}
 
-	if notFoundErr != nil {
-		c.JSON(404, nil)
-		return
-	}
+// 	if notFoundErr != nil {
+// 		c.JSON(404, nil)
+// 		return
+// 	}
 
-	correct, err := crypto.VerifyPassword(req.Password, userHash)
+// 	correct, err := crypto.VerifyPassword(req.Password, userHash)
 
-	if err != nil {
-		c.JSON(400, gin.H{
-			"error": "error while fetching password",
-		})
+// 	if err != nil {
+// 		c.JSON(400, gin.H{
+// 			"error": "error while fetching password",
+// 		})
 
-		return
-	} else if correct {
-		c.JSON(200, nil)
-		return
-	} else {
-		c.JSON(401, nil)
-	}
-}
+// 		return
+// 	} else if correct {
+// 		c.JSON(200, nil)
+// 		return
+// 	} else {
+// 		c.JSON(401, nil)
+// 	}
+// }

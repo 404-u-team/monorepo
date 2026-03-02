@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/auth"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
-	authpb "github.com/404-u-team/monorepo/apps/devspace/backend/services/proto/auth/v1"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/utils"
 )
 
 type AuthService interface {
-	Register(ctx context.Context, payload *authpb.RegisterRequest) (int, error)
+	Register(ctx context.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error)
 	// Login(ctx context.Context, payload *authpb.LoginRequest) (int, error)
 }
 
@@ -21,29 +23,34 @@ func NewAuthService(repo repository.UserRepository) *authService {
 	return &authService{repo: repo}
 }
 
-func (s *authService) Register(ctx context.Context, payload *authpb.RegisterRequest) (int, error) {
+func (s *authService) Register(ctx context.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error) {
 	// check if the user exists
 	exists, err := s.repo.IsUserExistByEmail(ctx, payload.Email)
 	if err != nil {
-		return -1, ErrInternal
+		return nil, ErrInternal
 	}
 	if exists {
-		return -1, ErrUserExists
+		return nil, ErrUserExists
 	}
 
 	// hash password
-	payload.Password, err = auth.HashPassword(payload.Password)
+	payload.Password, err = auth.HashPassword(payload.Password, config)
 	if err != nil {
-		return -1, ErrInternal
+		return nil, ErrInternal
 	}
 
 	// create user with hashed password
-	userId, err := s.repo.CreateUser(ctx, payload)
+	userID, err := s.repo.CreateUser(ctx, payload)
 	if err != nil {
-		return -1, ErrInternal
+		return nil, ErrInternal
 	}
 
-	return userId, nil
+	accessToken, err := utils.CreateToken(config.JWTSecret, userID, config)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &dto.TokenResponse{AccessToken: accessToken, RefreshToken: "2"}, nil
 }
 
 // func (s *authService) Login(ctx context.Context, payload *authpb.LoginRequest) (int, error) {

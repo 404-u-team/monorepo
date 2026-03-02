@@ -5,7 +5,7 @@ import (
 )
 
 type Message struct {
-	Id       uint      `gorm:"primaryKey; column:id"`
+	ID       uint      `gorm:"primaryKey; column:id"`
 	ChatId   uint      `gorm:"column:chat_id; not null"`
 	SenderId uint      `gorm:"column:sender_id; not null"`
 	Content  string    `gorm:"column:content; not null"`
