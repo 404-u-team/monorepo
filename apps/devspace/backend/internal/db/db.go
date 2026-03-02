@@ -64,7 +64,7 @@ func CreateEntity(db *gorm.DB, entity any) error {
 		if errors.Is(res.Error, gorm.ErrDuplicatedKey) {
 			return ErrUniqueKeyDupl
 		}
-		log.Println("failed to create %v: %v", entity, res.Error)
+		log.Printf("failed to create %v: %v\n", entity, res.Error)
 	}
 
 	if res.RowsAffected == 0 {
