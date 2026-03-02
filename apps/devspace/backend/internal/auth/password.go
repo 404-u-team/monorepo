@@ -1,7 +1,6 @@
-package crypto
+package auth
 
 import (
-	system "DevSpace/System"
 	"crypto/hmac"
 	"crypto/rand"
 	"encoding/base64"
@@ -10,6 +9,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -34,14 +34,14 @@ func CreateArgonConf(c *system.Config) Argon2Params {
 
 */
 
-func EncodePassword(pass string, c *system.Config) (string, error) {
+func HashPassword(password string, c *config.Config) (string, error) {
 	salt := make([]byte, c.SaltLength)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return "", err
 	}
 
 	hash := argon2.IDKey(
-		[]byte(pass),
+		[]byte(password),
 		salt,
 		uint32(c.Iterations),
 		uint32(c.Memory),
@@ -61,7 +61,7 @@ func EncodePassword(pass string, c *system.Config) (string, error) {
 	return strings.Join(parts, "$"), nil
 }
 
-func VerifyPassword(password, encoded string) (bool, error) {
+func ComparePasswords(password, encoded string) (bool, error) {
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 6 || parts[1] != "argon2id" || parts[2] != "v=19" {
 		return false, errors.New("invalid argon2 format")

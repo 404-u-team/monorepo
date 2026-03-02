@@ -1,10 +1,11 @@
 package net
 
 import (
-	crypto "DevSpace/Crypto"
-	db "DevSpace/DB"
-	system "DevSpace/System"
 	"errors"
+
+	crypto "github.com/404-u-team/monorepo/apps/devspace/backend/Crypto"
+	db "github.com/404-u-team/monorepo/apps/devspace/backend/DB"
+	system "github.com/404-u-team/monorepo/apps/devspace/backend/System"
 
 	"github.com/gin-gonic/gin"
 )
