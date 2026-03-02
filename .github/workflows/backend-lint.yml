@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Detect backend changes
         uses: dorny/paths-filter@v3
@@ -19,6 +21,8 @@ jobs:
           filters: |
             backend:
               - 'apps/devspace/backend/**'
+              - 'apps/devspace/backend/go.mod'
+              - 'apps/devspace/backend/go.sum'
               - 'go.mod'
               - 'go.sum'
 
@@ -32,23 +36,40 @@ jobs:
             apps/devspace/backend/go.sum
             go.sum
 
-      - name: Install staticcheck
+      - name: Ensure $GOPATH/bin in PATH
         if: steps.filter.outputs.backend == 'true'
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+        run: echo "${{ env.HOME }}/go/bin" >> $GITHUB_PATH
 
-      - name: Cache staticcheck
+      - name: Download dependencies (needed for staticcheck/go vet)
+        if: steps.filter.outputs.backend == 'true'
+        working-directory: apps/devspace/backend
+        run: |
+          go mod download
+
+      - name: Restore cache for staticcheck binary
         if: steps.filter.outputs.backend == 'true'
         uses: actions/cache@v4
         with:
-          path: ~/go/bin/staticcheck
-          key: ${{ runner.os }}-staticcheck-${{ hashFiles('go.mod') }}
+          path: ${{ env.HOME }}/go/bin/staticcheck
+          key: ${{ runner.os }}-staticcheck-${{ hashFiles('apps/devspace/backend/go.sum', 'go.sum') }}
           restore-keys: |
             ${{ runner.os }}-staticcheck-
+
+      - name: Install staticcheck (if missing)
+        if: steps.filter.outputs.backend == 'true'
+        run: |
+          if [ ! -x "${HOME}/go/bin/staticcheck" ]; then
+            echo "staticcheck not found — installing..."
+            GOBIN="${HOME}/go/bin" go install honnef.co/go/tools/cmd/staticcheck@latest
+          else
+            echo "staticcheck found in ${HOME}/go/bin"
+          fi
 
       - name: Run staticcheck
         if: steps.filter.outputs.backend == 'true'
         working-directory: apps/devspace/backend
-        run: staticcheck ./...
+        run: |
+          ${HOME}/go/bin/staticcheck ./...
 
       - name: Run go vet
         if: steps.filter.outputs.backend == 'true'
