@@ -14,9 +14,9 @@ type authHandler struct {
 	config      *config.Config
 }
 
-func NewAuthHandler(userService services.AuthService, config *config.Config) *authHandler {
+func NewAuthHandler(authService services.AuthService, config *config.Config) *authHandler {
 	return &authHandler{
-		authService: userService,
+		authService: authService,
 		config:      config,
 	}
 }
