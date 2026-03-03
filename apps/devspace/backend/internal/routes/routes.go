@@ -3,10 +3,7 @@ package routes
 import (
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/handlers"
-<<<<<<< HEAD
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
-=======
->>>>>>> main
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-contrib/cors"
