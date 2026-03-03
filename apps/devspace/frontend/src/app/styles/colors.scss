@@ -1,0 +1,33 @@
+:root {
+    // --- Brand Colors ---
+    --brand: #005ED9;
+    --brand--hover: #1A75E0;
+    --brand--active: #0047A3;
+    --brand--subtle: #E5F0FA;
+
+    // --- Text Colors ---
+    --text--primary: #08101A;
+    --text--secondary: #434445;
+    --text--disabled: #98A2B3;
+    --text--onError: #FFFFFF;
+    --text--onSuccess: #FFFFFF;
+    --text--onPrimary: #FFFFFF;
+    --text--onWarning: #08101A;
+    --text--onSurface: #08101A;
+
+    // --- Background Colors ---
+    --bg--surface: #EDEDED;
+    --bg--main: #FFFFFF;
+    --bg--disabled: #F2F4F7;
+
+    // --- Status Colors ---
+    --status--error: #D92D20;
+    --status--warning: #F79009;
+    --status--success: #039855;
+
+    // --- Border Colors ---
+    --border--main: #D0D5DD;
+    --border--hover: #98A2B3;
+    --border--divider: #EAECF0;
+    --border--active: #005CFF;
+}
