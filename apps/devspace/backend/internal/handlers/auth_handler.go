@@ -57,7 +57,17 @@ func (h *authHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
-// TODO: Добавить /refresh
+func (h *authHandler) Refresh(c *gin.Context) {
+	tokenResponse, err := h.authService.Refresh(c, h.config)
+	if err != nil {
+		// TODO check for different error response -> differenct error code
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
+}
 
 func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
 	c.SetSameSite(http.SameSiteLaxMode)

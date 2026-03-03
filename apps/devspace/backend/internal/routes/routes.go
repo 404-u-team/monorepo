@@ -28,6 +28,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	{
 		api.POST("/register", authHandler.Register)
 		api.POST("/login", authHandler.Login)
+		api.POST("/refresh", authHandler.Refresh)
 	}
 
 	// router.POST("/api/users/create", rest.RegisterUser)
