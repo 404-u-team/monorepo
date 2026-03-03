@@ -45,12 +45,17 @@ func (s *authService) Register(ctx context.Context, payload *dto.RegisterRequest
 		return nil, ErrInternal
 	}
 
-	accessToken, err := utils.CreateToken(config.JWTSecret, userID, config)
+	accessToken, err := utils.CreateToken(config.JWTSecret, userID, config.JWTAccessTokenExpirationInSeconds)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return &dto.TokenResponse{AccessToken: accessToken, RefreshToken: "2"}, nil
+	refreshToken, err := utils.CreateToken(config.JWTSecret, userID, config.JWTRefreshTokenExpirationInSeconds)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &dto.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 // func (s *authService) Login(ctx context.Context, payload *authpb.LoginRequest) (int, error) {

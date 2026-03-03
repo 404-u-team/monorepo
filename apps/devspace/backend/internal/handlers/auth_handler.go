@@ -35,20 +35,21 @@ func (h *authHandler) Register(c *gin.Context) {
 		return
 	}
 
-	setTokenIntoCookie(c, tokenResponse.AccessToken)
-
-	c.Status(http.StatusCreated)
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	c.JSON(http.StatusCreated, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
-func setTokenIntoCookie(c *gin.Context, token string) {
+// TODO: Добавить /refresh
+
+func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
-		"auth_token",
+		"refresh_token",
 		token,
-		86400,
+		expirationTime, // время жизни внутри куки
 		"/",
 		"",
-		false,
+		false, // когда будем использовать https поставить на true
 		true,
 	)
 }

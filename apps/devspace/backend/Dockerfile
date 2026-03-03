@@ -1,43 +1,37 @@
-# TODO: переделать для этого проекта
-
-# --- Build Stage ---
-FROM golang:1.25.5-alpine3.23 AS builder
+# --- Build stage ---
+FROM golang:1.26-alpine AS builder
 
 ENV CGO_ENABLED=0 \
 	GOOS=linux \
-	GOARCH=amd64 \
-	GOMODCACHE=/go/pkg/mod
+	GOARCH=amd64
 
-WORKDIR /app/services
+RUN apk add --no-cache git ca-certificates
+WORKDIR /src
 
-COPY services/proto ./proto
+# copy modules files and download dependencies first (cacheable)
+COPY go.mod go.sum ./
+RUN go mod download
 
+# copy the rest of the source
+COPY . ./
+
+# build the server binary (adjust build path if different)
+RUN --mount=type=cache,target=/root/.cache/go-build \
+	go build -trimpath -ldflags='-s -w' -o /app/server ./cmd/api
+
+
+# --- Runtime stage ---
+FROM alpine:3.18
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
-COPY services/auth-service/go.mod services/auth-service/go.sum ./services/auth-service/
-
-WORKDIR /app/services/auth-service
-RUN --mount=type=cache,target=/go/pkg/mod \
-	go mod download
-
-COPY services/auth-service .
-
-RUN --mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	go build -trimpath -ldflags="-s -w" -o server ./cmd/api/main.go
-
-
-# --- Run Stage ---
-FROM alpine:3.23
-
-WORKDIR /app
-
-COPY --from=builder /app/services/auth-service/server .
-
-COPY --from=builder /app/services/auth-service/internal/db/migrations ./migrations
-
-# создаем обычного пользователя (не root) и используем его
+# create non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=builder /app/server ./server
+
 USER appuser
 
+ENV PORT=8080
+EXPOSE 8080
 CMD ["./server"]

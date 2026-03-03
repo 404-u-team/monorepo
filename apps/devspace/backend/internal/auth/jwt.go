@@ -4,16 +4,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/golang-jwt/jwt"
 )
 
-func CreateJWT(secret []byte, userID int, config *config.Config) (string, error) {
-	expiration := time.Second * time.Duration(config.JWTExpirationInSeconds)
+func CreateJWT(secret []byte, userID uint, expirationTime int) (string, error) {
+	expiration := time.Second * time.Duration(expirationTime)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID":    strconv.Itoa(userID),
-		"expiredAt": time.Now().Add(expiration).Unix(),
+		"sub": strconv.FormatUint(uint64(userID), 10), // стандарт в jwt, подразумевает userID
+		"exp": time.Now().Add(expiration).Unix(),      // время конца жизни
 	})
 
 	tokenString, err := token.SignedString(secret)

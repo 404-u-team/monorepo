@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
 
@@ -27,15 +26,13 @@ type Config struct {
 	SaltLength  int
 	KeyLength   int
 
-	JWTSecret              string
-	JWTExpirationInSeconds int
+	JWTSecret                          string
+	JWTAccessTokenExpirationInSeconds  int
+	JWTRefreshTokenExpirationInSeconds int
 }
 
 func LoadConfig() Config {
-	err := godotenv.Load("/app/services/auth-service/.env")
-	if err != nil {
-		log.Printf("got error when tried to load env variables, %v", err)
-	}
+	_ = godotenv.Load()
 
 	return Config{
 		APIPort: getEnv("API_PORT", "8080"),
@@ -56,8 +53,9 @@ func LoadConfig() Config {
 		SaltLength:  getEnvAsInt("ARGON_SALT_LEN", 16),
 		KeyLength:   getEnvAsInt("ARGON_KEY_LEN", 32),
 
-		JWTSecret:              getEnv("JWT_SECRET", "not-secret-anymore"),
-		JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRE_TIME", 900),
+		JWTSecret:                          getEnv("JWT_SECRET", "not-secret-anymore"),
+		JWTAccessTokenExpirationInSeconds:  getEnvAsInt("JWT_EXPIRE_TIME", 900),
+		JWTRefreshTokenExpirationInSeconds: getEnvAsInt("JWT_EXPIRE_TIME", 604800),
 	}
 }
 
