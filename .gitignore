@@ -41,6 +41,7 @@ go.work
 **/.DS_Store
 *.DS_Store
 .DS_Store
+
 .AppleDouble
 .LSOverride
 
