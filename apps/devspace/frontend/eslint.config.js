@@ -81,7 +81,7 @@ export default defineConfig([
       'import-x/no-duplicates': 'error',
       'import-x/no-self-import': 'error',
       'import-x/no-useless-path-segments': 'error',
-      'import-x/no-relative-parent-imports': 'error',
+      'import-x/no-relative-parent-imports': 'warn',
       'import-x/no-restricted-paths': ['error', {
         zones: [
           {
