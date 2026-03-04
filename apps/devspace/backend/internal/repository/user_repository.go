@@ -41,31 +41,27 @@ func (r *userRepository) CreateUser(payload *dto.RegisterRequest) (uuid.UUID, er
 }
 
 func (r *userRepository) IsUserExistByEmail(email string) (bool, error) {
-	var exists bool
+	var count int64
 	err := r.conn.Model(&models.User{}).
-		Select("COUNT(*) = 1").
 		Where("email = ?", email).
-		Find(&exists).Error
+		Count(&count).Error
 	if err != nil {
 		log.Println("Ошибка при проверке наличия пользователя: ", err)
 		return false, err
 	}
-
-	return exists, err
+	return count > 0, nil
 }
 
 func (r *userRepository) IsUserExistByID(id uuid.UUID) (bool, error) {
-	var exists bool
+	var count int64
 	err := r.conn.Model(&models.User{}).
-		Select("COUNT(*) = 1").
 		Where("id = ?", id).
-		Find(&exists).Error
+		Count(&count).Error
 	if err != nil {
 		log.Println("Ошибка при проверке наличия пользователя: ", err)
 		return false, err
 	}
-
-	return exists, err
+	return count > 0, nil
 }
 
 func (r *userRepository) GetUserByEmail(email string) (models.User, error) {

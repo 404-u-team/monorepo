@@ -40,7 +40,7 @@ func (r *projectRepository) CreateProject(project *models.Project) error {
 	if err := r.conn.Model(&models.User{}).
 		Where("id = ?", project.LeaderID).
 		Count(&cnt).Error; err != nil {
-		return fmt.Errorf("failed to check leader existence: %w", err)
+		return fmt.Errorf("ошибка при проверке наличия проекта:: %w", err)
 	}
 	if cnt == 0 {
 		return fmt.Errorf("leader not found")
