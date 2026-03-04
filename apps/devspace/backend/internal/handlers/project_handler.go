@@ -45,7 +45,8 @@ func (h *projectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	if err := h.projectService.CreateProject(&payload, userID); err != nil {
+	project, err := h.projectService.CreateProject(&payload, userID)
+	if err != nil {
 		if errors.Is(err, services.ErrProjectConflict) {
 			c.Status(http.StatusConflict)
 			return
@@ -54,5 +55,5 @@ func (h *projectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.JSON(http.StatusCreated, project)
 }

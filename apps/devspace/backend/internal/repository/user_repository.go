@@ -12,6 +12,7 @@ import (
 type UserRepository interface {
 	CreateUser(payload *dto.RegisterRequest) (uuid.UUID, error)
 	IsUserExistByEmail(email string) (bool, error)
+	IsUserExistByID(id uuid.UUID) (bool, error)
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByNickname(login string) (models.User, error)
 }
@@ -44,6 +45,20 @@ func (r *userRepository) IsUserExistByEmail(email string) (bool, error) {
 	err := r.conn.Model(&models.User{}).
 		Select("COUNT(*) = 1").
 		Where("email = ?", email).
+		Find(&exists).Error
+	if err != nil {
+		log.Println("Ошибка при проверке наличия пользователя: ", err)
+		return false, err
+	}
+
+	return exists, err
+}
+
+func (r *userRepository) IsUserExistByID(id uuid.UUID) (bool, error) {
+	var exists bool
+	err := r.conn.Model(&models.User{}).
+		Select("COUNT(*) = 1").
+		Where("id = ?", id).
 		Find(&exists).Error
 	if err != nil {
 		log.Println("Ошибка при проверке наличия пользователя: ", err)

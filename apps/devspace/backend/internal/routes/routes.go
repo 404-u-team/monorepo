@@ -39,7 +39,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 		// защищенные
 		protected := api.Group("")
-		protected.Use(middleware.AuthMiddleware(config.JWTSecret))
+		protected.Use(middleware.AuthMiddleware(config.JWTSecret, userRepo))
 		{
 			protected.POST("/projects", projectHandler.CreateProject)
 
