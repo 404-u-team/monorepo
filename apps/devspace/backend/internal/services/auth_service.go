@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/auth"
@@ -15,8 +16,8 @@ import (
 )
 
 type AuthService interface {
-	Register(c *gin.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error)
-	Login(c *gin.Context, payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error)
+	Register(payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error)
+	Login(payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error)
 	Refresh(c *gin.Context, config *config.Config) (*dto.TokenResponse, error)
 }
 
@@ -28,7 +29,7 @@ func NewAuthService(repo repository.UserRepository) *authService {
 	return &authService{repo: repo}
 }
 
-func (s *authService) Register(c *gin.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error) {
+func (s *authService) Register(payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error) {
 	// check if the user exists
 	exists, err := s.repo.IsUserExistByEmail(payload.Email)
 	if err != nil {
@@ -53,7 +54,7 @@ func (s *authService) Register(c *gin.Context, payload *dto.RegisterRequest, con
 	return createTokenResponse(config.JWTSecret, userID, config.JWTAccessTokenExpirationInSeconds, config.JWTRefreshTokenExpirationInSeconds)
 }
 
-func (s *authService) Login(c *gin.Context, payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error) {
+func (s *authService) Login(payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error) {
 	// проверка существования пользователя
 	var user models.User
 	var err error
@@ -91,13 +92,14 @@ func (s *authService) Refresh(c *gin.Context, config *config.Config) (*dto.Token
 	// получение токена из куки
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	// проверка токена
 	userID, err := auth.ValidateJWT([]byte(config.JWTSecret), refreshToken)
 	if err != nil {
-		return nil, err
+		log.Println("Ошибка при валидации jwt токена в /refresh: ", err)
+		return nil, ErrUnauthorized
 	}
 
 	// создание новых токенов
