@@ -11,15 +11,15 @@ import (
 	"strconv"
 )
 
-type SkillsHandler struct {
+type skillsHandler struct {
 	db *gorm.DB
 }
 
-func NewSkillsHandler(d *gorm.DB) SkillsHandler {
-	return SkillsHandler{db: d}
+func NewSkillsHandler(d *gorm.DB) skillsHandler {
+	return skillsHandler{db: d}
 }
 
-func (ch *SkillsHandler) GetSkills(context *gin.Context) {
+func (ch *skillsHandler) GetSkills(context *gin.Context) {
 	var req dto.SkillCategoriesListRequest
 	bindErr := context.ShouldBindQuery(&req)
 
@@ -50,7 +50,7 @@ func (ch *SkillsHandler) GetSkills(context *gin.Context) {
 	context.JSON(http.StatusOK, skills)
 }
 
-func (ch *SkillsHandler) GetSkillByID(context *gin.Context) {
+func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 	id := context.Param("id")
 	intId, err := strconv.Atoi(id)
 

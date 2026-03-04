@@ -26,7 +26,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
-	commonHandler := handlers.NewCommonHandler(dbConn)
+	commonHandler := handlers.NewSkillsHandler(dbConn)
 
 	api := router.Group("/api")
 	{
