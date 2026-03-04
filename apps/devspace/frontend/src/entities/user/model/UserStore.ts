@@ -2,30 +2,30 @@ import { makeAutoObservable } from "mobx";
 import type { IUser } from "./IUser";
 
 export class UserStore {
-    user: IUser | null = null;
-    accessToken: string | null = null;
+    user: IUser | undefined = undefined;
+    accessToken: string | undefined = undefined;
 
     constructor() {
         makeAutoObservable(this);
     }
 
-    setUser(user: IUser) {
+    setUser(user: IUser): void {
         this.user = user;
     }
 
-    setAccessToken(token: string) {
+    setAccessToken(token: string): void {
         this.accessToken = token;
     }
 
-    invalidateToken() {
-        this.accessToken = null;
+    invalidateToken(): void {
+        this.accessToken = undefined;
     }
 
-    invalidateUser() {
-        this.user = null;
+    invalidateUser(): void {
+        this.user = undefined;
     }
 
     isAuthenticated(): boolean {
-        return this.user !== null && this.accessToken !== null;
+        return this.user !== undefined && this.accessToken !== undefined;
     }
 }
