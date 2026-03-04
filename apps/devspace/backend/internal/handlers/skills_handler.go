@@ -30,7 +30,7 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 
 	skills, dbError := services.GetSkills(req, ch.db)
 
-	if dbError.Error != nil {
+	if dbError != nil {
 		if errors.Is(dbError, gorm.ErrRecordNotFound) {
 			context.JSON(http.StatusOK, nil)
 		} else {
