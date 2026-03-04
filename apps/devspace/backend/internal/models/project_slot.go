@@ -1,11 +1,13 @@
 package models
 
+import "github.com/google/uuid"
+
 type ProjectSlot struct {
-	ID              uint   `gorm:"primaryKey; column:id"`
-	ProjectId       uint   `gorm:"column:project_id; not null"`
-	SkillCategoryId uint   `gorm:"column:skill_category_id; not null"`
-	UserId          uint   `gorm:"column:user_id"`
-	Status          string `gorm:"column:status; not null"`
+	ID              uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	ProjectId       uuid.UUID `gorm:"column:project_id;type:uuid; not null"`
+	SkillCategoryId uuid.UUID `gorm:"column:skill_category_id;type:uuid; not null"`
+	UserId          uuid.UUID `gorm:"column:user_id;type:uuid"`
+	Status          string    `gorm:"column:status; not null"`
 
 	Project Project       `gorm:"foreignKey:ProjectId"`
 	Skill   SkillCategory `gorm:"foreignKey:SkillCategoryId"`

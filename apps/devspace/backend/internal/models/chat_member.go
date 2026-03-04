@@ -2,11 +2,13 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ChatMember struct {
-	ChatID     uint      `gorm:"column:chat_id; primaryKey"`
-	UserID     uint      `gorm:"column:user_id; primaryKey"`
+	ChatID     uuid.UUID `gorm:"column:chat_id;type:uuid;primaryKey"`
+	UserID     uuid.UUID `gorm:"column:user_id;type:uuid;primaryKey"`
 	JoinedAt   time.Time `gorm:"column:joined_at; not null"`
 	LastReadAt time.Time `gorm:"column:last_read_at; not null"`
 
