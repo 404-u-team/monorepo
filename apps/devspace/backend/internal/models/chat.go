@@ -2,16 +2,18 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Chat struct {
-	ID        uint      `gorm:"primaryKey; column:id"`
-	ProjectId uint      `gorm:"column:project_id"`
+	ID        uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	ProjectId uuid.UUID `gorm:"column:project_id;type:uuid"`
 	Title     string    `gorm:"column:title"`
 	Type      string    `gorm:"column:type; not null"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 
-	Project Project `gorm:"foreignKey:ProjectId"`
+	Project Project `gorm:"foreignKey:ProjectID"`
 }
 
 func (c *Chat) TableName() string { return "Chat" }

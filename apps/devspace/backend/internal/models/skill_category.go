@@ -1,11 +1,13 @@
 package models
 
-type SkillCategory struct {
-	ID       uint   `gorm:"primaryKey; column:id"`
-	ParentId uint   `gorm:"column:parent_id"`
-	Name     string `gorm:"column:name; not null"`
+import "github.com/google/uuid"
 
-	Parent *SkillCategory `gorm:"foreignKey:ParentId"`
+type SkillCategory struct {
+	ID       uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	ParentId uuid.UUID `gorm:"column:parent_id;type:uuid"`
+	Name     string    `gorm:"column:name; not null"`
+
+	Parent *SkillCategory `gorm:"foreignKey:ParentID"`
 }
 
 func (skillCategory *SkillCategory) TableName() string { return "Skill_Category" }
