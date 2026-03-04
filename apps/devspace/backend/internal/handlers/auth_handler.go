@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
@@ -14,9 +15,9 @@ type authHandler struct {
 	config      *config.Config
 }
 
-func NewAuthHandler(userService services.AuthService, config *config.Config) *authHandler {
+func NewAuthHandler(authService services.AuthService, config *config.Config) *authHandler {
 	return &authHandler{
-		authService: userService,
+		authService: authService,
 		config:      config,
 	}
 }
@@ -28,27 +29,66 @@ func (h *authHandler) Register(c *gin.Context) {
 		return
 	}
 
-	tokenResponse, err := h.authService.Register(c, &payload, h.config)
+	tokenResponse, err := h.authService.Register(&payload, h.config)
 	if err != nil {
-		// TODO check for different error response -> differenct error code
+		if errors.Is(err, services.ErrUserExists) {
+			c.Status(http.StatusConflict)
+			return
+		}
+
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	c.JSON(http.StatusCreated, gin.H{"access_token": tokenResponse.AccessToken})
+}
+
+func (h *authHandler) Login(c *gin.Context) {
+	var payload dto.LoginRequest
+	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	setTokenIntoCookie(c, tokenResponse.AccessToken)
+	tokenResponse, err := h.authService.Login(&payload, h.config)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 
-	c.Status(http.StatusCreated)
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
-func setTokenIntoCookie(c *gin.Context, token string) {
+func (h *authHandler) Refresh(c *gin.Context) {
+	tokenResponse, err := h.authService.Refresh(c, h.config)
+	if err != nil {
+		if errors.Is(err, services.ErrUnauthorized) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
+}
+
+func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
-		"auth_token",
+		"refresh_token",
 		token,
-		86400,
+		expirationTime, // время жизни внутри куки
 		"/",
 		"",
-		false,
+		false, // когда будем использовать https поставить на true
 		true,
 	)
 }

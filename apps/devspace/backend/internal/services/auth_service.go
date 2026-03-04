@@ -1,18 +1,24 @@
 package services
 
 import (
-	"context"
+	"errors"
+	"log"
+	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/auth"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/utils"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type AuthService interface {
-	Register(ctx context.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error)
-	// Login(ctx context.Context, payload *authpb.LoginRequest) (int, error)
+	Register(payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error)
+	Login(payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error)
+	Refresh(c *gin.Context, config *config.Config) (*dto.TokenResponse, error)
 }
 
 type authService struct {
@@ -23,9 +29,9 @@ func NewAuthService(repo repository.UserRepository) *authService {
 	return &authService{repo: repo}
 }
 
-func (s *authService) Register(ctx context.Context, payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error) {
+func (s *authService) Register(payload *dto.RegisterRequest, config *config.Config) (*dto.TokenResponse, error) {
 	// check if the user exists
-	exists, err := s.repo.IsUserExistByEmail(ctx, payload.Email)
+	exists, err := s.repo.IsUserExistByEmail(payload.Email)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -40,30 +46,76 @@ func (s *authService) Register(ctx context.Context, payload *dto.RegisterRequest
 	}
 
 	// create user with hashed password
-	userID, err := s.repo.CreateUser(ctx, payload)
+	userID, err := s.repo.CreateUser(payload)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	accessToken, err := utils.CreateToken(config.JWTSecret, userID, config)
-	if err != nil {
-		return nil, ErrInternal
-	}
-
-	return &dto.TokenResponse{AccessToken: accessToken, RefreshToken: "2"}, nil
+	return createTokenResponse(config.JWTSecret, userID, config.JWTAccessTokenExpirationInSeconds, config.JWTRefreshTokenExpirationInSeconds)
 }
 
-// func (s *authService) Login(ctx context.Context, payload *authpb.LoginRequest) (int, error) {
-// 	// check if the user exists
-// 	u, err := s.repo.GetUserByEmail(ctx, payload.Email)
-// 	if err != nil {
-// 		return -1, ErrInternal
-// 	}
+func (s *authService) Login(payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error) {
+	// проверка существования пользователя
+	var user models.User
+	var err error
+	if strings.Contains(payload.Login, "@") {
+		user, err = s.repo.GetUserByEmail(payload.Login)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrUserNotFound
+			}
+			return nil, ErrInternal
+		}
+	} else {
+		user, err = s.repo.GetUserByNickname(payload.Login)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrUserNotFound
+			}
+			return nil, ErrInternal
+		}
+	}
 
-// 	// compare password
-// 	if !auth.ComparePasswords(u.Password, payload.Password) {
-// 		return -1, ErrUserNotFound
-// 	}
+	// проверка пароля
+	equal, err := auth.ComparePasswords(payload.Password, user.PasswordHash)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if !equal {
+		return nil, ErrUserNotFound
+	}
 
-// 	return u.ID, nil
-// }
+	return createTokenResponse(config.JWTSecret, user.ID, config.JWTAccessTokenExpirationInSeconds, config.JWTRefreshTokenExpirationInSeconds)
+}
+
+func (s *authService) Refresh(c *gin.Context, config *config.Config) (*dto.TokenResponse, error) {
+	// получение токена из куки
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		return nil, ErrUnauthorized
+	}
+
+	// проверка токена
+	userID, err := auth.ValidateJWT([]byte(config.JWTSecret), refreshToken)
+	if err != nil {
+		log.Println("Ошибка при валидации jwt токена в /refresh: ", err)
+		return nil, ErrUnauthorized
+	}
+
+	// создание новых токенов
+	return createTokenResponse(config.JWTSecret, userID, config.JWTAccessTokenExpirationInSeconds, config.JWTRefreshTokenExpirationInSeconds)
+}
+
+func createTokenResponse(secret string, userID uint, accessTokenExpirationTime, refreshTokenExpirationTime int) (*dto.TokenResponse, error) {
+	accessToken, err := utils.CreateToken(secret, userID, accessTokenExpirationTime)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	refreshToken, err := utils.CreateToken(secret, userID, refreshTokenExpirationTime)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return &dto.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken}, nil
+}

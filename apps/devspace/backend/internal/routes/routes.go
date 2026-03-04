@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/handlers"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-contrib/cors"
@@ -20,18 +21,32 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
+	userService := services.NewUserService(userRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
+	userHandler := handlers.NewUserHandler(userService, config)
 	commonHandler := handlers.NewCommonHandler(dbConn)
 
 	api := router.Group("/api")
 	{
+		// публичные эндпоинты
 		api.POST("/register", authHandler.Register)
-
+		api.POST("/login", authHandler.Login)
+		api.POST("/refresh", authHandler.Refresh)
 		api.GET("/skills", commonHandler.GetSkills)
 		api.GET("/skills/:id", commonHandler.GetSkillByID)
+
+		// защищенные
+		protected := api.Group("")
+		protected.Use(middleware.AuthMiddleware(config.JWTSecret))
+		{
+			protected.GET("/users/me", userHandler.Me)
+		}
+
 	}
+
+	// router.POST("/api/users/create", rest.RegisterUser)
 
 	return router
 }
