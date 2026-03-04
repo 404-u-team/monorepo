@@ -17,23 +17,23 @@ export function Navbar(): JSX.Element {
             <div className={styles.actions}>
                 <ul className={styles.nav}>
                     <li>
-                        <Link to="/community" className={styles.link}>
+                        <Link to="/" className={styles.link}>
                             Сообщество
                         </Link>
                     </li>
                     <li>
-                        <Link to="/projects" className={styles.link}>
+                        <Link to="/" className={styles.link}>
                             Проекты
                         </Link>
                     </li>
                     <li>
-                        <Link to="/ideas" className={styles.link}>
+                        <Link to="/" className={styles.link}>
                             Идеи
                         </Link>
                     </li>
                 </ul>
 
-                <Link to="/my-projects" className={styles.createButton}>
+                <Link to="/" className={styles.createButton}>
                     Мои проекты
                 </Link>
 
