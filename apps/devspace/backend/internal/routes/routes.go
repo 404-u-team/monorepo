@@ -18,14 +18,17 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание репозиториев (круды для работы с entity)
 	userRepo := repository.NewUserRepository(dbConn)
+	projectRepo := repository.NewProjectRepository(dbConn)
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
+	projectService := services.NewProjectService(projectRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
+	projectHandler := handlers.NewProjectHandler(projectService, config)
 
 	api := router.Group("/api")
 	{
@@ -38,6 +41,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware(config.JWTSecret))
 		{
+			protected.POST("/projects", projectHandler.CreateProject)
+
 			protected.GET("/users/me", userHandler.Me)
 		}
 
