@@ -34,6 +34,9 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 		Description: payload.Description,
 		Status:      "In Progress", // пока что так, может прийдется оставить
 	}
+	if payload.IdeaID != nil {
+		project.IdeaId = *payload.IdeaID
+	}
 	if err := s.repo.CreateProject(project); err != nil {
 		return ErrInternal
 	}
