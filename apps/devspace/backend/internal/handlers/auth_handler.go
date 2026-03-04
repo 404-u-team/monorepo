@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
@@ -28,10 +29,14 @@ func (h *authHandler) Register(c *gin.Context) {
 		return
 	}
 
-	tokenResponse, err := h.authService.Register(c, &payload, h.config)
+	tokenResponse, err := h.authService.Register(&payload, h.config)
 	if err != nil {
-		// TODO check for different error response -> differenct error code
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if errors.Is(err, services.ErrUserExists) {
+			c.Status(http.StatusConflict)
+			return
+		}
+
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
@@ -46,10 +51,13 @@ func (h *authHandler) Login(c *gin.Context) {
 		return
 	}
 
-	tokenResponse, err := h.authService.Login(c, &payload, h.config)
+	tokenResponse, err := h.authService.Login(&payload, h.config)
 	if err != nil {
-		// TODO check for different error response -> differenct error code
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
@@ -60,8 +68,11 @@ func (h *authHandler) Login(c *gin.Context) {
 func (h *authHandler) Refresh(c *gin.Context) {
 	tokenResponse, err := h.authService.Refresh(c, h.config)
 	if err != nil {
-		// TODO check for different error response -> differenct error code
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if errors.Is(err, services.ErrUnauthorized) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 

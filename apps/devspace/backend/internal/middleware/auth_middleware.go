@@ -38,11 +38,19 @@ func AuthMiddleware(JWTSecret string) gin.HandlerFunc {
 }
 
 func getAccessToken(c *gin.Context) string {
-	// Check header first
-	authHeader := c.GetHeader("Authorization")
-	if authHeader != "" {
-		return strings.TrimPrefix(authHeader, "Bearer ")
+	authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
+	if authHeader == "" {
+		return ""
 	}
 
-	return ""
+	parts := strings.Fields(authHeader)
+	if len(parts) != 2 {
+		return ""
+	}
+
+	if !strings.EqualFold(parts[0], "Bearer") {
+		return ""
+	}
+
+	return parts[1]
 }

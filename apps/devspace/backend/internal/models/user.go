@@ -1,6 +1,7 @@
 package models
 
 type User struct {
+	// 	ID           uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	ID           uint   `gorm:"primaryKey; column:id"`
 	Email        string `gorm:"unique; column:email; not null"`
 	PasswordHash string `gorm:"column:password_hash; not null"`

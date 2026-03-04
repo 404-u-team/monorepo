@@ -28,7 +28,7 @@ func ValidateJWT(secret []byte, tokenString string) (uint, error) {
 	// парсинг и валидация токена
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return "", fmt.Errorf("ожидался другой способ создания подписи токена: %v", token.Header["alg"])
+			return nil, fmt.Errorf("ожидался другой способ создания подписи токена: %v", token.Header["alg"])
 		}
 		return secret, nil
 	})
@@ -39,7 +39,7 @@ func ValidateJWT(secret []byte, tokenString string) (uint, error) {
 	// получаем claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return 0, fmt.Errorf("неккоректный токен")
+		return 0, fmt.Errorf("некорректный токен")
 	}
 
 	if exp, ok := claims["exp"].(float64); ok {

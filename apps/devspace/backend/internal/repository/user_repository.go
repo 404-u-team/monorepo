@@ -69,7 +69,7 @@ func (r *userRepository) GetUserByNickname(nickname string) (models.User, error)
 
 	result := r.conn.First(&user, "nickname = ?", nickname)
 	if result.Error != nil {
-		log.Println("Ошибка при получении пользователя по email: ", result.Error)
+		log.Println("Ошибка при получении пользователя по nickname: ", result.Error)
 		return user, result.Error
 	}
 
