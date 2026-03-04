@@ -7,9 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
+func enablePgCrypto(connection *gorm.DB) error {
+	// Включение расширения pgcrypto
+	result := connection.Exec("CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";")
+	return result.Error
+}
+
 func Migrate(connection *gorm.DB) {
-	err := connection.AutoMigrate(&models.User{}, &models.Idea{}, &models.Notification{}, &models.Project{}, &models.SkillCategory{}, &models.UserSkill{}, &models.Chat{}, &models.ProjectSlot{}, &models.Request{}, &models.Message{}, &models.ChatMember{})
-	if err != nil {
-		log.Fatalf("Произошла ошибка при миграции, %v", err)
+	if err := enablePgCrypto(connection); err != nil {
+		log.Fatalln("Произошла ошибка при добавления расширения в момент миграции: ", err)
+	}
+
+	if 	err := connection.AutoMigrate(&models.User{}, &models.Idea{}, &models.Notification{}, &models.Project{}, &models.SkillCategory{}, &models.UserSkill{}, &models.Chat{}, &models.ProjectSlot{}, &models.Request{}, &models.Message{}, &models.ChatMember{}); err != nil {
+		log.Fatalln("Произошла ошибка при миграции: ", err)
 	}
 }

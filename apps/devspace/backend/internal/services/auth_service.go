@@ -12,6 +12,7 @@ import (
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -106,7 +107,7 @@ func (s *authService) Refresh(c *gin.Context, config *config.Config) (*dto.Token
 	return createTokenResponse(config.JWTSecret, userID, config.JWTAccessTokenExpirationInSeconds, config.JWTRefreshTokenExpirationInSeconds)
 }
 
-func createTokenResponse(secret string, userID uint, accessTokenExpirationTime, refreshTokenExpirationTime int) (*dto.TokenResponse, error) {
+func createTokenResponse(secret string, userID uuid.UUID, accessTokenExpirationTime, refreshTokenExpirationTime int) (*dto.TokenResponse, error) {
 	accessToken, err := utils.CreateToken(secret, userID, accessTokenExpirationTime)
 	if err != nil {
 		return nil, ErrInternal
