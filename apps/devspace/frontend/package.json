@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tanstack/react-router": "^1.163.3",
+    "axios": "^1.13.6",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
     "react": "^19.2.0",
