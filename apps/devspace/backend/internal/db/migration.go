@@ -8,8 +8,7 @@ import (
 )
 
 func Migrate(connection *gorm.DB) {
-	// &User{}, &Idea{}, &Notification{}, &Project{}, &Skill_Category{}, &User_Skill{}, &Chat{}, &Project_Slot{}, &Request{}, &Message{}, &Chat_Member{}
-	err := connection.AutoMigrate(&models.User{})
+	err := connection.AutoMigrate(&models.User{}, &models.Idea{}, &models.Notification{}, &models.Project{}, &models.SkillCategory{}, &models.UserSkill{}, &models.Chat{}, &models.ProjectSlot{}, &models.Request{}, &models.Message{}, &models.ChatMember{})
 	if err != nil {
 		log.Fatalf("Произошла ошибка при миграции, %v", err)
 	}
