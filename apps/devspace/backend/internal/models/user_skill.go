@@ -1,11 +1,13 @@
 package models
 
-type UserSkill struct {
-	UserID  uint `gorm:"column:user_id; primaryKey"`
-	SkillId uint `gorm:"column:skill_id; primaryKey"`
+import "github.com/google/uuid"
 
-	User  User          `gorm:"foreignKey:UserId"`
-	Skill SkillCategory `gorm:"foreignKey:SkillId"`
+type UserSkill struct {
+	UserID  uuid.UUID `gorm:"column:user_id;type:uuid;primaryKey"`
+	SkillId uuid.UUID `gorm:"column:skill_id;type:uuid;primaryKey"`
+
+	User  User          `gorm:"foreignKey:UserID"`
+	Skill SkillCategory `gorm:"foreignKey:SkillID"`
 }
 
 func (us *UserSkill) TableName() string { return "User_Skill" }

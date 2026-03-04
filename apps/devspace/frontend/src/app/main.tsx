@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { configure } from 'mobx';
 import '@/app/styles/index.scss'
-import { RootStore, StoreContext } from '@/app/providers/store';
+import { StoreContext, rootStore } from '@/app/providers/store';
+
+import { verifyInterceptors } from '@/app/providers/apiInterceptors';
 
 // Import the generated route tree
 // eslint-disable-next-line import-x/no-unresolved
@@ -27,8 +29,8 @@ configure({
     reactionRequiresObservable: true,
 });
 
-// Create the global store
-const store = new RootStore();
+// Configure Axios with FSD-compliant rules
+verifyInterceptors();
 
 // Render the app
 const rootElement = document.getElementById('root')
@@ -36,7 +38,7 @@ if (rootElement !== null && !rootElement.innerHTML) {
     const root = createRoot(rootElement)
     root.render(
         <StrictMode>
-            <StoreContext.Provider value={store}>
+            <StoreContext.Provider value={rootStore}>
                 <RouterProvider router={router} />
             </StoreContext.Provider>
         </StrictMode>,

@@ -10,6 +10,6 @@ export class RootStore {
     }
 }
 
-const rootStore = new RootStore();
+export const rootStore = new RootStore();
 export const StoreContext: Context<RootStore> = createContext<RootStore>(rootStore);
 export const useStore = (): RootStore => useContext(StoreContext);
