@@ -25,7 +25,7 @@ export class UserStore {
         this.user = undefined;
     }
 
-    isAuthenticated(): boolean {
+    get isAuthenticated(): boolean {
         return this.user !== undefined && this.accessToken !== undefined;
     }
 }
