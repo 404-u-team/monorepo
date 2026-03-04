@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"gorm.io/gorm"
@@ -34,7 +35,11 @@ func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillC
 	return skills, nil
 }
 
-func CutIntoPages(skills []models.SkillCategory, pages int) [][]models.SkillCategory {
+func CutIntoPages(skills []models.SkillCategory, pages int) ([][]models.SkillCategory, error) {
+
+	if pages == 0 {
+		return nil, errors.New("0 страниц")
+	}
 	skillsPerPage := int(math.Ceil(float64(len(skills)) / float64(pages)))
 
 	splittedByPages := make([][]models.SkillCategory, pages)
@@ -47,7 +52,7 @@ func CutIntoPages(skills []models.SkillCategory, pages int) [][]models.SkillCate
 		splittedByPages[cursor] = append(splittedByPages[cursor], elem)
 	}
 
-	return splittedByPages
+	return splittedByPages, nil
 }
 
 func GetSkillById(id int, db *gorm.DB) (*models.SkillCategory, error) {

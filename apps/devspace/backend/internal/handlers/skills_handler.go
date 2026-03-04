@@ -42,7 +42,10 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 
 	if req.Page != nil {
 		//делим на страницы
-		splittedByPages := services.CutIntoPages(skills, int(*req.Page))
+		splittedByPages, err := services.CutIntoPages(skills, int(*req.Page))
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 		context.JSON(http.StatusOK, splittedByPages)
 		return
 	}
