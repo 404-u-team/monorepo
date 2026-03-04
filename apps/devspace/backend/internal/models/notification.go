@@ -13,7 +13,7 @@ type Notification struct {
 	IsRead    bool      `gorm:"column:is_read; not null"`
 	CreatedAt time.Time `gorm:"column:created_at; not null"`
 
-	User User `gorm:"foreignKey:UserId"`
+	User User `gorm:"foreignKey:UserID"`
 }
 
 func (n *Notification) TableName() string { return "Notification" }

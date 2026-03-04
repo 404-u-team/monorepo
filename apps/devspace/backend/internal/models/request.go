@@ -10,8 +10,8 @@ type Request struct {
 	Status      string    `gorm:"column:status; not null"`
 	CoverLetter string    `gorm:"column:cover_letter; not null"`
 
-	Slot ProjectSlot `gorm:"foreignKey:SlotId"`
-	User User        `gorm:"foreignKey:UserId"`
+	Slot ProjectSlot `gorm:"foreignKey:SlotID"`
+	User User        `gorm:"foreignKey:UserID"`
 }
 
 func (r *Request) TableName() string { return "Request" }

@@ -14,8 +14,8 @@ type Message struct {
 	SentAt   time.Time `gorm:"column:sent_at; not null"`
 	IsEdited bool      `gorm:"column:is_edited; not null"`
 
-	Chat   Chat `gorm:"foreignKey:ChatId"`
-	Sender User `gorm:"foreignKey:SenderId"`
+	Chat   Chat `gorm:"foreignKey:ChatID"`
+	Sender User `gorm:"foreignKey:SenderID"`
 }
 
 func (m *Message) TableName() string { return "Message" }

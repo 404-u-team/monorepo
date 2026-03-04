@@ -10,7 +10,7 @@ type Idea struct {
 	ViewsCount     uint      `gorm:"column:views_count; not null"`
 	FavoritesCount uint      `gorm:"column:favorites_count; not null"`
 
-	Author User `gorm:"foreignKey:AuthorId"`
+	Author User `gorm:"foreignKey:AuthorID"`
 }
 
 func (i *Idea) TableName() string { return "Idea" }

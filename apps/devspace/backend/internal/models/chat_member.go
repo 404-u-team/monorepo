@@ -12,8 +12,8 @@ type ChatMember struct {
 	JoinedAt   time.Time `gorm:"column:joined_at; not null"`
 	LastReadAt time.Time `gorm:"column:last_read_at; not null"`
 
-	Chat Chat `gorm:"foreignKey:ChatId"`
-	User User `gorm:"foreignKey:UserId"`
+	Chat Chat `gorm:"foreignKey:ChatID"`
+	User User `gorm:"foreignKey:UserID"`
 }
 
 func (cm *ChatMember) TableName() string { return "Chat_Member" }

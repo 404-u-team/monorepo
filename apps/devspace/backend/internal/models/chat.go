@@ -13,7 +13,7 @@ type Chat struct {
 	Type      string    `gorm:"column:type; not null"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 
-	Project Project `gorm:"foreignKey:ProjectId"`
+	Project Project `gorm:"foreignKey:ProjectID"`
 }
 
 func (c *Chat) TableName() string { return "Chat" }

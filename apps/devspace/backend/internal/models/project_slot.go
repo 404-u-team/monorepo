@@ -9,9 +9,9 @@ type ProjectSlot struct {
 	UserId          uuid.UUID `gorm:"column:user_id;type:uuid"`
 	Status          string    `gorm:"column:status; not null"`
 
-	Project Project       `gorm:"foreignKey:ProjectId"`
-	Skill   SkillCategory `gorm:"foreignKey:SkillCategoryId"`
-	User    User          `gorm:"foreignKey:UserId"`
+	Project Project       `gorm:"foreignKey:ProjectID"`
+	Skill   SkillCategory `gorm:"foreignKey:SkillCategoryID"`
+	User    User          `gorm:"foreignKey:UserID"`
 }
 
 func (ps *ProjectSlot) TableName() string { return "Project_Slot" }
