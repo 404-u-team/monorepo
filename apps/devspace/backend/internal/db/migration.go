@@ -19,7 +19,7 @@ func Migrate(connection *gorm.DB) {
 	}
 
 	// &User{}, &Idea{}, &Notification{}, &Project{}, &Skill_Category{}, &User_Skill{}, &Chat{}, &Project_Slot{}, &Request{}, &Message{}, &Chat_Member{}
-	if err := connection.AutoMigrate(&models.User{}); err != nil {
+	if err := connection.AutoMigrate(&models.User{}, &models.Project{}); err != nil {
 		log.Fatalln("Произошла ошибка при миграции: ", err)
 	}
 }
