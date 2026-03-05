@@ -1,23 +1,27 @@
 package services
 
 import (
+	"errors"
 	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
+	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
+	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 }
 
 type projectService struct {
 	repo repository.ProjectRepository
 }
 
-func NewProjectService(repo repository.ProjectRepository) *projectService {
+func NewProjectService(repo repository.ProjectRepository) ProjectService {
 	return &projectService{repo: repo}
 }
 
@@ -31,16 +35,40 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	}
 
 	project := &models.Project{
-		LeaderID:    leaderID,
-		Title:       payload.Title,
-		Description: payload.Description,
-		Status:      "In Progress", // пока что так, может прийдется оставить
+		LeaderID: leaderID,
+		Title:    payload.Title,
+		Status:   "open",
+	}
+	if payload.Description != nil {
+		project.Description = payload.Description
 	}
 	if payload.IdeaID != nil {
 		project.IdeaID = payload.IdeaID
 	}
 	if err := s.repo.CreateProject(project); err != nil {
 		log.Println("Ошибка при создании проекта: ", err)
+		return nil, ErrInternal
+	}
+
+	return project, nil
+}
+
+func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
+	projects, err := s.repo.GetProjects(query)
+	if err != nil {
+		log.Println("Ошибка при получении списка проектов: ", err)
+		return nil, ErrInternal
+	}
+
+	return projects, nil
+}
+
+func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
+	project, err := s.repo.GetProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectNotFound
+		}
 		return nil, ErrInternal
 	}
 

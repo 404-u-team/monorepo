@@ -57,3 +57,42 @@ func (h *projectHandler) CreateProject(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, project)
 }
+
+func (h *projectHandler) GetProjects(c *gin.Context) {
+	var query dto.GetProjectsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		log.Println("Ошибка при парсинге query: ", err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	projects, err := h.projectService.GetProjects(&query)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, projects)
+}
+
+func (h *projectHandler) GetProjectByID(c *gin.Context) {
+	projectIDStr := c.Param("projectID")
+
+	projectID, err := uuid.Parse(projectIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	project, err := h.projectService.GetProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, project)
+}
