@@ -1,0 +1,120 @@
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 72px;
+    background-color: var(--brand--subtle);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logoImage {
+    height: 64px;
+    width: auto;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: var(--text--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: var(--brand);
+    }
+
+    &.active {
+        color: var(--brand);
+        font-weight: 600;
+    }
+}
+
+.createButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    background-color: var(--brand);
+    color: var(--text--onPrimary);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: var(--brand--hover);
+    }
+
+    &:active {
+        background-color: var(--brand--active);
+    }
+}
+
+.userControls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-left: 8px;
+}
+
+.iconButton {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        color: var(--brand);
+    }
+}
+
+.avatarWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--text--disabled);
+}
+
+.chevron {
+    color: var(--text--primary);
+    width: 20px;
+    height: 20px;
+}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
@@ -25,7 +26,8 @@ func NewAuthHandler(authService services.AuthService, config *config.Config) *au
 func (h *authHandler) Register(c *gin.Context) {
 	var payload dto.RegisterRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println("Ошибка при парсинге: ", err.Error())
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
@@ -47,7 +49,8 @@ func (h *authHandler) Register(c *gin.Context) {
 func (h *authHandler) Login(c *gin.Context) {
 	var payload dto.LoginRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Println("Ошибка при парсинге: ", err.Error())
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
