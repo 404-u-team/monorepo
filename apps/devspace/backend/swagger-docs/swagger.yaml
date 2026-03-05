@@ -1,23 +1,26 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   title: API Платформы для проектов
-  version: 1.0.0
   description: API для управления пользователями, навыками, идеями, проектами и откликами.
-
-servers:
-  - url: https://api.example.com/v1
-    description: Основной сервер
-
+  version: 1.0.0
+tags:
+  - name: Аутентификация
+  - name: Пользователи
+  - name: Навыки
+  - name: Идеи
+  - name: Проекты
+  - name: Слоты проектов
+  - name: Отклики
 paths:
-  # ========== Аутентификация ==========
   /auth/register:
     post:
       summary: Регистрация пользователя
+      deprecated: false
       description: Создает нового пользователя с ролью USER. Пароль хэшируется.
       tags:
         - Аутентификация
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -25,6 +28,7 @@ paths:
               required:
                 - email
                 - password
+                - nickname
               properties:
                 email:
                   type: string
@@ -35,20 +39,30 @@ paths:
                   format: password
                   minLength: 6
                   example: securePassword123
+                nickname:
+                  type: string
+            example:
+              email: user@example.com
+              nickname: example
+              password: securePassword123
+        required: true
       responses:
         '201':
           description: Пользователь успешно зарегистрирован
+          headers: {}
         '400':
           description: Ошибка валидации (например, email уже существует)
-
+          headers: {}
+      security: []
   /auth/login:
     post:
       summary: Вход в систему
+      deprecated: false
       description: Аутентификация пользователя и получение JWT токенов.
       tags:
         - Аутентификация
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -63,6 +77,10 @@ paths:
                 password:
                   type: string
                   format: password
+            example:
+              email: Einar_Kuphal@gmail.com
+              password: _VmgGaB1xNOl8Op
+        required: true
       responses:
         '200':
           description: Успешный вход. Возвращает токены.
@@ -78,19 +96,20 @@ paths:
                   token_type:
                     type: string
                     example: Bearer
+          headers: {}
         '401':
           description: Неверные учетные данные
-
+          headers: {}
+      security: []
   /auth/refresh:
     post:
       summary: Обновление Access токена
+      deprecated: false
       description: Получение новой пары токенов по Refresh токену.
       tags:
         - Аутентификация
-      security:
-        - BearerAuth: []
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -100,6 +119,9 @@ paths:
               properties:
                 refresh_token:
                   type: string
+            example:
+              refresh_token: ea Ut ipsum ad
+        required: true
       responses:
         '200':
           description: Токены успешно обновлены.
@@ -112,18 +134,27 @@ paths:
                     type: string
                   refresh_token:
                     type: string
+          headers: {}
         '401':
           description: Недействительный или просроченный Refresh токен
-
-  # ========== Пользователи ==========
+          headers: {}
+      security:
+        - BearerAuth: []
   /users/me:
     get:
       summary: Получить свой профиль
+      deprecated: false
       description: Возвращает полную информацию о текущем авторизованном пользователе.
       tags:
         - Пользователи
-      security:
-        - BearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            example: {}
       responses:
         '200':
           description: Информация о профиле
@@ -131,17 +162,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrivateUserProfile'
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
+      security:
+        - BearerAuth: []
     put:
       summary: Обновить свой профиль
+      deprecated: false
       description: Обновляет информацию текущего пользователя.
       tags:
         - Пользователи
-      security:
-        - BearerAuth: []
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -157,6 +191,7 @@ paths:
                 bio:
                   type: string
                   example: Full-stack разработчик
+        required: true
       responses:
         '200':
           description: Профиль успешно обновлен
@@ -164,22 +199,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PrivateUserProfile'
+          headers: {}
         '400':
           description: Ошибка валидации
+          headers: {}
         '401':
           description: Не авторизован
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /users/me/skills:
     post:
       summary: Добавить навык в профиль
-      description: Добавляет ссылку на существующую категорию навыка в профиль пользователя.
+      deprecated: false
+      description: >-
+        Добавляет ссылку на существующую категорию навыка в профиль
+        пользователя.
       tags:
         - Пользователи
         - Навыки
-      security:
-        - BearerAuth: []
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -190,54 +230,65 @@ paths:
                 skill_id:
                   type: string
                   format: uuid
-                  example: "123e4567-e89b-12d3-a456-426614174000"
+                  example: 123e4567-e89b-12d3-a456-426614174000
+        required: true
       responses:
         '201':
           description: Навык успешно добавлен
+          headers: {}
         '400':
           description: Навык уже существует у пользователя или не найден
+          headers: {}
         '401':
           description: Не авторизован
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /users/me/skills/{skill_id}:
     delete:
       summary: Удалить навык из профиля
+      deprecated: false
       description: Удаляет навык из списка навыков пользователя.
       tags:
         - Пользователи
         - Навыки
-      security:
-        - BearerAuth: []
       parameters:
         - name: skill_id
           in: path
+          description: ID навыка (категории) для удаления
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: ID навыка (категории) для удаления
       responses:
         '204':
           description: Навык успешно удален
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '404':
           description: Навык не найден у пользователя
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /users/{user_id}:
     get:
       summary: Получить публичный профиль
+      deprecated: false
       description: Возвращает публичную информацию о другом пользователе.
       tags:
         - Пользователи
       parameters:
         - name: user_id
           in: path
+          description: UUID пользователя
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: UUID пользователя
       responses:
         '200':
           description: Публичный профиль пользователя
@@ -245,40 +296,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicUserProfile'
+          headers: {}
         '404':
           description: Пользователь не найден
-
-  # ========== Навыки ==========
+          headers: {}
+      security: []
+  /skills/{uuid}:
+    delete:
+      summary: Удалить навык
+      deprecated: false
+      description: Позволяет удалить навык uuid. Доступен только админам
+      tags: []
+      parameters:
+        - name: uuid
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+        - name: cascade
+          in: query
+          description: Должно ли удаление родителя удалять детей. По-умолчанию false
+          required: false
+          schema:
+            type: boolean
+        - name: Authorization
+          in: header
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '403':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+              example:
+                error: Записи с таким id не существует
+          headers: {}
+      security: []
   /skills:
     get:
       summary: Получить список навыков
-      description: Возвращает список всех категорий навыков с возможностью фильтрации по родителю и поиску.
+      deprecated: false
+      description: >-
+        Возвращает список всех категорий навыков с возможностью фильтрации по
+        родителю и поиску.
       tags:
         - Навыки
       parameters:
         - name: parent_id
           in: query
-          schema:
-            type: string
-            format: uuid
           description: Фильтр по родительской категории (оставьте пустым для корневых)
+          required: false
+          schema:
+            type: integer
         - name: search
           in: query
+          description: Поиск по названию навыка
+          required: false
           schema:
             type: string
-          description: Поиск по названию навыка
         - name: page
           in: query
+          description: Номер страницы
+          required: false
           schema:
             type: integer
             default: 1
-          description: Номер страницы
         - name: limit
           in: query
+          description: Количество записей на странице
+          required: false
           schema:
             type: integer
             default: 20
-          description: Количество записей на странице
       responses:
         '200':
           description: Список навыков
@@ -288,30 +395,42 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Skill'
+          headers: {}
+      security: []
     post:
       summary: Создать новый навык
-      description: Создает новую категорию навыка. Доступно только модераторам/администраторам.
+      deprecated: false
+      description: >-
+        Создает новую категорию навыка. Доступно только
+        модераторам/администраторам.
       tags:
         - Навыки
-      security:
-        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: string
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - name
               properties:
                 name:
                   type: string
-                  example: "Фронтенд разработка"
+                  description: название
                 parent_id:
                   type: string
-                  format: uuid
-                  description: ID родительской категории (null для корневой)
-                  example: "123e4567-e89b-12d3-a456-426614174000"
+                  description: >-
+                    родитель. Если не указан, навык будет навыком первого
+                    уровня.
+              required:
+                - name
+            examples: {}
+        required: true
       responses:
         '201':
           description: Навык успешно создан
@@ -319,25 +438,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Skill'
+          headers: {}
         '400':
           description: Ошибка валидации
+          headers: {}
         '403':
           description: Недостаточно прав
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /skills/{skill_id}:
     get:
       summary: Получить детали навыка
+      deprecated: false
       description: Возвращает информацию о конкретном навыке.
       tags:
         - Навыки
       parameters:
         - name: skill_id
           in: path
+          description: UUID навыка
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: UUID навыка
       responses:
         '200':
           description: Информация о навыке
@@ -345,40 +470,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Skill'
+          headers: {}
         '404':
           description: Навык не найден
-
-  # ========== Идеи ==========
+          headers: {}
+      security: []
   /ideas:
     get:
       summary: Список идей
+      deprecated: false
       description: Возвращает список идей с пагинацией и фильтрацией.
       tags:
         - Идеи
       parameters:
         - name: author_id
           in: query
+          description: Фильтр по автору
+          required: false
           schema:
             type: string
             format: uuid
-          description: Фильтр по автору
         - name: search
           in: query
+          description: Поиск по заголовку и описанию
+          required: false
           schema:
             type: string
-          description: Поиск по заголовку и описанию
         - name: favorites
           in: query
+          description: >-
+            Показать только избранные идеи текущего пользователя (требует
+            авторизации)
+          required: false
           schema:
             type: boolean
-          description: Показать только избранные идеи текущего пользователя (требует авторизации)
         - name: page
           in: query
+          description: ''
+          required: false
           schema:
             type: integer
             default: 1
         - name: limit
           in: query
+          description: ''
+          required: false
           schema:
             type: integer
             default: 20
@@ -391,15 +527,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Idea'
+          headers: {}
+      security: []
     post:
       summary: Создать идею
+      deprecated: false
       description: Создает новую идею. Автор устанавливается автоматически из токена.
       tags:
         - Идеи
-      security:
-        - BearerAuth: []
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -410,10 +547,13 @@ paths:
               properties:
                 title:
                   type: string
-                  example: "Мобильное приложение для изучения языков"
+                  example: Мобильное приложение для изучения языков
                 description:
                   type: string
-                  example: "Идея создания приложения с использованием AI для практики разговорной речи."
+                  example: >-
+                    Идея создания приложения с использованием AI для практики
+                    разговорной речи.
+        required: true
       responses:
         '201':
           description: Идея успешно создана
@@ -421,25 +561,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Idea'
+          headers: {}
         '400':
           description: Ошибка валидации
+          headers: {}
         '401':
           description: Не авторизован
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /ideas/{idea_id}:
     get:
       summary: Получить детали идеи
-      description: Возвращает информацию о конкретной идее (включая счетчики просмотров и избранного).
+      deprecated: false
+      description: >-
+        Возвращает информацию о конкретной идее (включая счетчики просмотров и
+        избранного).
       tags:
         - Идеи
       parameters:
         - name: idea_id
           in: path
+          description: UUID идеи
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: UUID идеи
       responses:
         '200':
           description: Детали идеи
@@ -456,24 +604,27 @@ paths:
                       favorites_count:
                         type: integer
                         example: 25
+          headers: {}
         '404':
           description: Идея не найдена
+          headers: {}
+      security: []
     put:
       summary: Редактировать идею
+      deprecated: false
       description: Обновляет информацию об идее. Доступно только автору.
       tags:
         - Идеи
-      security:
-        - BearerAuth: []
       parameters:
         - name: idea_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -483,6 +634,7 @@ paths:
                   type: string
                 description:
                   type: string
+        required: true
       responses:
         '200':
           description: Идея обновлена
@@ -490,48 +642,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Idea'
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не автор)
+          headers: {}
         '404':
           description: Идея не найдена
+          headers: {}
+      security:
+        - BearerAuth: []
     delete:
       summary: Удалить идею
+      deprecated: false
       description: Удаляет идею. Доступно только автору.
       tags:
         - Идеи
-      security:
-        - BearerAuth: []
       parameters:
         - name: idea_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       responses:
         '204':
           description: Идея успешно удалена
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не автор)
+          headers: {}
         '404':
           description: Идея не найдена
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /ideas/{idea_id}/favorite:
     post:
       summary: Добавить/убрать из избранного
+      deprecated: false
       description: Переключает состояние избранного для текущего пользователя.
       tags:
         - Идеи
-      security:
-        - BearerAuth: []
       parameters:
         - name: idea_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
@@ -546,24 +711,31 @@ paths:
                   is_favorite:
                     type: boolean
                     description: Текущее состояние (true - в избранном)
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '404':
           description: Идея не найдена
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /ideas/{idea_id}/project:
     post:
       summary: Создать проект на основе идеи
-      description: Создает новый проект, копируя title и description из идеи. Лидером становится автор идеи.
+      deprecated: false
+      description: >-
+        Создает новый проект, копируя title и description из идеи. Лидером
+        становится автор идеи.
       tags:
         - Идеи
         - Проекты
-      security:
-        - BearerAuth: []
       parameters:
         - name: idea_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
@@ -574,45 +746,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Только автор идеи может создавать проект
+          headers: {}
         '404':
           description: Идея не найдена
-
-  # ========== Проекты ==========
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects:
     get:
       summary: Список проектов
+      deprecated: false
       description: Возвращает список проектов с пагинацией и фильтрацией.
       tags:
         - Проекты
       parameters:
         - name: leader_id
           in: query
+          description: Фильтр по лидеру проекта
+          required: false
           schema:
             type: string
             format: uuid
-          description: Фильтр по лидеру проекта
         - name: status
           in: query
+          description: Фильтр по статусу проекта
+          required: false
           schema:
             type: string
-            enum: [open, closed]
-          description: Фильтр по статусу проекта
+            enum:
+              - open
+              - closed
         - name: search
           in: query
+          description: Поиск по заголовку и описанию
+          required: false
           schema:
             type: string
-          description: Поиск по заголовку и описанию
         - name: page
           in: query
+          description: ''
+          required: false
           schema:
             type: integer
             default: 1
         - name: limit
           in: query
+          description: ''
+          required: false
           schema:
             type: integer
             default: 20
@@ -625,15 +811,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Project'
+          headers: {}
+      security: []
     post:
       summary: Создать проект
+      deprecated: false
       description: Создает новый проект (не на основе идеи).
       tags:
         - Проекты
-      security:
-        - BearerAuth: []
+      parameters: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -645,13 +832,16 @@ paths:
                 idea_id:
                   type: string
                   format: uuid
-                  description: ID идеи, если проект создается на ее основе (альтернатива прямому созданию)
+                  description: >-
+                    ID идеи, если проект создается на ее основе (альтернатива
+                    прямому созданию)
                 title:
                   type: string
-                  example: "AI Language Learning App"
+                  example: AI Language Learning App
                 description:
                   type: string
-                  example: "Разработка мобильного приложения для изучения языков с AI."
+                  example: Разработка мобильного приложения для изучения языков с AI.
+        required: true
       responses:
         '201':
           description: Проект успешно создан
@@ -659,21 +849,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+          headers: {}
         '400':
           description: Ошибка валидации
+          headers: {}
         '401':
           description: Не авторизован
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}:
     get:
       summary: Детали проекта
+      deprecated: false
       description: Возвращает информацию о проекте, включая слоты и участников команды.
       tags:
         - Проекты
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
@@ -691,24 +888,27 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/ProjectSlot'
+          headers: {}
         '404':
           description: Проект не найден
+          headers: {}
+      security: []
     put:
       summary: Редактировать проект
+      deprecated: false
       description: Обновляет информацию о проекте. Доступно только лидеру.
       tags:
         - Проекты
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -720,51 +920,68 @@ paths:
                   type: string
                 status:
                   type: string
-                  enum: [open, closed]
+                  enum:
+                    - open
+                    - closed
+        required: true
       responses:
         '200':
           description: Проект обновлен
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер)
+          headers: {}
         '404':
           description: Проект не найден
+          headers: {}
+      security:
+        - BearerAuth: []
     delete:
       summary: Удалить проект
+      deprecated: false
       description: Удаляет проект. Доступно только лидеру, если в проекте нет участников.
       tags:
         - Проекты
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       responses:
         '204':
           description: Проект успешно удален
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер или есть команда)
+          headers: {}
         '404':
           description: Проект не найден
-
-  # ========== Слоты проектов ==========
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}/slots:
     get:
       summary: Список слотов проекта
+      deprecated: false
       description: Возвращает все слоты (вакансии) проекта.
       tags:
         - Слоты проектов
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
@@ -777,24 +994,27 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectSlot'
+          headers: {}
         '404':
           description: Проект не найден
+          headers: {}
+      security: []
     post:
       summary: Создать слот
+      deprecated: false
       description: Создает новый слот (вакансию) в проекте. Доступно только лидеру.
       tags:
         - Слоты проектов
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -809,14 +1029,17 @@ paths:
                   description: ID требуемого навыка
                 title:
                   type: string
-                  example: "Backend Developer"
+                  example: Backend Developer
                 description:
                   type: string
-                  example: "Ищем опытного Python разработчика"
+                  example: Ищем опытного Python разработчика
                 status:
                   type: string
-                  enum: [open, closed]
+                  enum:
+                    - open
+                    - closed
                   default: open
+        required: true
       responses:
         '201':
           description: Слот успешно создан
@@ -824,38 +1047,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectSlot'
+          headers: {}
         '400':
           description: Ошибка валидации
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер)
+          headers: {}
         '404':
           description: Проект не найден
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}/slots/{slot_id}:
     put:
       summary: Редактировать слот
+      deprecated: false
       description: Обновляет информацию о слоте. Доступно только лидеру проекта.
       tags:
         - Слоты проектов
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
         - name: slot_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -870,74 +1101,96 @@ paths:
                   type: string
                 status:
                   type: string
-                  enum: [open, closed]
+                  enum:
+                    - open
+                    - closed
+        required: true
       responses:
         '200':
           description: Слот обновлен
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер)
+          headers: {}
         '404':
           description: Слот или проект не найден
+          headers: {}
+      security:
+        - BearerAuth: []
     delete:
       summary: Удалить/закрыть слот
+      deprecated: false
       description: Удаляет слот. Доступно только лидеру проекта.
       tags:
         - Слоты проектов
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
         - name: slot_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       responses:
         '204':
           description: Слот успешно удален
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер)
+          headers: {}
         '404':
           description: Слот или проект не найден
-
-  # ========== Отклики и приглашения ==========
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}/requests:
     get:
       summary: Список откликов на проект
+      deprecated: false
       description: Возвращает все отклики/приглашения по проекту для лидера.
       tags:
         - Отклики
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
         - name: slot_id
           in: query
+          description: Фильтр по конкретному слоту
+          required: false
           schema:
             type: string
             format: uuid
-          description: Фильтр по конкретному слоту
         - name: status
           in: query
+          description: Фильтр по статусу
+          required: false
           schema:
             type: string
-            enum: [pending, accepted, rejected]
-          description: Фильтр по статусу
+            enum:
+              - pending
+              - accepted
+              - rejected
       responses:
         '200':
           description: Список откликов
@@ -947,29 +1200,36 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Request'
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер проекта)
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}/slots/{slot_id}/apply:
     post:
       summary: Откликнуться на слот
+      deprecated: false
       description: Пользователь отправляет заявку (apply) на слот в проекте.
       tags:
         - Отклики
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
         - name: slot_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
@@ -982,7 +1242,7 @@ paths:
                 cover_letter:
                   type: string
                   description: Сопроводительное письмо
-                  example: "Имею большой опыт в этой сфере..."
+                  example: Имею большой опыт в этой сфере...
       responses:
         '201':
           description: Отклик успешно отправлен
@@ -990,36 +1250,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
+          headers: {}
         '400':
           description: Нельзя откликнуться на свой проект или слот уже занят
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '404':
           description: Слот или проект не найден
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /projects/{project_id}/slots/{slot_id}/invite:
     post:
       summary: Пригласить пользователя
+      deprecated: false
       description: Лидер проекта отправляет приглашение (invite) пользователю на слот.
       tags:
         - Отклики
-      security:
-        - BearerAuth: []
       parameters:
         - name: project_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
         - name: slot_id
           in: path
+          description: ''
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -1034,6 +1301,7 @@ paths:
                 cover_letter:
                   type: string
                   description: Сопроводительное письмо
+        required: true
       responses:
         '201':
           description: Приглашение успешно отправлено
@@ -1041,18 +1309,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
+          headers: {}
         '400':
           description: Нельзя пригласить самого себя или слот уже занят
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Доступ запрещен (не лидер)
+          headers: {}
         '404':
           description: Слот, проект или пользователь не найден
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /requests/{request_id}/accept:
     put:
       summary: Принять отклик/приглашение
+      deprecated: false
       description: |
         Принимает отклик или приглашение.
         - Для отклика (apply): принимает лидер проекта.
@@ -1060,16 +1335,15 @@ paths:
         При успехе слот занимается пользователем.
       tags:
         - Отклики
-      security:
-        - BearerAuth: []
       parameters:
         - name: request_id
           in: path
+          description: ID отклика/приглашения
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: ID отклика/приглашения
       responses:
         '200':
           description: Отклик принят. Слот занят.
@@ -1077,34 +1351,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
+          headers: {}
         '400':
           description: Нельзя принять (возможно, слот уже занят)
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Нет прав для принятия (не лидер и не получатель invite)
+          headers: {}
         '404':
           description: Отклик не найден
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /requests/{request_id}/reject:
     put:
       summary: Отклонить отклик/приглашение
+      deprecated: false
       description: |
         Отклоняет отклик или приглашение.
         - Для отклика (apply): отклоняет лидер проекта.
         - Для приглашения (invite): отклоняет приглашенный пользователь.
       tags:
         - Отклики
-      security:
-        - BearerAuth: []
       parameters:
         - name: request_id
           in: path
+          description: ID отклика/приглашения
           required: true
+          example: ''
           schema:
             type: string
             format: uuid
-          description: ID отклика/приглашения
       responses:
         '200':
           description: Отклик отклонен
@@ -1112,35 +1392,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
+          headers: {}
         '401':
           description: Не авторизован
+          headers: {}
         '403':
           description: Нет прав для отклонения
+          headers: {}
         '404':
           description: Отклик не найден
-
+          headers: {}
+      security:
+        - BearerAuth: []
   /users/me/requests:
     get:
       summary: Мои отклики и приглашения
-      description: Возвращает список откликов (где пользователь applicant) и приглашений (где пользователь invitee).
+      deprecated: false
+      description: >-
+        Возвращает список откликов (где пользователь applicant) и приглашений
+        (где пользователь invitee).
       tags:
         - Отклики
         - Пользователи
-      security:
-        - BearerAuth: []
       parameters:
         - name: type
           in: query
+          description: Фильтр по типу (исходящие отклики или входящие приглашения)
+          required: false
           schema:
             type: string
-            enum: [apply, invite]
-          description: Фильтр по типу (исходящие отклики или входящие приглашения)
+            enum:
+              - apply
+              - invite
         - name: status
           in: query
+          description: Фильтр по статусу
+          required: false
           schema:
             type: string
-            enum: [pending, accepted, rejected]
-          description: Фильтр по статусу
+            enum:
+              - pending
+              - accepted
+              - rejected
       responses:
         '200':
           description: Список откликов и приглашений
@@ -1150,16 +1443,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Request'
+          headers: {}
         '401':
           description: Не авторизован
-
+          headers: {}
+      security:
+        - BearerAuth: []
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
   schemas:
     User:
       type: object
@@ -1180,7 +1470,6 @@ components:
         created_at:
           type: string
           format: date-time
-
     PrivateUserProfile:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1190,7 +1479,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Skill'
-
     PublicUserProfile:
       type: object
       properties:
@@ -1208,7 +1496,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Skill'
-
     Skill:
       type: object
       properties:
@@ -1225,7 +1512,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Skill'
-
     Idea:
       type: object
       properties:
@@ -1245,7 +1531,6 @@ components:
         updated_at:
           type: string
           format: date-time
-
     Project:
       type: object
       properties:
@@ -1261,7 +1546,9 @@ components:
           format: uuid
         status:
           type: string
-          enum: [open, closed]
+          enum:
+            - open
+            - closed
         idea_id:
           type: string
           format: uuid
@@ -1272,7 +1559,6 @@ components:
         updated_at:
           type: string
           format: date-time
-
     ProjectSlot:
       type: object
       properties:
@@ -1291,7 +1577,9 @@ components:
           type: string
         status:
           type: string
-          enum: [open, closed]
+          enum:
+            - open
+            - closed
         user_id:
           type: string
           format: uuid
@@ -1300,7 +1588,6 @@ components:
         created_at:
           type: string
           format: date-time
-
     Request:
       type: object
       properties:
@@ -1309,10 +1596,15 @@ components:
           format: uuid
         type:
           type: string
-          enum: [apply, invite]
+          enum:
+            - apply
+            - invite
         status:
           type: string
-          enum: [pending, accepted, rejected]
+          enum:
+            - pending
+            - accepted
+            - rejected
         project_id:
           type: string
           format: uuid
@@ -1322,7 +1614,9 @@ components:
         user_id:
           type: string
           format: uuid
-          description: ID пользователя, который откликнулся (для apply) или на кого пришло приглашение (для invite)
+          description: >-
+            ID пользователя, который откликнулся (для apply) или на кого пришло
+            приглашение (для invite)
         leader_id:
           type: string
           format: uuid
@@ -1332,3 +1626,11 @@ components:
         created_at:
           type: string
           format: date-time
+  responses: {}
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers: []
+security: []
