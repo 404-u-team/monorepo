@@ -1,6 +1,10 @@
-import type { Preview } from '@storybook/react-vite'
+import { definePreview } from '@storybook/react-vite';
+// @ts-expect-error - SCSS типы определены в tsconfig.app.json (vite/client), а Storybook использует tsconfig.node.json
+// eslint-disable-next-line import-x/no-relative-parent-imports
+import '@/app/styles/index.scss'; // Подключение глобальных стилей для всех историй
 
-const preview = {
+const preview = definePreview({
+  addons: [],
   // Все stories получают страницу Autodocs автоматически.
   // Можно переопределить на уровне конкретного файла: tags: []
   tags: ['autodocs'],
@@ -20,6 +24,6 @@ const preview = {
       test: 'todo',
     },
   },
-} satisfies Preview
+})
 
 export default preview
