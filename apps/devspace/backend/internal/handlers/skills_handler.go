@@ -5,18 +5,19 @@ import (
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
-	"github.com/ydb-platform/ydb-go-sdk/v3/log"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 type skillsHandler struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *log.Logger
 }
 
-func NewSkillsHandler(d *gorm.DB) skillsHandler {
-	return skillsHandler{db: d}
+func NewSkillsHandler(d *gorm.DB, l *log.Logger) skillsHandler {
+	return skillsHandler{db: d, logger: l}
 }
 
 func (ch *skillsHandler) GetSkills(context *gin.Context) {
@@ -32,10 +33,10 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 
 	if dbError != nil {
 		if errors.Is(dbError, gorm.ErrRecordNotFound) {
-			context.JSON(http.StatusOK, nil)
+			context.Status(http.StatusOK)
 		} else {
-			context.JSON(http.StatusInternalServerError, nil)
-			log.Error(dbError)
+			context.Status(http.StatusInternalServerError)
+			ch.logger.Println("Ошибка обращения к БД:", dbError.Error())
 		}
 		return
 	}
@@ -58,7 +59,7 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 	intId, err := strconv.Atoi(id)
 
 	if id == "" || err != nil {
-		context.JSON(http.StatusBadRequest, nil)
+		context.JSON(http.StatusBadRequest, gin.H{"error": "id - не число"})
 		return
 	}
 
@@ -66,9 +67,10 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			context.JSON(http.StatusOK, nil)
+			context.Status(http.StatusOK)
 		} else {
-			context.JSON(http.StatusInternalServerError, nil)
+			context.Status(http.StatusInternalServerError)
+			ch.logger.Println("Ошибка обращения к БД:", dbErr.Error())
 		}
 		return
 	}

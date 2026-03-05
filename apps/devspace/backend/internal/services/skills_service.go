@@ -2,10 +2,11 @@ package services
 
 import (
 	"errors"
+	"math"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"gorm.io/gorm"
-	"math"
 )
 
 func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillCategory, error) {
@@ -39,6 +40,10 @@ func CutIntoPages(skills []models.SkillCategory, pages int) ([][]models.SkillCat
 
 	if pages == 0 {
 		return nil, errors.New("0 страниц")
+	}
+
+	if len(skills) == 0 {
+		return [][]models.SkillCategory{}, nil
 	}
 	skillsPerPage := int(math.Ceil(float64(len(skills)) / float64(pages)))
 

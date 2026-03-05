@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"log"
 	"time"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
@@ -13,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
+func SetupRoutes(dbConn *gorm.DB, config *config.Config, logger *log.Logger) *gin.Engine {
 	router := gin.Default()
 
 	corsConfig := cors.Config{
@@ -38,7 +39,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
-	commonHandler := handlers.NewSkillsHandler(dbConn)
+	skillHandler := handlers.NewSkillsHandler(dbConn, logger)
 	projectHandler := handlers.NewProjectHandler(projectService, config)
 
 	api := router.Group("/api")
@@ -47,8 +48,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.POST("/register", authHandler.Register)
 		api.POST("/login", authHandler.Login)
 		api.POST("/refresh", authHandler.Refresh)
-		api.GET("/skills", commonHandler.GetSkills)
-		api.GET("/skills/:id", commonHandler.GetSkillByID)
+		api.GET("/skills", skillHandler.GetSkills)
+		api.GET("/skills/:id", skillHandler.GetSkillByID)
 
 		// защищенные
 		protected := api.Group("")

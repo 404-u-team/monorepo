@@ -11,12 +11,13 @@ import (
 
 func main() {
 	config := config.LoadConfig()
+	logger := log.Logger{}
 
 	dbConn := db.InitDB(&config)
 
 	db.Migrate(dbConn)
 
-	router := routes.SetupRoutes(dbConn, &config)
+	router := routes.SetupRoutes(dbConn, &config, &logger)
 
 	log.Printf("Server starting on :%s", config.APIPort)
 	log.Fatal(http.ListenAndServe(":"+config.APIPort, router))
