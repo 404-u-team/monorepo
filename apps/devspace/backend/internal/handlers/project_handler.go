@@ -74,3 +74,25 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 
 	c.JSON(http.StatusOK, projects)
 }
+
+func (h *projectHandler) GetProjectByID(c *gin.Context) {
+	projectIDStr := c.Param("projectID")
+
+	projectID, err := uuid.Parse(projectIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	project, err := h.projectService.GetProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, project)
+}

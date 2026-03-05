@@ -12,13 +12,14 @@ import (
 type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
+	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 }
 
 type projectService struct {
 	repo repository.ProjectRepository
 }
 
-func NewProjectService(repo repository.ProjectRepository) *projectService {
+func NewProjectService(repo repository.ProjectRepository) ProjectService {
 	return &projectService{repo: repo}
 }
 
@@ -51,7 +52,6 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 }
 
 func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
-
 	projects, err := s.repo.GetProjects(query)
 	if err != nil {
 		log.Println("Ошибка при получении списка проектов: ", err)
@@ -59,4 +59,16 @@ func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Proj
 	}
 
 	return projects, nil
+}
+
+func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
+	project, err := s.repo.GetProjectByID(projectID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if project == nil {
+		return nil, ErrProjectNotFound
+	}
+
+	return project, nil
 }
