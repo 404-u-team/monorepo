@@ -1,12 +1,14 @@
 package services
 
 import (
+	"errors"
 	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ProjectService interface {
@@ -64,10 +66,10 @@ func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Proj
 func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
 	project, err := s.repo.GetProjectByID(projectID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectNotFound
+		}
 		return nil, ErrInternal
-	}
-	if project == nil {
-		return nil, ErrProjectNotFound
 	}
 
 	return project, nil
