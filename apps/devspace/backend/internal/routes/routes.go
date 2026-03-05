@@ -38,6 +38,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
+	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService, config)
 
 	api := router.Group("/api")
@@ -46,6 +47,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.POST("/register", authHandler.Register)
 		api.POST("/login", authHandler.Login)
 		api.POST("/refresh", authHandler.Refresh)
+		api.GET("/skills", skillHandler.GetSkills)
+		api.GET("/skills/:id", skillHandler.GetSkillByID)
 
 		api.GET("/projects", projectHandler.GetProjects)
 		api.GET("/projects/:projectID", projectHandler.GetProjectByID)
