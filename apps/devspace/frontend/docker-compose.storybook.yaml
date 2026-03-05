@@ -3,7 +3,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.storybook
-        container_name: frontend-storybook
         ports:
             - "6006:6006"
         command: bun run storybook --host 0.0.0.0

@@ -3,7 +3,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dev
-        container_name: frontend-dev
         ports:
             - "5173:5173"
         command: bun run dev --host 0.0.0.0
