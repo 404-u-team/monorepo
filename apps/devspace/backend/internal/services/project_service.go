@@ -31,10 +31,12 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	}
 
 	project := &models.Project{
-		LeaderID:    leaderID,
-		Title:       payload.Title,
-		Description: payload.Description,
-		Status:      "In Progress", // пока что так, может прийдется оставить
+		LeaderID: leaderID,
+		Title:    payload.Title,
+		Status:   "open",
+	}
+	if payload.Description != nil {
+		project.Description = payload.Description
 	}
 	if payload.IdeaID != nil {
 		project.IdeaID = payload.IdeaID
@@ -45,4 +47,15 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	}
 
 	return project, nil
+}
+
+func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
+
+	projects, err := s.repo.GetProjects(query)
+	if err != nil {
+		log.Println("Ошибка при получении списка проектов: ", err)
+		return nil, ErrInternal
+	}
+
+	return projects, nil
 }

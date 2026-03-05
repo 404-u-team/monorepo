@@ -10,8 +10,8 @@ type Project struct {
 	ID          uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
 	LeaderID    uuid.UUID  `gorm:"column:leader_id;type:uuid; not null"`
 	IdeaID      *uuid.UUID `gorm:"column:idea_id;type:uuid"`
-	Title       string    `gorm:"column:title; not null"`
-	Description string    `gorm:"column:descriprion; not null"`
+	Title       string    `gorm:"column:title;unique; not null"`
+	Description *string    `gorm:"column:descriprion"`
 	Status      string    `gorm:"column:status; not null"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null"`
 
