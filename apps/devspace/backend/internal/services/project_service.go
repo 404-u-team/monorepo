@@ -56,7 +56,6 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
 	projects, err := s.repo.GetProjects(query)
 	if err != nil {
-		log.Println("Ошибка при получении списка проектов: ", err)
 		return nil, ErrInternal
 	}
 
