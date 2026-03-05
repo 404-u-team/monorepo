@@ -74,11 +74,16 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 	if query.StartAt != nil && *query.StartAt > 0 {
 		result = result.Offset(*query.StartAt)
 	}
-	if query.Limit != nil && *query.Limit > 50 {
-		*query.Limit = 50
-	}
-	if query.Limit != nil && *query.Limit >= 0 {
-		result = result.Limit(*query.Limit)
+
+	if query.Limit != nil {
+		if *query.Limit > 50 {
+			*query.Limit = 50
+		}
+		if *query.Limit >= 0 {
+			result = result.Limit(*query.Limit)
+		}
+	} else {
+		result = result.Limit(50)
 	}
 
 	result = result.Find(&projects)
@@ -91,12 +96,12 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 }
 
 func (r *projectRepository) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
-	var project *models.Project
-	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Find(project)
+	var project models.Project
+	result := r.conn.First(&project, "id = ?", projectID)
 	if result.Error != nil {
 		log.Println("Ошибка при получении проекта по ID: ", result.Error)
 		return nil, result.Error
 	}
 
-	return project, nil
+	return &project, nil
 }
