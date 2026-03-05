@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"time"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
@@ -14,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(dbConn *gorm.DB, config *config.Config, logger *log.Logger) *gin.Engine {
+func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	router := gin.Default()
 
 	corsConfig := cors.Config{
@@ -39,7 +38,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config, logger *log.Logger) *gi
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
-	skillHandler := handlers.NewSkillsHandler(dbConn, logger)
+	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService, config)
 
 	api := router.Group("/api")

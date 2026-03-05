@@ -2,22 +2,22 @@ package handlers
 
 import (
 	"errors"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 type skillsHandler struct {
-	db     *gorm.DB
-	logger *log.Logger
+	db *gorm.DB
 }
 
-func NewSkillsHandler(d *gorm.DB, l *log.Logger) skillsHandler {
-	return skillsHandler{db: d, logger: l}
+func NewSkillsHandler(d *gorm.DB) skillsHandler {
+	return skillsHandler{db: d}
 }
 
 func (ch *skillsHandler) GetSkills(context *gin.Context) {
@@ -36,7 +36,7 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 			context.Status(http.StatusOK)
 		} else {
 			context.Status(http.StatusInternalServerError)
-			ch.logger.Println("Ошибка обращения к БД:", dbError.Error())
+			log.Println("Ошибка обращения к БД:", dbError.Error())
 		}
 		return
 	}
@@ -70,7 +70,7 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 			context.Status(http.StatusOK)
 		} else {
 			context.Status(http.StatusInternalServerError)
-			ch.logger.Println("Ошибка обращения к БД:", dbErr.Error())
+			log.Println("Ошибка обращения к БД:", dbErr.Error())
 		}
 		return
 	}
