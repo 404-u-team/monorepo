@@ -11,6 +11,7 @@ import (
 
 type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
+	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 }
 
 type projectService struct {
