@@ -12,13 +12,18 @@
   align-items: center;
 }
 
-.userAvatar {
+.avatar_uri {
   margin-top: 19px;
   margin-left: 15px;
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 100px;
+}
+
+.avatar_uri img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 50%;
-  background-color: var(--text--disabled);
 }
 
 .textInfo {
@@ -27,7 +32,7 @@
   margin-left: 15px;
 }
 
-.userID {
+.user_id {
   font-size: 18px;
   font-weight: 500;
   line-height: 24px;
@@ -52,15 +57,47 @@
   font-size: 12px;
   color: var(--text--primary);
   font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .skillBox {
   display: flex;
-  max-width: 380px;
+  height: 17px;
   margin-top: 10px;
+  overflow-x: hidden;
+  gap: 10px;
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+.Scroll {
+  display: flex;
   margin-left: 15px;
   gap: 10px;
-  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.Scroll:hover {
+  animation: scroll 5s infinite;
+  animation-timing-function: linear;
+}
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .skillName {
@@ -70,6 +107,7 @@
   background-color: var(--border--main);
   border-radius: 12px;
   padding: 1px 5px;
+  flex-shrink: 0;
 }
 
 .profileButtonsBox {
@@ -90,10 +128,20 @@
   background-color: var(--brand);
 }
 
+.profileButton:hover {
+  background-color: var(--brand--hover);
+  transition: 0.5s ease;
+}
+
 .inviteButton {
   width: 117px;
   height: 26px;
   border-radius: 12px;
   border-style: hidden;
   background-color: var(--brand--subtle);
+}
+
+.inviteButton:hover {
+  background-color: var(--text--disabled);
+  transition: 0.5s ease;
 }
