@@ -29,17 +29,20 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	// создание репозиториев (круды для работы с entity)
 	userRepo := repository.NewUserRepository(dbConn)
 	projectRepo := repository.NewProjectRepository(dbConn)
+	slotRepo := repository.NewSlotRepository(dbConn)
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
 	projectService := services.NewProjectService(projectRepo)
+	slotService := services.NewSlotService(slotRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
 	skillHandler := handlers.NewSkillsHandler(dbConn)
-	projectHandler := handlers.NewProjectHandler(projectService, config)
+	projectHandler := handlers.NewProjectHandler(projectService)
+	slotHandler := handlers.NewSlotHandler(slotService, projectService)
 
 	api := router.Group("/api")
 	{
@@ -52,6 +55,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 		api.GET("/projects", projectHandler.GetProjects)
 		api.GET("/projects/:projectID", projectHandler.GetProjectByID)
+		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
 		// защищенные
 		protected := api.Group("")
@@ -60,6 +64,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.POST("/projects", projectHandler.CreateProject)
 			protected.PUT("/projects/:projectID", projectHandler.UpdateProjectByID)
 			protected.DELETE("/projects/:projectID", projectHandler.DeleteProjectByID)
+
+			protected.POST("/projects/:projectID/slots", slotHandler.CreateSlot)
 
 			protected.GET("/users/me", userHandler.Me)
 		}

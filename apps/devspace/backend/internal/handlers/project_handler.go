@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
@@ -14,13 +13,11 @@ import (
 
 type projectHandler struct {
 	projectService services.ProjectService
-	config         *config.Config
 }
 
-func NewProjectHandler(projectService services.ProjectService, config *config.Config) *projectHandler {
+func NewProjectHandler(projectService services.ProjectService) *projectHandler {
 	return &projectHandler{
 		projectService: projectService,
-		config:         config,
 	}
 }
 
