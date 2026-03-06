@@ -12,7 +12,7 @@ import (
 )
 
 func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillCategory, error) {
-	query := db.Table("skill_categories")
+	query := db.Table("Skill_Category")
 	if req.ParentId == nil {
 		query = query.Where("parent_id IS null")
 	} else {
@@ -70,9 +70,8 @@ func GetSkillById(id int, db *gorm.DB) (*models.SkillCategory, error) {
 	return &targetSkill, nil
 }
 
-func CreateSkill(name string, parentId *string, db *gorm.DB) error {
-	parentUUID := uuid.MustParse(*parentId)
-	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentId: parentUUID})
+func CreateSkill(name string, parentUUID *uuid.UUID, db *gorm.DB) error {
+	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentId: *parentUUID})
 
 	if res.Error != nil {
 		return res.Error

@@ -89,19 +89,31 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 		return
 	}
 
-	dbError := services.CreateSkill(req.Name, req.ParentId, ch.db)
-	if dbError != nil {
+	var dbErr error
+
+	if context.Param("id") == "" {
+		dbErr = services.CreateSkill(req.Name, nil, ch.db)
+	} else {
+		UUID, parceErr := uuid.Parse(context.Param("id"))
+		if parceErr != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Битый uuid"})
+			return
+		}
+
+		dbErr = services.CreateSkill(req.Name, &UUID, ch.db)
+	}
+	if dbErr != nil {
 		//Навык с таким именем уже есть
-		if errors.Is(dbError, gorm.ErrDuplicatedKey) {
+		if errors.Is(dbErr, gorm.ErrDuplicatedKey) {
 			context.JSON(http.StatusConflict, gin.H{"error": "Навык с таким именем уже существует"})
 			return
-		} else if errors.Is(dbError, gorm.ErrForeignKeyViolated) {
+		} else if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
 			//родителя с таким uuid нет
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Родителя с таким uuid не существует"})
 		} else {
 			// косяк на стороне сервера
 			context.Status(http.StatusInternalServerError)
-			log.Println("Ошибка при вставке навыка в БД: ", dbError.Error())
+			log.Println("Ошибка при вставке навыка в БД: ", dbErr.Error())
 		}
 		return
 	}

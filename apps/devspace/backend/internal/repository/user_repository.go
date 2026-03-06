@@ -16,7 +16,7 @@ type UserRepository interface {
 	IsUserExistByID(id uuid.UUID) (bool, error)
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByNickname(login string) (models.User, error)
-	CheckUserIsAdmin(id string) (bool, error)
+	CheckUserIsAdmin(id uuid.UUID) (bool, error)
 }
 
 type userRepository struct {
@@ -90,7 +90,7 @@ func (r *userRepository) GetUserByNickname(nickname string) (models.User, error)
 	return user, nil
 }
 
-func (r *userRepository) CheckUserIsAdmin(id string) (bool, error) {
+func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 	var user models.User
 
 	result := r.conn.Select("is_admin").Where("id = ?", id).First(&user)
