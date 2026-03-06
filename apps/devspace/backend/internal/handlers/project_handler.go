@@ -96,3 +96,126 @@ func (h *projectHandler) GetProjectByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, project)
 }
+
+func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// является ли пользователь владельцем данного проекта
+	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if !isUserProjectLeader {
+		c.Status(http.StatusForbidden)
+		return
+	}
+
+	// получение payload
+	var payload dto.UpdateProjectRequest
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Println("Ошибка при парсинге: ", err.Error())
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if payload.Title == nil && payload.Description == nil && payload.Status == nil {
+		log.Println("Все поля пустые, нечего изменять")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Все поля пустые, нечего изменять"})
+		return
+	}
+
+	err = h.projectService.UpdateProjectByID(projectID, &payload)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectConflict) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		}
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	// получение ID пользователя из контекста
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// является ли пользователь владельцем данного проекта
+	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if !isUserProjectLeader {
+		c.Status(http.StatusForbidden)
+		return
+	}
+
+	err = h.projectService.DeleteProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrProjectHasSlots) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func getUserId(c *gin.Context) (uuid.UUID, error) {
+	userIDAny, ok := c.Get("userID")
+	if !ok {
+		return uuid.Nil, services.ErrUnauthorized
+	}
+
+	userID, ok := userIDAny.(uuid.UUID)
+	if !ok {
+		log.Println("Ошибка при конвертировании userID в UUID")
+		return uuid.Nil, services.ErrUnauthorized
+	}
+
+	return userID, nil
+}
+
+func getProjectID(c *gin.Context) (uuid.UUID, error) {
+	projectIDStr := c.Param("projectID")
+
+	projectID, err := uuid.Parse(projectIDStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return projectID, nil
+}
