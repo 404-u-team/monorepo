@@ -54,15 +54,13 @@ paths:
                         schema:
                             type: object
                             required:
-                                - email
+                                - login
                                 - password
                             properties:
-                                email:
+                                login:
                                     type: string
-                                    format: email
-                                password:
-                                    type: string
-                                    format: password
+                                    description: Логин пользователя (email или никнейм)
+                                    example: user@example.com
             responses:
                 "200":
                     description: Успешный вход. Возвращает токены.

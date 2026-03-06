@@ -181,9 +181,11 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrProjectHasSlots) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return
