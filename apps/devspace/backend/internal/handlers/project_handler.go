@@ -112,7 +112,12 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 	}
 
 	// является ли пользователь владельцем данного проекта
-	if projectID != userID {
+	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if !isUserProjectLeader {
 		c.Status(http.StatusForbidden)
 		return
 	}
@@ -162,7 +167,12 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 	}
 
 	// является ли пользователь владельцем данного проекта
-	if projectID != userID {
+	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if !isUserProjectLeader {
 		c.Status(http.StatusForbidden)
 		return
 	}

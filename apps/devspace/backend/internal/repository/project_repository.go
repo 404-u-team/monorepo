@@ -18,6 +18,7 @@ type ProjectRepository interface {
 	GetProjectByTitle(title string) (*models.Project, error)
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
 	DeleteProjectByID(projectID uuid.UUID) (int, error)
+	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
 }
 
 type projectRepository struct {
@@ -166,4 +167,13 @@ func (r *projectRepository) DeleteProjectByID(projectID uuid.UUID) (int, error) 
 		return 0, result.Error
 	}
 	return int(result.RowsAffected), nil
+}
+
+func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error) {
+	var count int64
+	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Where("leader_id = ?", userID).Count(&count)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count == 1, nil
 }

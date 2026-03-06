@@ -17,6 +17,7 @@ type ProjectService interface {
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
 	DeleteProjectByID(projectID uuid.UUID) error
+	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
 }
 
 type projectService struct {
@@ -76,6 +77,14 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 	return project, nil
 }
 
+func (s *projectService) IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error) {
+	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return false, ErrInternal
+	}
+	return isUserProjectLeader, nil
+}
+
 func (s *projectService) UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
 	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
 	if err != nil {
@@ -103,7 +112,6 @@ func (s *projectService) DeleteProjectByID(projectID uuid.UUID) error {
 	if status == 0 {
 		return ErrProjectNotFound
 	}
-	
 
 	return nil
 }
