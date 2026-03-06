@@ -122,7 +122,7 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 }
 
 func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
-	rawUUID := context.Param("uuid")
+	rawUUID := context.Param("id")
 	if rawUUID == "" {
 		context.Status(http.StatusBadRequest)
 	}
