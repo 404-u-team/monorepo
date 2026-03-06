@@ -15,6 +15,7 @@ type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
+	UpdateProjectById(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
 }
 
 type projectService struct {
@@ -72,4 +73,20 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 	}
 
 	return project, nil
+}
+
+func (s *projectService) UpdateProjectById(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
+	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return ErrProjectConflict
+		}
+		return ErrInternal
+	}
+
+	if rowsAffected == 0 {
+		return ErrProjectNotFound
+	}
+
+	return nil
 }

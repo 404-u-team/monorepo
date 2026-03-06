@@ -4,14 +4,20 @@ import "github.com/google/uuid"
 
 type CreateProjectRequest struct {
 	IdeaID      *uuid.UUID `json:"idea_id"`
-	Title       string     `json:"title" binding:"required"`
-	Description *string    `json:"description"`
+	Title       string     `json:"title" binding:"required,min=3,max=255"`
+	Description *string    `json:"description" binding:"omitempty,min=3,max=255"`
 }
 
 type GetProjectsQuery struct {
-	Status   *string    `form:"status"`
+	Status   *string    `form:"status" binding:"omitempty,oneof=open closed"`
 	LeaderID *uuid.UUID `form:"leader_id"`
 	Search   *string    `form:"search"`
 	StartAt  *int       `form:"start_at"`
 	Limit    *int       `form:"limit"`
+}
+
+type UpdateProjectRequest struct {
+	Title       *string `json:"title" binding:"min=3,max=255"`
+	Description *string `json:"description" binding:"min=3,max=255"`
+	Status      *string `json:"status" binding:"omitempty,oneof=open closed"`
 }
