@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
@@ -76,4 +78,63 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, skill)
+}
+
+func (ch *skillsHandler) CreateSkill(context *gin.Context) {
+	var req dto.SkillCategoryAddRequest
+
+	bindErr := context.ShouldBindJSON(&req)
+	if bindErr != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	dbError := services.CreateSkill(req.Name, req.ParentId, ch.db)
+	if dbError != nil {
+		//Навык с таким именем уже есть
+		if errors.Is(dbError, gorm.ErrDuplicatedKey) {
+			context.JSON(http.StatusConflict, gin.H{"error": "Навык с таким именем уже существует"})
+			return
+		} else if errors.Is(dbError, gorm.ErrForeignKeyViolated) {
+			//родителя с таким uuid нет
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Родителя с таким uuid не существует"})
+		} else {
+			// косяк на стороне сервера
+			context.Status(http.StatusInternalServerError)
+			log.Println("Ошибка при вставке навыка в БД: ", dbError.Error())
+		}
+		return
+	}
+
+	context.Status(http.StatusCreated)
+}
+
+func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
+	rawUUID := context.Param("uuid")
+	if rawUUID == "" {
+		context.Status(http.StatusBadRequest)
+	}
+
+	UUID := uuid.MustParse(rawUUID)
+
+	enableCascade := strings.ToLower(context.Query("cascade")) == "true"
+
+	deleteError := services.DeleteSkill(UUID, enableCascade, ch.db)
+
+	if deleteError != nil {
+		if errors.Is(deleteError, gorm.ErrRecordNotFound) {
+			context.JSON(http.StatusNotFound, gin.H{"error": "Записи с таким id не существует"})
+		} else {
+			context.Status(http.StatusInternalServerError)
+			if enableCascade {
+				log.Println("Ошибка каскадного удаления навыка: ", deleteError.Error())
+			} else {
+				log.Println("Ошибка удаления навыка: ", deleteError.Error())
+			}
+		}
+
+		return
+	}
+
+	context.Status(http.StatusOK)
 }

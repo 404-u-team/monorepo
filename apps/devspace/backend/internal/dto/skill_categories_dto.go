@@ -6,3 +6,8 @@ type SkillCategoriesListRequest struct {
 	Page     *uint   `json:"page"`
 	Limit    *uint   `json:"limit"`
 }
+
+type SkillCategoryAddRequest struct {
+	ParentId *string `json:"parent_id"`
+	Name     string  `json:"name"`
+}

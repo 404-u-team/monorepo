@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
+	"github.com/google/uuid"
 	"math"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -66,4 +68,28 @@ func GetSkillById(id int, db *gorm.DB) (*models.SkillCategory, error) {
 		return nil, res.Error
 	}
 	return &targetSkill, nil
+}
+
+func CreateSkill(name string, parentId *string, db *gorm.DB) error {
+	parentUUID := uuid.MustParse(*parentId)
+	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentId: parentUUID})
+
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
+func DeleteSkill(id uuid.UUID, cascade bool, db *gorm.DB) error {
+	if cascade {
+		resCascade := repository.DeleteAll("parent_id", "Skill_Category", id, db)
+
+		if resCascade != nil {
+			return resCascade
+		}
+	}
+
+	res := db.Table("Skill_Category").Where("id = ?", id).Delete(&models.SkillCategory{})
+	return res.Error
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -15,6 +16,7 @@ type UserRepository interface {
 	IsUserExistByID(id uuid.UUID) (bool, error)
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByNickname(login string) (models.User, error)
+	CheckUserIsAdmin(id string) (bool, error)
 }
 
 type userRepository struct {
@@ -86,4 +88,21 @@ func (r *userRepository) GetUserByNickname(nickname string) (models.User, error)
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) CheckUserIsAdmin(id string) (bool, error) {
+	var user models.User
+
+	result := r.conn.Select("is_admin").Where("id = ?", id).First(&user)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			log.Println("Пользователь не найден по id ", id)
+			return false, nil
+		}
+		log.Println("Ошибка при получении прав юзера по id ", result.Error)
+		return false, result.Error
+	}
+
+	return user.IsAdmin, nil
 }
