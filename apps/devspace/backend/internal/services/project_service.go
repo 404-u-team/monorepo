@@ -93,13 +93,17 @@ func (s *projectService) UpdateProjectByID(projectID uuid.UUID, updateRequest *d
 }
 
 func (s *projectService) DeleteProjectByID(projectID uuid.UUID) error {
-	rowsAffected, err := s.repo.DeleteProjectByID(projectID)
+	status, err := s.repo.DeleteProjectByID(projectID)
 	if err != nil {
 		return ErrInternal
 	}
-	if rowsAffected == 0 {
+	if status == -1 {
+		return ErrProjectHasSlots
+	}
+	if status == 0 {
 		return ErrProjectNotFound
 	}
+	
 
 	return nil
 }

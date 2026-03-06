@@ -9,3 +9,4 @@ var ErrUnauthorized = errors.New("нет доступа с данными рек
 
 var ErrProjectConflict = errors.New("проект с таким названием уже существует")
 var ErrProjectNotFound = errors.New("проект не найден")
+var ErrProjectHasSlots = errors.New("проект не может быть удален из-за наличия связанных слотов")

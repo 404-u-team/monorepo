@@ -148,8 +148,20 @@ func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest
 	return int(result.RowsAffected), nil
 }
 
+// возвращает статус (-1: есть слоты связанные с проектов, 0: нет проекта, 1: удален) и ошибку
 func (r *projectRepository) DeleteProjectByID(projectID uuid.UUID) (int, error) {
-	result := r.conn.Delete(&models.Project{}, "id = ?", projectID)
+	// проверка на наличие занятых слотов в проекте
+	var count int64
+	result := r.conn.Model(&models.ProjectSlot{}).Where("project_id = ?", projectID).Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	// есть слоты привязанные к проекту
+	if count != 0 {
+		return -1, nil
+	}
+
+	result = r.conn.Delete(&models.Project{}, "id = ?", projectID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
