@@ -83,23 +83,17 @@ paths:
 
     /auth/refresh:
         post:
-            summary: Обновление Access токена
-            description: Получение новой пары токенов по Refresh токену.
+            summary: Обновление Access и refresh токена
+            description: Получение новой пары токенов по Refresh токену, передаваемому в cookie `refresh_token`.
             tags:
                 - Аутентификация
-            security:
-                - BearerAuth: []
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - refresh_token
-                            properties:
-                                refresh_token:
-                                    type: string
+            parameters:
+                - in: cookie
+                  name: refresh_token
+                  required: true
+                  description: Refresh токен, передаваемый в cookie `refresh_token`.
+                  schema:
+                      type: string
             responses:
                 "200":
                     description: Токены успешно обновлены.
@@ -612,7 +606,7 @@ paths:
                       type: integer
                       default: 0
                   description: Порядковый номер проекта с которого начинаем
-                - nвame: limit
+                - name: limit
                   in: query
                   schema:
                       type: integer
