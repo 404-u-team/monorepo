@@ -15,6 +15,9 @@ type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
+	UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
+	DeleteProjectByID(projectID uuid.UUID) error
+	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
 }
 
 type projectService struct {
@@ -56,7 +59,6 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
 	projects, err := s.repo.GetProjects(query)
 	if err != nil {
-		log.Println("Ошибка при получении списка проектов: ", err)
 		return nil, ErrInternal
 	}
 
@@ -73,4 +75,43 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 	}
 
 	return project, nil
+}
+
+func (s *projectService) IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error) {
+	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return false, ErrInternal
+	}
+	return isUserProjectLeader, nil
+}
+
+func (s *projectService) UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
+	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return ErrProjectConflict
+		}
+		return ErrInternal
+	}
+
+	if rowsAffected == 0 {
+		return ErrProjectNotFound
+	}
+
+	return nil
+}
+
+func (s *projectService) DeleteProjectByID(projectID uuid.UUID) error {
+	status, err := s.repo.DeleteProjectByID(projectID)
+	if err != nil {
+		return ErrInternal
+	}
+	if status == -1 {
+		return ErrProjectHasSlots
+	}
+	if status == 0 {
+		return ErrProjectNotFound
+	}
+
+	return nil
 }

@@ -15,6 +15,10 @@ type ProjectRepository interface {
 	CreateProject(project *models.Project) error
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
+	GetProjectByTitle(title string) (*models.Project, error)
+	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
+	DeleteProjectByID(projectID uuid.UUID) (int, error)
+	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
 }
 
 type projectRepository struct {
@@ -104,4 +108,72 @@ func (r *projectRepository) GetProjectByID(projectID uuid.UUID) (*models.Project
 	}
 
 	return &project, nil
+}
+
+func (r *projectRepository) GetProjectByTitle(title string) (*models.Project, error) {
+	var project models.Project
+	result := r.conn.First(&project, "title = ?", title)
+	if result.Error != nil {
+		log.Println("Ошибка при получении проекта по title: ", result.Error)
+		return nil, result.Error
+	}
+
+	return &project, nil
+}
+
+// обновить данные проекта, возвращает кол-во измененных строк и ошибку
+func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error) {
+	updates := map[string]string{}
+
+	if updateRequest.Title != nil {
+		updates["title"] = *updateRequest.Title
+	}
+
+	if updateRequest.Description != nil {
+		updates["description"] = *updateRequest.Description
+	}
+
+	if updateRequest.Status != nil {
+		updates["status"] = *updateRequest.Status
+	}
+
+	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Updates(updates)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return 0, nil
+	}
+
+	return int(result.RowsAffected), nil
+}
+
+// возвращает статус (-1: есть слоты связанные с проектов, 0: нет проекта, 1: удален) и ошибку
+func (r *projectRepository) DeleteProjectByID(projectID uuid.UUID) (int, error) {
+	// проверка на наличие занятых слотов в проекте
+	var count int64
+	result := r.conn.Model(&models.ProjectSlot{}).Where("project_id = ?", projectID).Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	// есть слоты привязанные к проекту
+	if count != 0 {
+		return -1, nil
+	}
+
+	result = r.conn.Delete(&models.Project{}, "id = ?", projectID)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return int(result.RowsAffected), nil
+}
+
+func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error) {
+	var count int64
+	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Where("leader_id = ?", userID).Count(&count)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count == 1, nil
 }
