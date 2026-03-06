@@ -131,7 +131,7 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 		return
 	}
 
-	err = h.projectService.UpdateProjectById(projectID, &payload)
+	err = h.projectService.UpdateProjectByID(projectID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrProjectConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
@@ -139,11 +139,44 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	// получение ID пользователя из контекста
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// является ли пользователь владельцем данного проекта
+	if projectID != userID {
+		c.Status(http.StatusForbidden)
+		return
+	}
+
+	err = h.projectService.DeleteProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func getUserId(c *gin.Context) (uuid.UUID, error) {

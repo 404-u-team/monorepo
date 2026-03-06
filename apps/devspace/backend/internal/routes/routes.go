@@ -56,6 +56,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		{
 			protected.POST("/projects", projectHandler.CreateProject)
 			protected.PUT("/projects/:projectID", projectHandler.UpdateProjectByID)
+			protected.DELETE("/projects/:projectID", projectHandler.DeleteProjectByID)
 
 			protected.GET("/users/me", userHandler.Me)
 		}

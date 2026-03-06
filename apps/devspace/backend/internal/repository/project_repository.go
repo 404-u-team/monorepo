@@ -17,6 +17,7 @@ type ProjectRepository interface {
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	GetProjectByTitle(title string) (*models.Project, error)
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
+	DeleteProjectByID(projectID uuid.UUID) (int, error)
 }
 
 type projectRepository struct {
@@ -144,5 +145,13 @@ func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest
 		return 0, nil
 	}
 
+	return int(result.RowsAffected), nil
+}
+
+func (r *projectRepository) DeleteProjectByID(projectID uuid.UUID) (int, error) {
+	result := r.conn.Delete(&models.Project{}, "id = ?", projectID)
+	if result.Error != nil {
+		return 0, result.Error
+	}
 	return int(result.RowsAffected), nil
 }
