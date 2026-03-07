@@ -4,8 +4,8 @@ import "github.com/google/uuid"
 
 type Request struct {
 	ID          uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	SlotId      uuid.UUID `gorm:"column:slot_id;type:uuid; not null"`
-	UserId      uuid.UUID `gorm:"column:user_id;type:uuid; not null"`
+	SlotID      uuid.UUID `gorm:"column:slot_id;type:uuid; not null"`
+	UserID      uuid.UUID `gorm:"column:user_id;type:uuid; not null"`
 	Type        string    `gorm:"column:type; not null"`
 	Status      string    `gorm:"column:status; not null"`
 	CoverLetter string    `gorm:"column:cover_letter; not null"`

@@ -1,7 +1,8 @@
 import { definePreview } from '@storybook/react-vite';
 // @ts-expect-error - SCSS типы определены в tsconfig.app.json (vite/client), а Storybook использует tsconfig.node.json
 // eslint-disable-next-line import-x/no-relative-parent-imports
-import '@/app/styles/index.scss'; // Подключение глобальных стилей для всех историй
+import '@/app/styles/index.scss';
+
 
 const preview = definePreview({
   addons: [],

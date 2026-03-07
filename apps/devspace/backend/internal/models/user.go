@@ -10,6 +10,7 @@ type User struct {
 	AvatarUrl    string    `gorm:"column:avatar_url; null"`
 	MainRole     string    `gorm:"column:main_role; null"`
 	Bio          string    `gorm:"column:bio; null"`
+	IsAdmin      bool      `gorm:"column:is_admin; not null"`
 }
 
 func (u *User) TableName() string { return "User" }
