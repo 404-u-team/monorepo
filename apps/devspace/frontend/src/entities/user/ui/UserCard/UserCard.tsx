@@ -1,38 +1,43 @@
 import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
 import { useEffect, useRef, useState } from "react";
-import InviteButton from "@/features/invite-user/ui/InviteButton";
+import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
 
 interface UserCardProps {
-  avatar_uri?: string;
   user_id: string;
-  mainRole?: string;
-  description?: string;
-  skill_id?: string[];
+  //description?: string;
+  //skill_id?: string[];
   //project_id?: string;
   //slot_id?: string;
+  inviteButton?: React.ReactNode;
 }
 
 export function UserCard({
-  avatar_uri,
+  //avatar_uri,
   user_id,
-  mainRole,
-  description,
-  skill_id = [],
+  //mainRole,
+  //description,
+  //skill_id = [],
   //project_id,
   //slot_id,
 }: UserCardProps): JSX.Element {
-  const skillBoxRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const skillBoxReference = useRef<HTMLDivElement>(null);
+  const scrollReference = useRef<HTMLDivElement>(null);
   const [needsScroll, setNeedsScroll] = useState(false);
-  const project_id = null;
-  const slot_id = 1;
+  const project_id = "2";
+  const slot_id = "sdad";
+  const avatar_uri = "https://placehold.co/150x150";
+  const mainRole = "Frontend Developer";
+  const description =
+    "Люблю React и TypeScript Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima consequatur cum doloribus asperiores exercitationem ipsum incidunt odit provident quia, delectus sequi ullam perspiciatis facilis eveniet cumque deleniti at laboriosam. Impedit!";
+  const skill_id = ["react", "css"];
+
   useEffect(() => {
-    const checkOverflow = () => {
-      const box = skillBoxRef.current;
-      const inner = scrollRef.current;
+    const checkOverflow = (): void => {
+      const box = skillBoxReference.current;
+      const inner = scrollReference.current;
       if (!box || !inner) return;
-      const contentWidth = inner.scrollWidth / 2;
+      const contentWidth = inner.scrollWidth / (needsScroll ? 2 : 1);
       const containerWidth = box.offsetWidth;
 
       setNeedsScroll(contentWidth > containerWidth);
@@ -41,9 +46,11 @@ export function UserCard({
     checkOverflow();
 
     const ro = new ResizeObserver(checkOverflow);
-    if (skillBoxRef.current) ro.observe(skillBoxRef.current);
+    if (skillBoxReference.current) ro.observe(skillBoxReference.current);
 
-    return () => ro.disconnect();
+    return (): void => {
+      ro.disconnect();
+    };
   }, [skill_id]);
 
   return (
@@ -59,16 +66,31 @@ export function UserCard({
       </div>
       <div className={styles.description}>{description}</div>
 
-      <div ref={skillBoxRef} className={styles.skillBox}>
+      <div
+        ref={skillBoxReference}
+        className={`${styles.skillBox ?? ""} ${needsScroll ? (styles.skillBoxWithMask ?? "") : ""}`}
+      >
         <div
-          ref={scrollRef}
-          className={`${styles.Scroll} ${needsScroll ? styles.ScrollAnimated : ""}`}
+          ref={scrollReference}
+          className={`${styles.Scroll ?? ""} ${needsScroll ? (styles.ScrollAnimated ?? "") : ""}`}
         >
-          {[...skill_id, ...skill_id].map((uuid, index) => (
-            <div key={`${uuid}-${index}`} className={styles.skillName}>
-              {uuid}
-            </div>
-          ))}
+          {needsScroll
+            ? [...skill_id, ...skill_id].map((uuid, index) => (
+                <div
+                  key={`${uuid}-${String(index)}`}
+                  className={styles.skillName}
+                >
+                  {uuid}
+                </div>
+              ))
+            : [...skill_id].map((uuid, index) => (
+                <div
+                  key={`${uuid}-${String(index)}`}
+                  className={styles.skillName}
+                >
+                  {uuid}
+                </div>
+              ))}
         </div>
       </div>
 

@@ -71,6 +71,9 @@
   overflow-x: hidden;
   gap: 10px;
   scrollbar-width: none;
+}
+
+.skillBoxWithMask {
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -87,16 +90,24 @@
   white-space: nowrap;
 }
 
-.Scroll:hover {
-  animation: scroll 5s infinite;
-  animation-timing-function: linear;
-}
-@keyframes scroll {
+// .Scroll:hover {
+//   animation: scroll 10s infinite;
+//   animation-timing-function: linear;
+// }
+
+@keyframes marquee {
   0% {
     transform: translateX(0);
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+
+.ScrollAnimated {
+  animation: marquee 12s linear infinite;
+  &:hover {
+    animation-play-state: paused;
   }
 }
 
@@ -126,11 +137,11 @@
   color: var(--text--onPrimary);
   border-style: hidden;
   background-color: var(--brand);
+  transition: 0.2s ease;
 }
 
 .profileButton:hover {
   background-color: var(--brand--hover);
-  transition: 0.5s ease;
 }
 
 .inviteButton {
@@ -139,9 +150,9 @@
   border-radius: 12px;
   border-style: hidden;
   background-color: var(--brand--subtle);
+  transition: 0.2s ease;
 }
 
 .inviteButton:hover {
   background-color: var(--text--disabled);
-  transition: 0.5s ease;
 }

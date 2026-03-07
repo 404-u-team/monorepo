@@ -1,10 +1,11 @@
 import { useState } from "react";
+import type { JSX } from "react";
 import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
 
 interface InviteButtonProps {
   project_id?: string;
   slot_id?: string;
-  user_id: string;
+  user_id?: string;
   onInvite?: (userId: string) => Promise<void>;
 }
 
@@ -13,16 +14,16 @@ const InviteButton = ({
   slot_id,
   user_id,
   onInvite,
-}: InviteButtonProps) => {
+}: InviteButtonProps): JSX.Element | undefined => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInvite = async () => {
-    if (!project_id || !slot_id) return;
+  const handleInvite = async (): Promise<void> => {
+    if (project_id === undefined || slot_id === undefined) return;
 
     setIsLoading(true);
     try {
       if (onInvite) {
-        await onInvite(user_id);
+        await onInvite(String(user_id));
       } else {
         const token = localStorage.getItem("authToken");
         const response = await fetch(
@@ -31,7 +32,7 @@ const InviteButton = ({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${String(token)}`,
             },
             body: JSON.stringify({
               user_id: user_id,
@@ -48,15 +49,17 @@ const InviteButton = ({
     }
   };
 
-  return project_id && slot_id ? (
+  return project_id !== undefined && slot_id !== undefined ? (
     <button
-      className={styles.inviteButton} // Используем стили из UserCard
-      onClick={handleInvite}
+      className={styles.inviteButton}
+      onClick={() => {
+        handleInvite().catch(console.error);
+      }}
       disabled={isLoading}
     >
       {isLoading ? "..." : "Пригласить"}
     </button>
-  ) : null;
+  ) : undefined;
 };
 
 export default InviteButton;
