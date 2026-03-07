@@ -148,6 +148,52 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
+	// получение slotID из параметров
+	slotID, err := getSlotID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrSlotNotFound.Error()})
+		return
+	}
+
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	// получение projectID из контекста
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// является ли пользователь владельцем данного проекта
+	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if !isUserProjectLeader {
+		c.Status(http.StatusForbidden)
+		return
+	}
+
+	err = h.slotService.DeleteSlotByID(slotID)
+	if err != nil {
+		if errors.Is(err, services.ErrSlotNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func getSlotID(c *gin.Context) (uuid.UUID, error) {
 	slotIDStr := c.Param("slotID")
 

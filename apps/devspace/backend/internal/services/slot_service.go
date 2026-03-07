@@ -14,6 +14,7 @@ type SlotService interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotRequest) error
 	UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error
+	DeleteSlotByID(slotID uuid.UUID) error
 }
 
 type slotService struct {
@@ -65,6 +66,18 @@ func (s *slotService) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.Update
 		return ErrInternal
 	}
 
+	if rowsAffected == 0 {
+		return ErrSlotNotFound
+	}
+
+	return nil
+}
+
+func (s *slotService) DeleteSlotByID(slotID uuid.UUID) error {
+	rowsAffected, err := s.repo.DeleteSlotByID(slotID)
+	if err != nil {
+		return ErrInternal
+	}
 	if rowsAffected == 0 {
 		return ErrSlotNotFound
 	}

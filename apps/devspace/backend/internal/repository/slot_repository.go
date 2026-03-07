@@ -13,6 +13,7 @@ type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
 	UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
+	DeleteSlotByID(slotID uuid.UUID) (int, error)
 }
 
 type slotRepository struct {
@@ -84,5 +85,14 @@ func (r *slotRepository) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.Upd
 		return 0, nil
 	}
 
+	return int(result.RowsAffected), nil
+}
+
+// возвращает количество удаленных проектов и ошибку
+func (r *slotRepository) DeleteSlotByID(slotID uuid.UUID) (int, error) {
+	result := r.conn.Delete(&models.ProjectSlot{}, "id = ?", slotID)
+	if result.Error != nil {
+		return 0, result.Error
+	}
 	return int(result.RowsAffected), nil
 }
