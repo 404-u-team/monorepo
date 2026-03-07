@@ -1632,11 +1632,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-servers: []
-security: []
-    title: API Платформы для проектов
-    version: 1.0.0
-    description: API для управления пользователями, навыками, идеями, проектами и откликами.
+ 
 
 servers:
     - url: https://api.example.com/v1
