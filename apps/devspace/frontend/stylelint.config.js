@@ -18,7 +18,7 @@ export default {
             {
                 "ignoreValues": ["currentColor", "transparent", "inherit", "none", "initial"],
                 "expandShorthand": true,
-                "message": "Use variables for colors only"
+                "message": "Use variables from colors.scss for colors only"
             }
         ],
         "custom-property-pattern": "^[a-zA-Z0-9-]+$",
