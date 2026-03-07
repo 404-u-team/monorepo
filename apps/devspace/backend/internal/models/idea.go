@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type Idea struct {
 	ID             uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	AuthorId       uuid.UUID `gorm:"column:author_id;type:uuid"`
+	AuthorID       uuid.UUID `gorm:"column:author_id;type:uuid"`
 	Title          string    `gorm:"column:title; not null"`
 	Description    string    `gorm:"column:description; not null"`
 	ViewsCount     uint      `gorm:"column:views_count; not null"`

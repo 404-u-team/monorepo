@@ -5,26 +5,34 @@ import (
 	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/auth"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware(JWTSecret string) gin.HandlerFunc {
+func AuthMiddleware(JWTSecret string, userRepo repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := getAccessToken(c)
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "No authorization token",
-			})
+			c.Status(http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
 
 		userID, err := auth.ValidateJWT([]byte(JWTSecret), token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error":   "Invalid token",
-				"details": err.Error(),
-			})
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+
+		exists, err := userRepo.IsUserExistByID(userID)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			c.Abort()
+			return
+		}
+		if !exists {
+			c.Status(http.StatusUnauthorized)
 			c.Abort()
 			return
 		}

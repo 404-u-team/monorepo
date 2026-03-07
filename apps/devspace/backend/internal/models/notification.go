@@ -8,7 +8,7 @@ import (
 
 type Notification struct {
 	ID        uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	UserId    uuid.UUID `gorm:"column:user_id;type:uuid; not null"`
+	UserID    uuid.UUID `gorm:"column:user_id;type:uuid; not null"`
 	Message   string    `gorm:"column:message; not null"`
 	IsRead    bool      `gorm:"column:is_read; not null"`
 	CreatedAt time.Time `gorm:"column:created_at; not null"`

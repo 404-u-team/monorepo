@@ -38,7 +38,10 @@ go.work
 
 ### macOS ###
 # General
+**/.DS_Store
+*.DS_Store
 .DS_Store
+
 .AppleDouble
 .LSOverride
 
@@ -90,3 +93,8 @@ Temporary Items
 
 # Env file
 .env
+.env.*
+
+# IDE
+.zed
+.idea
