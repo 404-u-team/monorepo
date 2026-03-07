@@ -101,7 +101,7 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 		return
 	}
 
-	// получение projectID из контекста
+	// получение userID из контекста
 	userID, err := getUserId(c)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
@@ -137,9 +137,11 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrSlotNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return

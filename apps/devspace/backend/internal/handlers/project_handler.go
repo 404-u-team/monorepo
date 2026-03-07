@@ -137,9 +137,11 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrProjectConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return
