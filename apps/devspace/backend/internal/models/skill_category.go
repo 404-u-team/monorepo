@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type SkillCategory struct {
 	ID       uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	ParentId uuid.UUID `gorm:"column:parent_id;type:uuid"`
+	ParentID uuid.UUID `gorm:"column:parent_id;type:uuid"`
 	Name     string    `gorm:"column:name; not null"`
 
 	Parent *SkillCategory `gorm:"foreignKey:ParentID"`
