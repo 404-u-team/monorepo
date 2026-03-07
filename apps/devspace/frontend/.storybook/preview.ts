@@ -1,4 +1,7 @@
 import type { Preview } from '@storybook/react-vite'
+/* eslint-disable */
+// @ts-expect-error Typescript cannot resolve this without aliases set up correctly for storybook types
+import '../src/app/styles/index.scss'
 
 const preview = {
   // Все stories получают страницу Autodocs автоматически.

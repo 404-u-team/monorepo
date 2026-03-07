@@ -1,0 +1,68 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;
+}
+
+.inputContainer {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg--disabled);
+    border: 1px solid var(--border--main);
+    border-radius: 8px;
+    padding: 0 0.75rem;
+    height: 48px;
+    transition: border-color 0.2s, background-color 0.2s;
+
+    &:focus-within {
+        border-color: var(--brand);
+        background-color: var(--bg--main);
+    }
+
+    &.hasError {
+        border-color: var(--status--error);
+    }
+}
+
+.input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text--primary);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    padding: 0 0.5rem;
+
+    &::placeholder {
+        color: var(--text--secondary);
+    }
+}
+
+.iconLeft,
+.iconRight {
+    display: flex;
+    align-items: center;
+    color: var(--text--secondary);
+
+    button {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        color: inherit;
+
+        &:hover {
+            color: var(--text--primary);
+        }
+    }
+}
+
+.error {
+    font-size: 0.875rem;
+    color: var(--status--error);
+}
