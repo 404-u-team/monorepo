@@ -70,6 +70,14 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.GET("/users/me", userHandler.Me)
 		}
 
+		//только для админов
+		adminOnly := api.Group("")
+		adminOnly.Use(middleware.AuthMiddleware(config.JWTSecret, userRepo), middleware.AdminOnlyMiddleware(userRepo))
+		{
+			adminOnly.POST("/skills", skillHandler.CreateSkill)
+			adminOnly.DELETE("/skills/:id", skillHandler.DeleteSkill)
+		}
+
 	}
 
 	return router
