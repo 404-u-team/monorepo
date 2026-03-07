@@ -33,8 +33,8 @@ func (s *slotService) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error
 
 func (s *slotService) CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotRequest) error {
 	slot := &models.ProjectSlot{
-		ProjectId:       projectID,
-		SkillCategoryId: payload.SkillCategoryID,
+		ProjectID:       projectID,
+		SkillCategoryID: payload.SkillCategoryID,
 		Title:           payload.Title,
 		Status:          "open",
 	}
@@ -47,9 +47,9 @@ func (s *slotService) CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotReq
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return ErrSlotConflict
 		}
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return ErrProjectNotFound
-        }
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrProjectNotFound
+		}
 		return ErrInternal
 	}
 	return nil
