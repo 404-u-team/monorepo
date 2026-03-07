@@ -102,11 +102,11 @@ export function UserCard({
   return (
     <div className={styles.userCard}>
       <div className={styles.cardHeader}>
-        <div className={styles.avatar_uri}>
+        <div className={styles.avatarUri}>
           <img src={avatar_uri} alt="avatar" />
         </div>
         <div className={styles.textInfo}>
-          <div className={styles.user_id}>{user_id}</div>
+          <div className={styles.userId}>{user_id}</div>
           <div className={styles.mainRole}>{mainRole}</div>
         </div>
       </div>
@@ -118,7 +118,7 @@ export function UserCard({
       >
         <div
           ref={scrollReference}
-          className={`${styles.Scroll ?? ""} ${needsScroll ? (styles.ScrollAnimated ?? "") : ""}`}
+          className={`${styles.scroll ?? ""} ${needsScroll ? (styles.scrollAnimated ?? "") : ""}`}
         >
           {needsScroll
             ? [...skill_id, ...skill_id].map((uuid, index) => (
