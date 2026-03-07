@@ -7,3 +7,10 @@ type CreateSlotRequest struct {
 	Title           string    `json:"title" binding:"required,min=3,max=255"`
 	Description     *string   `json:"description" binding:"omitempty,min=3,max=255"`
 }
+
+type UpdateSlotRequest struct {
+	SkillCategoryID *uuid.UUID `json:"skill_category_id"`
+	Title           *string    `json:"title" binding:"omitempty,min=3,max=255"`
+	Description     *string    `json:"description" binding:"omitempty,min=3,max=255"`
+	Status          *string    `jsong:"status" binding:"omitempty"`
+}

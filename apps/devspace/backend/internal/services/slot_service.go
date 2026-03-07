@@ -13,6 +13,7 @@ import (
 type SlotService interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotRequest) error
+	UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error
 }
 
 type slotService struct {
@@ -52,5 +53,21 @@ func (s *slotService) CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotReq
 		}
 		return ErrInternal
 	}
+	return nil
+}
+
+func (s *slotService) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error {
+	rowsAffected, err := s.repo.UpdateSlotByID(slotID, updateRequest)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return ErrSlotConflict
+		}
+		return ErrInternal
+	}
+
+	if rowsAffected == 0 {
+		return ErrSlotNotFound
+	}
+
 	return nil
 }
