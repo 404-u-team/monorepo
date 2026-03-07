@@ -71,7 +71,7 @@ func GetSkillById(id int, db *gorm.DB) (*models.SkillCategory, error) {
 }
 
 func CreateSkill(name string, parentUUID *uuid.UUID, db *gorm.DB) error {
-	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentId: *parentUUID})
+	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentID: *parentUUID})
 
 	if res.Error != nil {
 		return res.Error
