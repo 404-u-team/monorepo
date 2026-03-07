@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
 import { useEffect, useRef, useState } from "react";
+import InviteButton from "@/features/invite-user/ui/InviteButton";
 
 interface UserCardProps {
   avatar_uri?: string;
@@ -8,7 +9,8 @@ interface UserCardProps {
   mainRole?: string;
   description?: string;
   skill_id?: string[];
-  onInviteButtonClick?: () => void;
+  //project_id?: string;
+  //slot_id?: string;
 }
 
 export function UserCard({
@@ -17,12 +19,14 @@ export function UserCard({
   mainRole,
   description,
   skill_id = [],
-  //onInviteButtonClick
+  //project_id,
+  //slot_id,
 }: UserCardProps): JSX.Element {
   const skillBoxRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [needsScroll, setNeedsScroll] = useState(false);
-
+  const project_id = null;
+  const slot_id = 1;
   useEffect(() => {
     const checkOverflow = () => {
       const box = skillBoxRef.current;
@@ -70,7 +74,7 @@ export function UserCard({
 
       <div className={styles.profileButtonsBox}>
         <button className={styles.profileButton}>Профиль</button>
-        <button className={styles.inviteButton}>Пригласить</button>
+        <InviteButton project_id={project_id} slot_id={slot_id} />
       </div>
     </div>
   );
