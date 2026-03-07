@@ -2,6 +2,12 @@ import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
 import { useEffect, useRef, useState } from "react";
 import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
+// import { apiClient } from "../api-client";
+// import type {
+//   PrivateUserProfile,
+//   PublicUserProfile,
+//   UUID,
+// } from "@/types/api.types";
 
 interface UserCardProps {
   user_id: string;
@@ -31,6 +37,46 @@ export function UserCard({
   const description =
     "Люблю React и TypeScript Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima consequatur cum doloribus asperiores exercitationem ipsum incidunt odit provident quia, delectus sequi ullam perspiciatis facilis eveniet cumque deleniti at laboriosam. Impedit!";
   const skill_id = ["react", "css"];
+
+  // export const usersApi = {
+  //   getMyProfile: (token: string) =>
+  //     apiClient.request<PrivateUserProfile>("/users/me", {
+  //       method: "GET",
+  //       token,
+  //     }),
+
+  //   updateMyProfile: (
+  //     token: string,
+  //     data: {
+  //       nickname?: string;
+  //       avatar_uri?: string;
+  //       bio?: string;
+  //     },
+  //   ) =>
+  //     apiClient.request<PrivateUserProfile>("/users/me", {
+  //       method: "PUT",
+  //       token,
+  //       body: JSON.stringify(data),
+  //     }),
+
+  //   addSkill: (token: string, skill_id: UUID) =>
+  //     apiClient.request<void>("/users/me/skills", {
+  //       method: "POST",
+  //       token,
+  //       body: JSON.stringify({ skill_id }),
+  //     }),
+
+  //   removeSkill: (token: string, skill_id: UUID) =>
+  //     apiClient.request<void>(`/users/me/skills/${skill_id}`, {
+  //       method: "DELETE",
+  //       token,
+  //     }),
+
+  //   getUserProfile: (user_id: UUID) =>
+  //     apiClient.request<PublicUserProfile>(`/users/${user_id}`, {
+  //       method: "GET",
+  //     }),
+  // };
 
   useEffect(() => {
     const checkOverflow = (): void => {
