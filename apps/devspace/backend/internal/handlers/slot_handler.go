@@ -75,6 +75,9 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}

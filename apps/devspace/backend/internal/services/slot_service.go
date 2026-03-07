@@ -47,6 +47,9 @@ func (s *slotService) CreateSlot(projectID uuid.UUID, payload *dto.CreateSlotReq
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return ErrSlotConflict
 		}
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return ErrProjectNotFound
+        }
 		return ErrInternal
 	}
 	return nil

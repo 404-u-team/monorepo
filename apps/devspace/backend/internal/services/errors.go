@@ -11,4 +11,4 @@ var ErrProjectConflict = errors.New("проект с таким название
 var ErrProjectNotFound = errors.New("проект не найден")
 var ErrProjectHasSlots = errors.New("проект не может быть удален из-за наличия связанных слотов")
 
-var ErrSlotConflict = errors.New("слот с такмии значениями уже существует")
+var ErrSlotConflict = errors.New("слот с такими значениями уже существует")

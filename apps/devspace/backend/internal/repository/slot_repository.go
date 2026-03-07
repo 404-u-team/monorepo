@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -42,12 +41,12 @@ func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlo
 		return err
 	}
 	if count == 0 {
-		return fmt.Errorf("не найден проект с таким ID, невозможно создать слот для него")
+		return gorm.ErrRecordNotFound
 	}
 
 	result := r.conn.Create(slot)
 	if result.Error != nil {
-		log.Println("Ошибка при создании слота для проекта")
+		log.Println("Ошибка при создании слота для проекта: ", result.Error)
 		return result.Error
 	}
 
