@@ -12,8 +12,9 @@ import (
 type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
-	UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
-	DeleteSlotByID(slotID uuid.UUID) (int, error)
+	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
+	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
+	IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error)
 }
 
 type slotRepository struct {
@@ -56,8 +57,8 @@ func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlo
 	return nil
 }
 
-// обновить слот для определенного проекта. Возвращает количество изменных строк и ошибку
-func (r *slotRepository) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error) {
+// обновить слот для определенного проекта. Возвращает количество измененных строк и ошибку
+func (r *slotRepository) UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error) {
 	updates := map[string]string{}
 
 	if updateRequest.SkillCategoryID != nil {
@@ -76,7 +77,7 @@ func (r *slotRepository) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.Upd
 		updates["status"] = *updateRequest.Status
 	}
 
-	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Updates(updates)
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Where("project_id = ?", projectID).Updates(updates)
 	if result.Error != nil {
 		return 0, result.Error
 	}
@@ -88,11 +89,20 @@ func (r *slotRepository) UpdateSlotByID(slotID uuid.UUID, updateRequest *dto.Upd
 	return int(result.RowsAffected), nil
 }
 
-// возвращает количество удаленных проектов и ошибку
-func (r *slotRepository) DeleteSlotByID(slotID uuid.UUID) (int, error) {
-	result := r.conn.Delete(&models.ProjectSlot{}, "id = ?", slotID)
+// возвращает количество удаленных слотов и ошибку
+func (r *slotRepository) DeleteSlotByID(slotID, projectID uuid.UUID) (int, error) {
+	result := r.conn.Delete(&models.ProjectSlot{}, "id = ?", slotID, "project_id = ?", projectID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
 	return int(result.RowsAffected), nil
+}
+
+func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error) {
+	var count int64
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Where("project_id = ?", projectID).Count(&count)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count == 1, nil
 }

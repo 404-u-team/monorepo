@@ -108,17 +108,6 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
 	// получение payload
 	var payload dto.UpdateSlotRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -127,20 +116,22 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 		return
 	}
 
-	if payload.SkillCategoryID == nil && payload.Title == nil && payload.Description == nil && payload.Status == nil {
-		log.Println("Все поля пустые, нечего изменять")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Все поля пустые, нечего изменять"})
-		return
-	}
-
-	err = h.slotService.UpdateSlotByID(slotID, &payload)
+	err = h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrEmptyPayload) {
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrSlotNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, err.Error())
 			return
 		}
 		c.Status(http.StatusInternalServerError)
@@ -172,21 +163,14 @@ func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
-	err = h.slotService.DeleteSlotByID(slotID)
+	err = h.slotService.DeleteSlotByID(slotID, projectID, userID)
 	if err != nil {
 		if errors.Is(err, services.ErrSlotNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, err.Error())
 			return
 		}
 		c.Status(http.StatusInternalServerError)
