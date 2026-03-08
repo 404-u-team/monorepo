@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -27,7 +26,7 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 	bindErr := context.ShouldBindQuery(&req)
 
 	if bindErr != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Битый JSON"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка query параметров"})
 		return
 	}
 
@@ -58,14 +57,14 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 
 func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 	id := context.Param("id")
-	intId, err := strconv.Atoi(id)
+	UUID, bindErr := uuid.Parse(id)
 
-	if id == "" || err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "id - не число"})
+	if bindErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "UUID не валиден"})
 		return
 	}
 
-	skill, dbErr := services.GetSkillById(intId, ch.db)
+	skill, dbErr := services.GetSkillById(UUID, ch.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
