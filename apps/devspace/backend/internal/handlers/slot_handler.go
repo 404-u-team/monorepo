@@ -8,17 +8,16 @@ import (
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type slotHandler struct {
-	slotService    services.SlotService
-	projectService services.ProjectService
+	slotService services.SlotService
 }
 
-func NewSlotHandler(slotService services.SlotService, projectService services.ProjectService) *slotHandler {
+func NewSlotHandler(slotService services.SlotService) *slotHandler {
 	return &slotHandler{
-		slotService:    slotService,
-		projectService: projectService,
+		slotService: slotService,
 	}
 }
 
@@ -58,29 +57,128 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	err = h.slotService.CreateSlot(projectID, userID, &payload)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
-	err = h.slotService.CreateSlot(projectID, &payload)
-	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	c.Status(http.StatusCreated)
+}
+
+func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
+	// получение slotID из параметров
+	slotID, err := getSlotID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrSlotNotFound.Error()})
+		return
+	}
+
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	// получение userID из контекста
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// получение payload
+	var payload dto.UpdateSlotRequest
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Println("Ошибка при парсинге: ", err.Error())
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	err = h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
+	if err != nil {
+		if errors.Is(err, services.ErrEmptyPayload) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrSlotConflict) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrSlotNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
+	// получение slotID из параметров
+	slotID, err := getSlotID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrSlotNotFound.Error()})
+		return
+	}
+
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		return
+	}
+
+	// получение userID из контекста
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	err = h.slotService.DeleteSlotByID(slotID, projectID, userID)
+	if err != nil {
+		if errors.Is(err, services.ErrSlotNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func getSlotID(c *gin.Context) (uuid.UUID, error) {
+	slotIDStr := c.Param("slotID")
+
+	slotID, err := uuid.Parse(slotIDStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return slotID, nil
 }

@@ -108,17 +108,6 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
 	// получение payload
 	var payload dto.UpdateProjectRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -133,13 +122,18 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 		return
 	}
 
-	err = h.projectService.UpdateProjectByID(projectID, &payload)
+	err = h.projectService.UpdateProjectByID(projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
 		if errors.Is(err, services.ErrProjectConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return
@@ -163,19 +157,11 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
+	err = h.projectService.DeleteProjectByID(projectID, userID)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
-	err = h.projectService.DeleteProjectByID(projectID)
-	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
