@@ -1,10 +1,12 @@
 package dto
 
+import "github.com/google/uuid"
+
 type SkillCategoriesListRequest struct {
-	ParentId *string `json:"parent_id"`
-	Search   *string `json:"search"`
-	Page     *uint   `json:"page"`
-	Limit    *uint   `json:"limit"`
+	ParentId *uuid.UUID `form:"parent_id"`
+	Search   *string    `form:"search"`
+	Page     *uint      `form:"page"`
+	Limit    *uint      `form:"limit"`
 }
 
 type SkillCategoryAddRequest struct {

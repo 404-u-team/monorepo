@@ -26,16 +26,8 @@ func (ch *skillsHandler) GetSkills(context *gin.Context) {
 	bindErr := context.ShouldBindQuery(&req)
 
 	if bindErr != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Битый JSON"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка query параметров"})
 		return
-	}
-
-	if req.ParentId != nil {
-		_, parceErr := uuid.Parse(*req.ParentId)
-		if parceErr != nil {
-			context.Status(http.StatusNotFound)
-			return
-		}
 	}
 
 	skills, dbError := services.GetSkills(req, ch.db)
