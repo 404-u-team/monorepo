@@ -59,6 +59,9 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 
 	err = h.slotService.CreateSlot(projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
