@@ -35,6 +35,14 @@ func (s *slotService) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error
 }
 
 func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) error {
+	// есть ли такой проект
+	_, err := s.projectRepo.GetProjectByID(projectID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrProjectNotFound
+		}
+		return ErrInternal
+	}
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
@@ -89,7 +97,7 @@ func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, update
 		return ErrInternal
 	}
 	if !isSlotBelongsToProject {
-		return ErrUserNotLeader
+		return ErrSlotNotFound
 	}
 
 	// обновление слота по ID

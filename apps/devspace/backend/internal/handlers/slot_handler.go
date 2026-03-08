@@ -61,6 +61,7 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotLeader) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
@@ -68,6 +69,7 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
 		}
 		c.Status(http.StatusInternalServerError)
 		return
@@ -109,7 +111,7 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 	err = h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrEmptyPayload) {
-			c.JSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrSlotConflict) {
@@ -121,7 +123,7 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, services.ErrUserNotLeader) {
-			c.JSON(http.StatusForbidden, err.Error())
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
 		c.Status(http.StatusInternalServerError)
@@ -146,7 +148,7 @@ func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
 		return
 	}
 
-	// получение projectID из контекста
+	// получение userID из контекста
 	userID, err := getUserId(c)
 	if err != nil {
 		c.Status(http.StatusUnauthorized)
@@ -160,7 +162,7 @@ func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, services.ErrUserNotLeader) {
-			c.JSON(http.StatusForbidden, err.Error())
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
 		c.Status(http.StatusInternalServerError)

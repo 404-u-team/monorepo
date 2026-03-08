@@ -124,6 +124,9 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 
 	err = h.projectService.UpdateProjectByID(projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
 		if errors.Is(err, services.ErrProjectConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
@@ -156,6 +159,9 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 
 	err = h.projectService.DeleteProjectByID(projectID, userID)
 	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return

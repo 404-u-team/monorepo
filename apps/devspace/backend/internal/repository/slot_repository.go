@@ -91,7 +91,7 @@ func (r *slotRepository) UpdateSlotByID(slotID, projectID uuid.UUID, updateReque
 
 // возвращает количество удаленных слотов и ошибку
 func (r *slotRepository) DeleteSlotByID(slotID, projectID uuid.UUID) (int, error) {
-	result := r.conn.Delete(&models.ProjectSlot{}, "id = ?", slotID, "project_id = ?", projectID)
+	result := r.conn.Delete(&models.ProjectSlot{}, "id = ? AND project_id = ?", slotID, projectID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
