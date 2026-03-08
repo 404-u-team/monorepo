@@ -12,14 +12,12 @@ import (
 )
 
 type slotHandler struct {
-	slotService    services.SlotService
-	projectService services.ProjectService
+	slotService services.SlotService
 }
 
-func NewSlotHandler(slotService services.SlotService, projectService services.ProjectService) *slotHandler {
+func NewSlotHandler(slotService services.SlotService) *slotHandler {
 	return &slotHandler{
-		slotService:    slotService,
-		projectService: projectService,
+		slotService: slotService,
 	}
 }
 
@@ -59,18 +57,7 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 		return
 	}
 
-	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := h.projectService.IsUserProjectLeader(projectID, userID)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if !isUserProjectLeader {
-		c.Status(http.StatusForbidden)
-		return
-	}
-
-	err = h.slotService.CreateSlot(projectID, &payload)
+	err = h.slotService.CreateSlot(projectID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrSlotConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})

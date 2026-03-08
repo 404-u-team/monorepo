@@ -35,14 +35,14 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
 	projectService := services.NewProjectService(projectRepo)
-	slotService := services.NewSlotService(slotRepo)
+	slotService := services.NewSlotService(slotRepo, projectRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
 	userHandler := handlers.NewUserHandler(userService, config)
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
-	slotHandler := handlers.NewSlotHandler(slotService, projectService)
+	slotHandler := handlers.NewSlotHandler(slotService)
 
 	api := router.Group("/api")
 	{
