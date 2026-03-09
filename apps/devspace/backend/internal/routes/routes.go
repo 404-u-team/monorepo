@@ -39,7 +39,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
-	userHandler := handlers.NewUserHandler(userService, config)
+	userHandler := handlers.NewUserHandler(userService)
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
@@ -61,6 +61,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware(config.JWTSecret, userRepo))
 		{
+			protected.GET("/users/me", userHandler.GetMe)
+			protected.PUT("/users/me", userHandler.UpdateMe)
+
 			protected.POST("/projects", projectHandler.CreateProject)
 			protected.PUT("/projects/:projectID", projectHandler.UpdateProjectByID)
 			protected.DELETE("/projects/:projectID", projectHandler.DeleteProjectByID)
@@ -68,8 +71,6 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.POST("/projects/:projectID/slots", slotHandler.CreateSlot)
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
-
-			protected.GET("/users/me", userHandler.Me)
 		}
 
 		//только для админов

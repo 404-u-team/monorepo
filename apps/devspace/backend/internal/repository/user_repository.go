@@ -18,6 +18,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByNickname(login string) (*models.User, error)
 	CheckUserIsAdmin(id uuid.UUID) (bool, error)
+	UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
 }
 
 type userRepository struct {
@@ -118,4 +119,24 @@ func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 	}
 
 	return user.IsAdmin, nil
+}
+
+// обновить nickname и bio пользователя по ID. Возвращает ошибку
+func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
+	updates := map[string]string{}
+
+	if updateRequest.Nickname != nil {
+		updates["nickname"] = *updateRequest.Nickname
+	}
+
+	if updateRequest.Bio != nil {
+		updates["bio"] = *updateRequest.Bio
+	}
+
+	result := r.conn.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
