@@ -42,7 +42,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	userHandler := handlers.NewUserHandler(userService, config)
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
-	slotHandler := handlers.NewSlotHandler(slotService, projectService)
+	slotHandler := handlers.NewSlotHandler(slotService)
 	ideaHandler := handlers.NewIdeaHandler(dbConn)
 
 	api := router.Group("/api")
