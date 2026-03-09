@@ -35,7 +35,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
 	projectService := services.NewProjectService(projectRepo)
-	slotService := services.NewSlotService(slotRepo)
+	slotService := services.NewSlotService(slotRepo, projectRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
@@ -69,6 +69,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.DELETE("/projects/:projectID", projectHandler.DeleteProjectByID)
 
 			protected.POST("/projects/:projectID/slots", slotHandler.CreateSlot)
+			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
+			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
 			protected.GET("/users/me", userHandler.Me)
 

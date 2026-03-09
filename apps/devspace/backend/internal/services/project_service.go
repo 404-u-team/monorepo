@@ -15,9 +15,8 @@ type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
-	UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
-	DeleteProjectByID(projectID uuid.UUID) error
-	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
+	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
+	DeleteProjectByID(projectID, userID uuid.UUID) error
 }
 
 type projectService struct {
@@ -29,6 +28,7 @@ func NewProjectService(repo repository.ProjectRepository) ProjectService {
 }
 
 func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error) {
+	// проверка на наличие уже проекта с таким названием
 	exists, err := s.repo.IsProjectExistsByTitle(payload.Title)
 	if err != nil {
 		return nil, ErrInternal
@@ -37,6 +37,7 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 		return nil, ErrProjectConflict
 	}
 
+	// Создание проекта
 	project := &models.Project{
 		LeaderID: leaderID,
 		Title:    payload.Title,
@@ -76,16 +77,17 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 
 	return project, nil
 }
-
-func (s *projectService) IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error) {
+func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
+	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
-		return false, ErrInternal
+		return ErrInternal
 	}
-	return isUserProjectLeader, nil
-}
+	if !isUserProjectLeader {
+		return ErrUserNotLeader
+	}
 
-func (s *projectService) UpdateProjectByID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
+	// обновление проекта по ID
 	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -101,7 +103,17 @@ func (s *projectService) UpdateProjectByID(projectID uuid.UUID, updateRequest *d
 	return nil
 }
 
-func (s *projectService) DeleteProjectByID(projectID uuid.UUID) error {
+func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
+	// является ли пользователь владельцем данного проекта
+	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return ErrInternal
+	}
+	if !isUserProjectLeader {
+		return ErrUserNotLeader
+	}
+
+	// удаление проекта по ID
 	status, err := s.repo.DeleteProjectByID(projectID)
 	if err != nil {
 		return ErrInternal

@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default defineConfig([
-  globalIgnores(['dist', 'build', 'node_modules', 'src/app/generated/routeTree.gen.ts']),
+  globalIgnores(['dist', 'build', 'node_modules', 'src/app/generated/routeTree.gen.ts', '**/*.stories.*']),
   js.configs.recommended,
   ...tsEslint.config({
     extends: [

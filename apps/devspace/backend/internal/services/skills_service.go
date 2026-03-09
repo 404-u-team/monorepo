@@ -2,9 +2,10 @@ package services
 
 import (
 	"errors"
+	"math"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
-	"math"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -62,7 +63,7 @@ func CutIntoPages(skills []models.SkillCategory, pages int) ([][]models.SkillCat
 	return splittedByPages, nil
 }
 
-func GetSkillById(id int, db *gorm.DB) (*models.SkillCategory, error) {
+func GetSkillById(id uuid.UUID, db *gorm.DB) (*models.SkillCategory, error) {
 	var targetSkill models.SkillCategory
 	if res := db.Table("Skill_Category").Where("id = ?", id).First(&targetSkill); res.Error != nil {
 		return nil, res.Error
