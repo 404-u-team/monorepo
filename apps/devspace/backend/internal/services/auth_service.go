@@ -57,7 +57,7 @@ func (s *authService) Register(payload *dto.RegisterRequest, config *config.Conf
 
 func (s *authService) Login(payload *dto.LoginRequest, config *config.Config) (*dto.TokenResponse, error) {
 	// проверка существования пользователя
-	var user models.User
+	var user *models.User
 	var err error
 	if strings.Contains(payload.Login, "@") {
 		user, err = s.repo.GetUserByEmail(payload.Login)

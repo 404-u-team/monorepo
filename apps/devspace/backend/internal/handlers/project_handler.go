@@ -177,21 +177,6 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func getUserId(c *gin.Context) (uuid.UUID, error) {
-	userIDAny, ok := c.Get("userID")
-	if !ok {
-		return uuid.Nil, services.ErrUnauthorized
-	}
-
-	userID, ok := userIDAny.(uuid.UUID)
-	if !ok {
-		log.Println("Ошибка при конвертировании userID в UUID")
-		return uuid.Nil, services.ErrUnauthorized
-	}
-
-	return userID, nil
-}
-
 func getProjectID(c *gin.Context) (uuid.UUID, error) {
 	projectIDStr := c.Param("projectID")
 

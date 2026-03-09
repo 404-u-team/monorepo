@@ -14,8 +14,9 @@ type UserRepository interface {
 	CreateUser(payload *dto.RegisterRequest) (uuid.UUID, error)
 	IsUserExistByEmail(email string) (bool, error)
 	IsUserExistByID(id uuid.UUID) (bool, error)
-	GetUserByEmail(email string) (models.User, error)
-	GetUserByNickname(login string) (models.User, error)
+	GetUserByID(userID uuid.UUID) (*models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
+	GetUserByNickname(login string) (*models.User, error)
 	CheckUserIsAdmin(id uuid.UUID) (bool, error)
 }
 
@@ -66,28 +67,40 @@ func (r *userRepository) IsUserExistByID(id uuid.UUID) (bool, error) {
 	return count > 0, nil
 }
 
-func (r *userRepository) GetUserByEmail(email string) (models.User, error) {
+func (r *userRepository) GetUserByID(userID uuid.UUID) (*models.User, error) {
+	var user models.User
+
+	result := r.conn.First(&user, "id = ?", userID)
+	if result.Error != nil {
+		log.Println("Ошибка при получении пользователя по ID: ", result.Error)
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 
 	result := r.conn.First(&user, "email = ?", email)
 	if result.Error != nil {
 		log.Println("Ошибка при получении пользователя по email: ", result.Error)
-		return user, result.Error
+		return nil, result.Error
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func (r *userRepository) GetUserByNickname(nickname string) (models.User, error) {
+func (r *userRepository) GetUserByNickname(nickname string) (*models.User, error) {
 	var user models.User
 
 	result := r.conn.First(&user, "nickname = ?", nickname)
 	if result.Error != nil {
 		log.Println("Ошибка при получении пользователя по nickname: ", result.Error)
-		return user, result.Error
+		return nil, result.Error
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
