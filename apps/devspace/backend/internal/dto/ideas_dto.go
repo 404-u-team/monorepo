@@ -10,6 +10,6 @@ type GetListIdeasRequest struct {
 }
 
 type CreateIdeaRequest struct {
-	Title       string  `json:"title"`
+	Title       string  `json:"title" binding:"required"`
 	Description *string `json:"description"`
 }
