@@ -22,6 +22,11 @@ export default defineConfig({
       '@': path.resolve(dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      "fe.dev-main.stand.devspace.404.ms0ur.dev"
+    ]
+  },
   test: {
     projects: [{
       extends: true,

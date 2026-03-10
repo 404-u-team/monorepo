@@ -1,15 +1,13 @@
-/* eslint-disable import-x/no-relative-parent-imports, import-x/no-restricted-paths */
 import { useState, type JSX, type SyntheticEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import axios from 'axios';
-import { useStore } from '@/app/providers/store';
+import { useStore } from '@/shared/lib/store';
 import { apiClient } from '@/shared/api/client';
-import { Button } from '@/shared/ui/Button/Button';
-import { Input } from '@/shared/ui/Input/Input';
+import { Button, Input } from '@/shared/ui';
+import type { IUser, UserStore } from '@/entities/user';
 
 import styles from './AuthForm.module.scss';
-import type { IUser } from '@/entities/user/model/IUser';
 
 const GoogleIcon = (): JSX.Element => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -29,7 +27,7 @@ const GithubIcon = (): JSX.Element => (
 type AuthMode = 'login' | 'register';
 
 export const AuthForm = observer((): JSX.Element => {
-    const { userStore } = useStore();
+    const { userStore } = useStore() as { userStore: UserStore };
 
     const [mode, setMode] = useState<AuthMode>('login');
     const [nickname, setNickname] = useState('');
