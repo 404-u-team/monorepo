@@ -43,6 +43,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
+	ideaHandler := handlers.NewIdeaHandler(dbConn)
 
 	api := router.Group("/api")
 	{
@@ -57,6 +58,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.GET("/projects/:projectID", projectHandler.GetProjectByID)
 		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
+		api.GET("/ideas", ideaHandler.GetIdeas)
+
 		// защищенные
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware(config.JWTSecret, userRepo))
@@ -70,6 +73,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
 			protected.GET("/users/me", userHandler.Me)
+
+			protected.POST("/ideas", ideaHandler.AddIdea)
 		}
 
 		//только для админов
