@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"log"
 	"net/http"
 
@@ -29,7 +30,7 @@ func (h *projectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	userIDAny, ok := c.Get("userID")
+	userIDAny, ok := c.Get(middleware.UserIdKey)
 	if !ok {
 		c.Status(http.StatusUnauthorized)
 		return
@@ -178,7 +179,7 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 }
 
 func getUserId(c *gin.Context) (uuid.UUID, error) {
-	userIDAny, ok := c.Get("userID")
+	userIDAny, ok := c.Get(middleware.UserIdKey)
 	if !ok {
 		return uuid.Nil, services.ErrUnauthorized
 	}

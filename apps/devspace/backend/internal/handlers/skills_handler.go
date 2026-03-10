@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
@@ -148,4 +149,54 @@ func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
 	}
 
 	context.Status(http.StatusOK)
+}
+
+func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
+	var req dto.BaseSkillRequest
+	res := context.ShouldBindJSON(&req)
+
+	if res != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	// это защищенный путь, userID не может не существовать
+	userID, _ := context.Get(middleware.UserIdKey)
+	dbErr := services.AddSkillToUser(req.SkillID, userID.(uuid.UUID), ch.db)
+
+	if dbErr != nil {
+		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Навыка с таким uuid не существует"})
+		} else if errors.Is(dbErr, services.ErrRowAlreadyExists) {
+			context.JSON(http.StatusBadRequest, gin.H{"error": dbErr.Error()})
+		}
+		return
+	}
+
+	context.Status(http.StatusCreated)
+}
+
+func (ch *skillsHandler) DeleteSelfSkill(context *gin.Context) {
+	var req dto.BaseSkillRequest
+	res := context.ShouldBindQuery(&req)
+
+	if res != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	// это защищенный путь, userID не может не существовать
+	userID, _ := context.Get(middleware.UserIdKey)
+
+	dbErr := services.DeleteSkillFromUser(req.SkillID, userID.(uuid.UUID), ch.db)
+	if dbErr != nil {
+		if errors.Is(dbErr, services.ErrRowNotExists) {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "у пользователя нет данного навыка"})
+		} else {
+			context.Status(http.StatusInternalServerError)
+			log.Println("Ошибка удаления навыка пользователя из БД: ", dbErr.Error())
+		}
+		return
+	}
+	context.Status(http.StatusNoContent)
 }

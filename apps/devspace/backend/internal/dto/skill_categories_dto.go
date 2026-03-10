@@ -13,3 +13,8 @@ type SkillCategoryAddRequest struct {
 	ParentId *string `json:"parent_id"`
 	Name     string  `json:"name"`
 }
+
+// Удалить/привязать навык одинаковы по содержанию, смысл дублировать?
+type BaseSkillRequest struct {
+	SkillID uuid.UUID `json:"skill_id" form:"skill_id"`
+}
