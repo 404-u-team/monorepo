@@ -1,0 +1,16 @@
+name: Deploy Devspace Stand Frontend
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/devspace/frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Komodo Webhook
+        run: |
+          curl -X POST "${{ secrets.KOMODO_WEBHOOK_DEVSPACE_FRONTEND }}"
+          curl -X POST "${{ secrets.KOMODO_WEBHOOK_DEVSPACE_STORYBOOK }}"
