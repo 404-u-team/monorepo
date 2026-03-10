@@ -1,9 +1,15 @@
 import type { JSX } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, ChevronDown } from 'lucide-react'
+import { observer } from 'mobx-react-lite'
+import { useStore } from '@/shared/lib/store'
+import { Button } from '@/shared/ui'
 import styles from './Navbar.module.scss'
 
-export function Navbar(): JSX.Element {
+export const Navbar = observer(function Navbar(): JSX.Element {
+    const { userStore } = useStore()
+    const navigate = useNavigate()
+
     return (
         <nav className={styles.navbar}>
             <Link to="/" className={styles.logo}>
@@ -33,21 +39,34 @@ export function Navbar(): JSX.Element {
                     </li>
                 </ul>
 
-                <Link to="/" className={styles.createButton}>
-                    Мои проекты
-                </Link>
+                {userStore.isAuthenticated ? (
+                    <>
+                        <Button
+                            className={styles.createButton}
+                            onClick={() => { void navigate({ to: '/' }) }}
+                        >
+                            Мои проекты
+                        </Button>
 
-                <div className={styles.userControls}>
-                    <button className={styles.iconButton} aria-label="Уведомления">
-                        <Bell size={24} />
-                    </button>
+                        <div className={styles.userControls}>
+                            <button className={styles.iconButton} aria-label="Уведомления">
+                                <Bell size={24} />
+                            </button>
 
-                    <div className={styles.avatarWrapper}>
-                        <div className={styles.avatar} />
-                        <ChevronDown />
+                            <div className={styles.avatarWrapper}>
+                                <div className={styles.avatar} />
+                                <ChevronDown />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className={styles.userControls}>
+                        <Button onClick={() => { void navigate({ to: '/auth' }) }}>
+                            Войти
+                        </Button>
                     </div>
-                </div>
+                )}
             </div>
         </nav>
     )
-}
+})

@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { configure } from 'mobx';
 import '@/app/styles/index.scss'
-import { StoreContext, rootStore } from '@/app/providers/store';
+import { StoreContext } from '@/shared/lib/store';
+import { rootStore } from '@/app/providers/store';
 
 import { verifyInterceptors } from '@/app/providers/apiInterceptors';
 

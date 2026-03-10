@@ -1,8 +1,7 @@
-import { createContext, useContext, type Context } from "react";
-// eslint-disable-next-line import-x/no-relative-parent-imports
 import { UserStore } from "@/entities/user";
+import type { IRootStore } from "@/shared/lib/store";
 
-export class RootStore {
+export class RootStore implements IRootStore {
     readonly userStore: UserStore;
 
     constructor() {
@@ -11,5 +10,3 @@ export class RootStore {
 }
 
 export const rootStore = new RootStore();
-export const StoreContext: Context<RootStore> = createContext<RootStore>(rootStore);
-export const useStore = (): RootStore => useContext(StoreContext);
