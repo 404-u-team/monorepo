@@ -12,12 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type RowExists struct{}
-
-func (RowExists) Error() string {
-	return ""
-}
-
 func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillCategory, error) {
 	query := db.Table("Skill_Category")
 	if req.ParentId == nil {

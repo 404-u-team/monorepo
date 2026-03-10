@@ -152,23 +152,26 @@ func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
 }
 
 func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
-	var req dto.BaseSkillRequest
-	res := context.ShouldBindJSON(&req)
+	rawUUID := context.Param("id")
+	parsed, parseErr := uuid.Parse(rawUUID)
 
-	if res != nil {
+	if rawUUID == "" || parseErr != nil {
 		context.Status(http.StatusBadRequest)
 		return
 	}
 
 	// это защищенный путь, userID не может не существовать
 	userID, _ := context.Get(middleware.UserIdKey)
-	dbErr := services.AddSkillToUser(req.SkillID, userID.(uuid.UUID), ch.db)
+	dbErr := services.AddSkillToUser(parsed, userID.(uuid.UUID), ch.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Навыка с таким uuid не существует"})
 		} else if errors.Is(dbErr, services.ErrRowAlreadyExists) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": dbErr.Error()})
+		} else {
+			context.Status(http.StatusInternalServerError)
+			log.Println("Ошибка добавления навыка пользователю в БД:" + dbErr.Error())
 		}
 		return
 	}

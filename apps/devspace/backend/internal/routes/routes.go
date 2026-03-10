@@ -75,7 +75,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.GET("/users/me", userHandler.Me)
 
 			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
-			protected.DELETE("/users/me/skills/:id")
+			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
 
 			protected.POST("/ideas", ideaHandler.AddIdea)
 		}
