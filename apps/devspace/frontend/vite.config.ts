@@ -23,9 +23,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: [
-      "fe.dev-main.stand.devspace.404.ms0ur.dev"
-    ]
+    allowedHosts: true
   },
   test: {
     projects: [{
