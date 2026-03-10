@@ -1,5 +1,7 @@
 import { definePreview } from '@storybook/react-vite';
-// @ts-expect-error - SCSS типы определены в tsconfig.app.json (vite/client), а Storybook использует tsconfig.node.json
+// SCSS типы определены в tsconfig.app.json (vite/client), а Storybook использует tsconfig.node.json
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 // eslint-disable-next-line import-x/no-relative-parent-imports
 import '@/app/styles/index.scss';
 

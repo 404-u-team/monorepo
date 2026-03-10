@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build && tsc -b",
     "lint": "bun run lint:eslint && bun run lint:style",
     "lint:eslint": "eslint .",
     "lint:style": "stylelint \"src/**/*.scss\"",
