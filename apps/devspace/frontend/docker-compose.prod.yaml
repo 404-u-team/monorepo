@@ -1,0 +1,8 @@
+services:
+    frontend-prod:
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        ports:
+            - "5173:5173"
+        restart: unless-stopped
