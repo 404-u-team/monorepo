@@ -1,16 +1,37 @@
+import { createElement } from 'react';
 import { definePreview } from '@storybook/react-vite';
-// SCSS типы определены в tsconfig.app.json (vite/client), а Storybook использует tsconfig.node.json
+import { initialize, mswLoader } from 'msw-storybook-addon';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line import-x/no-relative-parent-imports
 import '@/app/styles/index.scss';
+// eslint-disable-next-line import-x/no-relative-parent-imports
+import { StoreContext, type IRootStore } from '../src/shared/lib/store/StoreContext';
 
+// Initialize MSW
+initialize();
+
+/**
+ * Мок-стор по умолчанию для Storybook.
+ * Можно переопределить через декоратор конкретного story.
+ */
+const defaultMockStore: IRootStore = {
+  userStore: { isAuthenticated: false },
+};
 
 const preview = definePreview({
   addons: [],
-  // Все stories получают страницу Autodocs автоматически.
-  // Можно переопределить на уровне конкретного файла: tags: []
   tags: ['autodocs'],
+
+  loaders: [mswLoader],
+
+  decorators: [
+    (Story) => createElement(
+      StoreContext.Provider,
+      { value: defaultMockStore },
+      createElement(Story),
+    ),
+  ],
 
   parameters: {
     controls: {
@@ -21,12 +42,10 @@ const preview = definePreview({
     },
 
     a11y: {
-      // 'todo'  — показывать нарушения только в Test UI
-      // 'error' — падать в CI при нарушениях
-      // 'off'   — пропускать проверку
       test: 'todo',
     },
   },
 })
 
 export default preview
+
