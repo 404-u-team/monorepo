@@ -2,81 +2,50 @@ import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
 import { useEffect, useRef, useState } from "react";
 import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
-// import { apiClient } from "../api-client";
-// import type {
-//   PrivateUserProfile,
-//   PublicUserProfile,
-//   UUID,
-// } from "@/types/api.types";
+import { apiClient } from "@/shared/api/client";
 
 interface UserCardProps {
   user_id: string;
-  //description?: string;
-  //skill_id?: string[];
-  //project_id?: string;
-  //slot_id?: string;
+  project_id?: string;
+  slot_id?: string;
   inviteButton?: React.ReactNode;
+}
+interface UserData {
+  avatar_uri: string;
+  mainRole: string;
+  description: string;
+  skill_id: string[];
 }
 
 export function UserCard({
-  //avatar_uri,
   user_id,
-  //mainRole,
-  //description,
-  //skill_id = [],
-  //project_id,
-  //slot_id,
+  project_id,
+  slot_id,
 }: UserCardProps): JSX.Element {
   const skillBoxReference = useRef<HTMLDivElement>(null);
   const scrollReference = useRef<HTMLDivElement>(null);
   const [needsScroll, setNeedsScroll] = useState(false);
-  const project_id = "2";
-  const slot_id = "sdad";
-  const avatar_uri = "https://placehold.co/150x150";
-  const mainRole = "Frontend Developer";
-  const description =
-    "Люблю React и TypeScript Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima consequatur cum doloribus asperiores exercitationem ipsum incidunt odit provident quia, delectus sequi ullam perspiciatis facilis eveniet cumque deleniti at laboriosam. Impedit!";
-  const skill_id = ["react", "css"];
+  const [userData, setUserData] = useState<UserData | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>(undefined);
 
-  // export const usersApi = {
-  //   getMyProfile: (token: string) =>
-  //     apiClient.request<PrivateUserProfile>("/users/me", {
-  //       method: "GET",
-  //       token,
-  //     }),
+  useEffect(() => {
+    const fetchUserData = async (): Promise<void> => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get<UserData>(`/users/${user_id}`);
+        setUserData(response.data);
+        setError(undefined);
+      } catch (error_) {
+        setError("Ошибка загрузки данных пользователя");
+        console.error("Error fetching user data:", error_);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //   updateMyProfile: (
-  //     token: string,
-  //     data: {
-  //       nickname?: string;
-  //       avatar_uri?: string;
-  //       bio?: string;
-  //     },
-  //   ) =>
-  //     apiClient.request<PrivateUserProfile>("/users/me", {
-  //       method: "PUT",
-  //       token,
-  //       body: JSON.stringify(data),
-  //     }),
-
-  //   addSkill: (token: string, skill_id: UUID) =>
-  //     apiClient.request<void>("/users/me/skills", {
-  //       method: "POST",
-  //       token,
-  //       body: JSON.stringify({ skill_id }),
-  //     }),
-
-  //   removeSkill: (token: string, skill_id: UUID) =>
-  //     apiClient.request<void>(`/users/me/skills/${skill_id}`, {
-  //       method: "DELETE",
-  //       token,
-  //     }),
-
-  //   getUserProfile: (user_id: UUID) =>
-  //     apiClient.request<PublicUserProfile>(`/users/${user_id}`, {
-  //       method: "GET",
-  //     }),
-  // };
+    void fetchUserData();
+  }, [user_id]);
 
   useEffect(() => {
     const checkOverflow = (): void => {
@@ -97,7 +66,33 @@ export function UserCard({
     return (): void => {
       ro.disconnect();
     };
-  }, [skill_id]);
+  }, [userData?.skill_id, needsScroll]);
+
+  if (loading) {
+    return (
+      <div className={styles.userCard}>
+        <div className={styles.loading}>Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (error !== undefined) {
+    return (
+      <div className={styles.userCard}>
+        <div className={styles.error}>{error}</div>
+      </div>
+    );
+  }
+
+  if (userData === undefined) {
+    return (
+      <div className={styles.userCard}>
+        <div className={styles.error}>Данные не найдены</div>
+      </div>
+    );
+  }
+
+  const { avatar_uri, mainRole, description, skill_id } = userData;
 
   return (
     <div className={styles.userCard}>

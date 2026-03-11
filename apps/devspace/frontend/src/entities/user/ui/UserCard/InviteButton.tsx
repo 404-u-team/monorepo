@@ -3,8 +3,8 @@ import type { JSX } from "react";
 import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
 
 interface InviteButtonProps {
-  project_id?: string;
-  slot_id?: string;
+  project_id?: string | undefined;
+  slot_id?: string | undefined;
   user_id?: string;
   onInvite?: (userId: string) => Promise<void>;
 }
