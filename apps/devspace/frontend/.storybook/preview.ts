@@ -26,6 +26,7 @@ const preview = definePreview({
   loaders: [mswLoader],
 
   decorators: [
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     (Story) => createElement(
       StoreContext.Provider,
       { value: defaultMockStore },
@@ -48,4 +49,4 @@ const preview = definePreview({
 })
 
 export default preview
-
+
