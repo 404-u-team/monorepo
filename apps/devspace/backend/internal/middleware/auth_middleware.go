@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// я бываю невнимателен, проще вынести ключ в константу, чем вспоминать как оно правильно печатается
+const UserIdKey = "userID"
+
 func AuthMiddleware(JWTSecret string, userRepo repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := getAccessToken(c)
@@ -38,7 +41,7 @@ func AuthMiddleware(JWTSecret string, userRepo repository.UserRepository) gin.Ha
 		}
 
 		// Set user info in context
-		c.Set("userID", userID)
+		c.Set(UserIdKey, userID)
 		// c.Set("userRole", claims.Role)
 
 		c.Next()

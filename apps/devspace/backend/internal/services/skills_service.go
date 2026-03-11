@@ -93,3 +93,34 @@ func DeleteSkill(id uuid.UUID, cascade bool, db *gorm.DB) error {
 	res := db.Table("Skill_Category").Where("id = ?", id).Delete(&models.SkillCategory{})
 	return res.Error
 }
+
+func AddSkillToUser(skillId uuid.UUID, userId uuid.UUID, db *gorm.DB) error {
+
+	var row models.UserSkill
+	exists := db.Model(&models.UserSkill{}).Where("user_id = ?", userId).Where("skill_id = ?", skillId).First(&row)
+
+	if exists.Error != nil {
+		if errors.Is(exists.Error, gorm.ErrRecordNotFound) {
+			res := db.Model(&models.UserSkill{}).Create(&models.UserSkill{UserID: userId, SkillID: skillId})
+			return res.Error
+		} else {
+			return exists.Error
+		}
+	}
+
+	return ErrRowAlreadyExists
+}
+
+func DeleteSkillFromUser(skillId uuid.UUID, userId uuid.UUID, db *gorm.DB) error {
+	res := db.Model(&models.UserSkill{}).Where("user_id = ?", userId).Where("skill_id = ?", skillId).Delete(&models.UserSkill{})
+
+	if res.Error != nil {
+		return res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return ErrRowNotExists
+	}
+
+	return nil
+}
