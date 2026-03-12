@@ -6,7 +6,7 @@ import { initialize, mswLoader } from 'msw-storybook-addon';
 // eslint-disable-next-line import-x/no-relative-parent-imports
 import '@/app/styles/index.scss';
 // eslint-disable-next-line import-x/no-relative-parent-imports
-import { StoreContext, type IRootStore } from '../src/shared/lib/store/StoreContext';
+import { StoreContext, type IRootStore } from '@/shared/lib/store';
 
 // Initialize MSW
 initialize();
