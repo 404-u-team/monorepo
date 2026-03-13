@@ -24,6 +24,12 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}
+	if config.AllowAnyOrigin {
+		corsConfig.AllowOrigins = []string{"*"}
+	} else {
+		corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+	}
+
 	router.Use(cors.New(corsConfig))
 
 	// создание репозиториев (круды для работы с entity)
