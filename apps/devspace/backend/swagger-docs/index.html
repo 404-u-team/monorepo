@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <title>API Docs (Scalar)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body style="margin: 0;">
+    <div id="app"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+
+    <script>
+      Scalar.createApiReference('#app', {
+        url: '/swagger.yaml',
+        
+        theme: 'default',
+        showSidebar: true
+      })
+    </script>
+  </body>
+</html>
