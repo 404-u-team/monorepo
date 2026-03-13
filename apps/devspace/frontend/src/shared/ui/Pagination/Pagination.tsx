@@ -11,10 +11,10 @@ export interface PaginationProps {
     className?: string;
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps): JSX.Element {
-    if (totalPages <= 1) return <></>;
+export function Pagination({ currentPage, totalPages, onPageChange, className }: PaginationProps): JSX.Element | undefined {
+    if (totalPages <= 1) return undefined;
 
-    const getVisiblePages = (current: number, total: number): Array<number | string> => {
+    const getVisiblePages = (current: number, total: number): (number | string)[] => {
         if (total <= 7) {
             return Array.from({ length: total }, (_, index) => index + 1);
         }
@@ -47,7 +47,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
             <div className={styles.pages}>
                 {pages.map((page, index) => (
                     page === '...' ? (
-                        <span key={`ellipsis-${index}`} className={styles.ellipsis}>...</span>
+                        <span key={`ellipsis-${String(index)}`} className={styles.ellipsis}>...</span>
                     ) : (
                         <Button
                             key={page}

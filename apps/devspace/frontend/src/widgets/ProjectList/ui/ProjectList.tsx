@@ -3,7 +3,11 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { ProjectCard, type IProject } from '@/entities/project';
 import { Pagination, SearchInput, Dropdown } from '@/shared/ui';
 import styles from './ProjectList.module.scss';
-import type { ProjectSearch } from '@/routes/projects';
+interface SearchParameters {
+    page?: number | undefined;
+    search?: string | undefined;
+    status?: 'open' | 'closed' | undefined;
+}
 
 export interface ProjectListProps {
     projects: IProject[];
@@ -17,20 +21,20 @@ const statusOptions = [
 ];
 
 export function ProjectList({ projects, totalPages }: ProjectListProps): JSX.Element {
-    const searchParams = useSearch({ strict: false });
+    const searchParameters = useSearch({ strict: false });
     const navigate = useNavigate({ from: '/projects' });
 
     const handleSearch = (value: string): void => {
         void navigate({
-            search: (prev: ProjectSearch) => ({ ...prev, search: value || undefined, page: 1 }),
+            search: (previous: SearchParameters) => ({ ...previous, search: value || undefined, page: 1 }),
         });
     };
 
     const handleStatusChange = (value: string): void => {
         void navigate({
-            search: (prev: ProjectSearch) => ({ 
-                ...prev, 
-                status: (value as 'open' | 'closed') || undefined, 
+            search: (previous: SearchParameters) => ({ 
+                ...previous, 
+                status: value === '' ? undefined : (value as 'open' | 'closed'), 
                 page: 1 
             }),
         });
@@ -39,7 +43,7 @@ export function ProjectList({ projects, totalPages }: ProjectListProps): JSX.Ele
     const handlePageChange = (page: number): void => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         void navigate({
-            search: (previous: ProjectSearch) => ({ ...previous, page }),
+            search: (previous: SearchParameters) => ({ ...previous, page }),
         });
     };
 
@@ -52,14 +56,14 @@ export function ProjectList({ projects, totalPages }: ProjectListProps): JSX.Ele
 
             <div className={styles.controls}>
                 <SearchInput
-                    value={(searchParams as Record<string, string>).search ?? ''}
+                    value={(searchParameters as Record<string, string>).search ?? ''}
                     onSearch={handleSearch}
                     placeholder="Название или описание..."
                     className={styles.search ?? ''}
                 />
                 <Dropdown
                     options={statusOptions}
-                    value={(searchParams as Record<string, string>).status ?? ''}
+                    value={(searchParameters as Record<string, string>).status ?? ''}
                     onChange={handleStatusChange}
                     className={styles.filter ?? ''}
                 />
@@ -84,7 +88,7 @@ export function ProjectList({ projects, totalPages }: ProjectListProps): JSX.Ele
             {totalPages > 1 && (
                 <div className={styles.pagination}>
                     <Pagination
-                        currentPage={Number((searchParams as Record<string, string>).page) || 1}
+                        currentPage={Number((searchParameters as Record<string, string>).page) || 1}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
                     />
