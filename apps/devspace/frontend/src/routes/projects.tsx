@@ -22,9 +22,15 @@ export const Route = createFileRoute('/projects')({
         status,
     }),
     loader: async ({ deps }) => {
+        const limit = 20;
+        const { page, ...restDeps } = deps;
+        const currentPage = page ?? 1;
+        const start_at = (currentPage - 1) * limit;
+
         return fetchProjects({
-            ...deps,
-            limit: 20,
+            ...restDeps,
+            start_at,
+            limit,
         });
     },
     component: ProjectsPage,
