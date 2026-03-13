@@ -25,6 +25,7 @@ export default defineConfig({
   server: {
     allowedHosts: true
   },
+  // @ts-expect-error - Vitest types are missing due to likely Vite version mismatch
   test: {
     projects: [{
       extends: true,
