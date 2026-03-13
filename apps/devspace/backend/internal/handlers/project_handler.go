@@ -239,9 +239,9 @@ func (h *projectHandler) GetProjectRequests(c *gin.Context) {
 	if err != nil {
 		switch err {
 		case services.ErrUserNotLeader:
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			c.Status(http.StatusForbidden)
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			c.Status(http.StatusInternalServerError)
 		}
 		return
 	}
@@ -252,14 +252,14 @@ func (h *projectHandler) GetProjectRequests(c *gin.Context) {
 func (h *projectHandler) GetUserRequests(c *gin.Context) {
 	userIDAny, exists := c.Get(middleware.UserIdKey)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.Status(http.StatusUnauthorized)
 		return
 	}
 	userID := userIDAny.(uuid.UUID)
 
 	requests, err := h.projectService.GetUserRequests(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 

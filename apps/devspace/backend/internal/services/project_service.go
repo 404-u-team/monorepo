@@ -17,8 +17,8 @@ type ProjectService interface {
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
 	DeleteProjectByID(projectID, userID uuid.UUID) error
-	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error)
-	GetUserRequests(userID uuid.UUID) ([]models.Request, error)
+	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error)
+	GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error)
 }
 
 type projectService struct {
@@ -130,7 +130,7 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	return nil
 }
 
-func (s *projectService) GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error) {
+func (s *projectService) GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error) {
 	// Проверяем, является ли пользователь лидером проекта
 	isLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
@@ -147,7 +147,7 @@ func (s *projectService) GetProjectRequests(projectID, userID uuid.UUID, slotID 
 	return requests, nil
 }
 
-func (s *projectService) GetUserRequests(userID uuid.UUID) ([]models.Request, error) {
+func (s *projectService) GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error) {
 	requests, err := s.repo.GetUserRequests(userID)
 	if err != nil {
 		return nil, ErrInternal

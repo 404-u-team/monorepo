@@ -19,8 +19,8 @@ type ProjectRepository interface {
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
 	DeleteProjectByID(projectID uuid.UUID) (int, error)
 	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
-	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error)
-	GetUserRequests(userID uuid.UUID) ([]models.Request, error)
+	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error)
+	GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error)
 }
 
 type projectRepository struct {
@@ -180,15 +180,19 @@ func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bo
 	return count == 1, nil
 }
 
-func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error) {
+func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error) {
 	var requests []models.Request
+
 	query := r.conn.
-		Preload("User").
+		Model(&models.Request{}). // важно!
+		Preload("User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "email", "nickname", "avatar_url", "main_role", "bio", "is_admin")
+		}).
 		Preload("Slot").
 		Preload("Slot.Skill").
 		Preload("Slot.Project").
-		Joins("JOIN project_slot ON project_slot.id = request.slot_id").
-		Where("project_slot.project_id = ?", projectID)
+		Joins("Slot").
+		Where("Slot.project_id = ?", projectID)
 
 	if slotID != nil {
 		query = query.Where("request.slot_id = ?", *slotID)
@@ -197,19 +201,35 @@ func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid
 		query = query.Where("request.status = ?", *status)
 	}
 
-	err := query.Find(&requests).Error
-	return requests, err
+	if err := query.Find(&requests).Error; err != nil {
+		return nil, err
+	}
+
+	return dto.FromRequests(requests), nil
 }
 
-func (r *projectRepository) GetUserRequests(userID uuid.UUID) ([]models.Request, error) {
+func (r *projectRepository) GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error) {
 	var requests []models.Request
+
 	err := r.conn.
-		Preload("User").
+		Preload("User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "email", "nickname", "avatar_url", "main_role", "bio", "is_admin")
+		}).
 		Preload("Slot").
-		Preload("Slot.Project").
-		Preload("Slot.Project.Leader").
+		Preload("Slot.Project", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "title", "description", "leader_id", "status", "created_at")
+		}).
+		Preload("Slot.Project.Leader", func(db *gorm.DB) *gorm.DB {
+			// Лидер проекта тоже User, ограничиваем поля
+			return db.Select("id", "email", "nickname", "avatar_url", "main_role", "bio", "is_admin")
+		}).
 		Preload("Slot.Skill").
 		Where("user_id = ?", userID).
 		Find(&requests).Error
-	return requests, err
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.FromRequests(requests), nil
 }
