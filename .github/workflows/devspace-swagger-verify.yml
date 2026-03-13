@@ -1,0 +1,19 @@
+name: DevSpace Swagger Validate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'apps/devspace/backend/swagger-ui/**'
+
+jobs:
+  lint-swagger:
+    name: lint-swagger
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate OpenAPI definition
+        run: npx @redocly/cli lint apps/devspace/backend/swagger-ui/swagger.yaml
