@@ -27,13 +27,19 @@
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "noImplicitOverride": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   },
   "include": [
     "vite.config.ts",
     "vitest.shims.d.ts",
     "scripts/**/*.ts",
-    ".storybook/**/*.ts"
+    ".storybook/main.ts"
   ],
   "references": []
 }
