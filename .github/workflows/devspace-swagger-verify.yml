@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - 'apps/devspace/backend/swagger-ui/**'
+      - 'apps/devspace/backend/swagger-docs/**'
 
 jobs:
   lint-swagger:
