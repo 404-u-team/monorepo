@@ -1637,9 +1637,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
- 
-
-servers:
-    - url: https://api.example.com/v1
-      description: Основной сервер
 
