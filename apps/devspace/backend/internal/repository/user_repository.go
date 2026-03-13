@@ -150,14 +150,18 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 	var skillIDs []uuid.UUID
 	query := `
         WITH RECURSIVE user_skill_tree AS (
-            SELECT skill_id FROM user_skills WHERE user_id = $1
+            SELECT skill_id FROM "User_Skill" WHERE user_id = $1
             UNION
-            SELECT sc.id FROM skill_categories sc
+            SELECT sc.id FROM "Skill_Category" sc
             JOIN user_skill_tree ust ON sc.parent_id = ust.skill_id
         )
         SELECT DISTINCT skill_id FROM user_skill_tree
     `
-	r.conn.Raw(query, userID).Scan(&skillIDs)
+	result := r.conn.Raw(query, userID).Scan(&skillIDs)
+	if result.Error != nil {
+		log.Println("Ошибка при получении рекурсивно списка скиллов пользователя: ", result.Error)
+		return nil, result.Error
+	}
 
 	if len(skillIDs) == 0 {
 		return []dto.SkillCategoryResponse{}, nil
@@ -165,7 +169,7 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 
 	// получаем скиллы на основе ID
 	var allSkills []models.SkillCategory
-	result := r.conn.Where("id IN ?", skillIDs).Find(&allSkills)
+	result = r.conn.Where("id IN ?", skillIDs).Find(&allSkills)
 	if result.Error != nil {
 		log.Println("Ошибка при списка скиллов по IDs: ", result.Error)
 		return nil, result.Error
