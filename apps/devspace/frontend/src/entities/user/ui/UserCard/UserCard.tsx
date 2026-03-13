@@ -3,6 +3,7 @@ import styles from "./UserCard.module.scss";
 import { useEffect, useRef, useState } from "react";
 import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
 import { apiClient } from "@/shared/api/client";
+import { Button } from "@/shared/ui";
 
 interface UserCardProps {
   user_id: string;
@@ -10,11 +11,13 @@ interface UserCardProps {
   slot_id?: string;
   inviteButton?: React.ReactNode;
 }
+
 interface UserData {
   avatar_uri: string;
-  mainRole: string;
-  description: string;
-  skill_id: string[];
+  main_role: string;
+  nickname: string;
+  bio: string;
+  skills: string[];
 }
 
 export function UserCard({
@@ -66,12 +69,12 @@ export function UserCard({
     return (): void => {
       ro.disconnect();
     };
-  }, [userData?.skill_id, needsScroll]);
+  }, [userData?.skills, needsScroll]);
 
   if (loading) {
     return (
       <div className={styles.userCard}>
-        <div className={styles.loading}>Загрузка...</div>
+        <div>Загрузка...</div>
       </div>
     );
   }
@@ -79,7 +82,7 @@ export function UserCard({
   if (error !== undefined) {
     return (
       <div className={styles.userCard}>
-        <div className={styles.error}>{error}</div>
+        <div>{error}</div>
       </div>
     );
   }
@@ -87,12 +90,12 @@ export function UserCard({
   if (userData === undefined) {
     return (
       <div className={styles.userCard}>
-        <div className={styles.error}>Данные не найдены</div>
+        <div>Данные не найдены</div>
       </div>
     );
   }
 
-  const { avatar_uri, mainRole, description, skill_id } = userData;
+  const { avatar_uri, main_role, bio, skills, nickname } = userData;
 
   return (
     <div className={styles.userCard}>
@@ -101,11 +104,11 @@ export function UserCard({
           <img src={avatar_uri} alt="avatar" />
         </div>
         <div className={styles.textInfo}>
-          <div className={styles.userId}>{user_id}</div>
-          <div className={styles.mainRole}>{mainRole}</div>
+          <div className={styles.userId}>{nickname}</div>
+          <div className={styles.mainRole}>{main_role}</div>
         </div>
       </div>
-      <div className={styles.description}>{description}</div>
+      <div className={styles.bio}>{bio}</div>
 
       <div
         ref={skillBoxReference}
@@ -116,7 +119,7 @@ export function UserCard({
           className={`${styles.scroll ?? ""} ${needsScroll ? (styles.scrollAnimated ?? "") : ""}`}
         >
           {needsScroll
-            ? [...skill_id, ...skill_id].map((uuid, index) => (
+            ? [...skills, ...skills].map((uuid, index) => (
                 <div
                   key={`${uuid}-${String(index)}`}
                   className={styles.skillName}
@@ -124,7 +127,7 @@ export function UserCard({
                   {uuid}
                 </div>
               ))
-            : [...skill_id].map((uuid, index) => (
+            : [...skills].map((uuid, index) => (
                 <div
                   key={`${uuid}-${String(index)}`}
                   className={styles.skillName}
@@ -136,8 +139,12 @@ export function UserCard({
       </div>
 
       <div className={styles.profileButtonsBox}>
-        <button className={styles.profileButton}>Профиль</button>
-        <InviteButton project_id={project_id} slot_id={slot_id} />
+        <Button variant="outline" className={styles.profileButton}>
+          Профиль
+        </Button>
+        {project_id !== undefined && slot_id !== undefined && (
+          <InviteButton project_id={project_id} slot_id={slot_id} />
+        )}
       </div>
     </div>
   );

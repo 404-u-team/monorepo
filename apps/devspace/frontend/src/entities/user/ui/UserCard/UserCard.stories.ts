@@ -7,6 +7,6 @@ const meta = preview.meta({
 
 export const Default = meta.story({
   args: {
-    user_id: "0",
+    user_id: "1\n",
   },
 });
