@@ -16,4 +16,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate OpenAPI definition
-        run: npx @redocly/cli lint apps/devspace/backend/swagger-ui/swagger.yaml
+        run: npx @redocly/cli lint apps/devspace/backend/swagger-docs/swagger.yaml
