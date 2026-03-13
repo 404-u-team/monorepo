@@ -32,15 +32,27 @@ export interface PaginatedProjects {
 
 export async function fetchProjects(parameters?: FetchProjectsParameters): Promise<PaginatedProjects> {
     const response = await apiClient.get<IProject[]>('/projects', { params: parameters });
-    
-    // Attempt to read standard pagination headers, fallback to mocked total if absent
-    const totalCountHeader = String(response.headers['x-total-count'] ?? '');
-    const totalCount = totalCountHeader !== '' ? Number(totalCountHeader) : 100;
-    const limit = parameters?.limit ?? 20;
+
+    const items = response.data;
+    const totalCountHeader = response.headers['x-total-count'];
+    const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
+
+    let total: number;
+    let totalPages: number;
+
+    if (Number.isFinite(parsedTotal)) {
+        const limit = parameters?.limit ?? (items.length > 0 ? items.length : 1);
+        total = parsedTotal;
+        totalPages = Math.ceil(total / limit);
+    } else {
+        // No valid total from the server; fall back to the number of items we actually received.
+        total = items.length;
+        totalPages = 1;
+    }
 
     return {
-        items: response.data,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit)
+        items,
+        total,
+        totalPages
     };
 }
