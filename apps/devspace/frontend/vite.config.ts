@@ -22,6 +22,9 @@ export default defineConfig({
       '@': path.resolve(dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: true
+  },
   test: {
     projects: [{
       extends: true,

@@ -3,6 +3,11 @@ info:
   title: API Платформы для проектов
   description: API для управления пользователями, навыками, идеями, проектами и откликами.
   version: 1.0.0
+servers:
+  - url: https://be.dev-main.stand.devspace.404.ms0ur.dev
+    description: Основной стенд (ветка main)
+  - url: http://localhost:8080
+    description: Локальный сервер для разработки (стандартный порт)
 tags:
   - name: Аутентификация
   - name: Пользователи
@@ -301,55 +306,6 @@ paths:
           description: Пользователь не найден
           headers: {}
       security: []
-  /skills/{uuid}:
-    delete:
-      summary: Удалить навык
-      deprecated: false
-      description: Позволяет удалить навык uuid. Доступен только админам
-      tags: []
-      parameters:
-        - name: uuid
-          in: path
-          description: ''
-          required: true
-          schema:
-            type: string
-        - name: cascade
-          in: query
-          description: Должно ли удаление родителя удалять детей. По-умолчанию false
-          required: false
-          schema:
-            type: boolean
-        - name: Authorization
-          in: header
-          description: ''
-          required: true
-          example: ''
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
-          headers: {}
-        '403':
-          description: ''
-          headers: {}
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
-              example:
-                error: Записи с таким id не существует
-          headers: {}
-      security: []
   /skills:
     get:
       summary: Получить список навыков
@@ -473,6 +429,54 @@ paths:
           headers: {}
         '404':
           description: Навык не найден
+          headers: {}
+      security: []
+    delete:
+      summary: Удалить навык
+      deprecated: false
+      description: Позволяет удалить навык. Доступен только админам
+      tags: []
+      parameters:
+        - name: skill_id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+        - name: cascade
+          in: query
+          description: Должно ли удаление родителя удалять детей. По-умолчанию false
+          required: false
+          schema:
+            type: boolean
+        - name: Authorization
+          in: header
+          description: ''
+          required: true
+          example: ''
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+        '403':
+          description: ''
+          headers: {}
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+              example:
+                error: Записи с таким id не существует
           headers: {}
       security: []
   /ideas:
@@ -1632,9 +1636,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
- 
-
-servers:
-    - url: https://api.example.com/v1
-      description: Основной сервер
 

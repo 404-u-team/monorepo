@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build && tsc -b",
     "lint": "bun run lint:eslint && bun run lint:style",
     "lint:eslint": "eslint .",
     "lint:style": "stylelint \"src/**/*.scss\"",
@@ -21,6 +21,8 @@
     "lucide-react": "^0.576.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
+    "msw": "^2.12.10",
+    "msw-storybook-addon": "^2.0.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -64,5 +66,10 @@
   },
   "overrides": {
     "vite": "^8.0.0-beta.13"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

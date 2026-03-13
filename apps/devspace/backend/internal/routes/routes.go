@@ -43,6 +43,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
+	ideaHandler := handlers.NewIdeaHandler(dbConn)
 
 	api := router.Group("/api")
 	{
@@ -57,6 +58,8 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.GET("/projects/:projectID", projectHandler.GetProjectByID)
 		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
+		api.GET("/ideas", ideaHandler.GetIdeas)
+
 		// защищенные
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware(config.JWTSecret, userRepo))
@@ -67,10 +70,19 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.POST("/projects", projectHandler.CreateProject)
 			protected.PUT("/projects/:projectID", projectHandler.UpdateProjectByID)
 			protected.DELETE("/projects/:projectID", projectHandler.DeleteProjectByID)
+			protected.GET("/projects/:projectID/requests", projectHandler.GetProjectRequests)
+			protected.GET("/users/me/requests", projectHandler.GetUserRequests)
 
 			protected.POST("/projects/:projectID/slots", slotHandler.CreateSlot)
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
+
+			protected.GET("/users/me", userHandler.Me)
+
+			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
+			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
+
+			protected.POST("/ideas", ideaHandler.AddIdea)
 		}
 
 		//только для админов
