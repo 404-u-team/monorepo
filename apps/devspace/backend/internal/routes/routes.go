@@ -77,8 +77,6 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
-			protected.GET("/users/me", userHandler.Me)
-
 			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
 
