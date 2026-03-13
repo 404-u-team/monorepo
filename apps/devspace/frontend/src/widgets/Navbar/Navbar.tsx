@@ -28,7 +28,7 @@ export const Navbar = observer(function Navbar(): JSX.Element {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/" className={styles.link}>
+                        <Link to="/projects" className={styles.link}>
                             Проекты
                         </Link>
                     </li>

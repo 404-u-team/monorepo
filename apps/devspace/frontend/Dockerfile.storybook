@@ -10,7 +10,7 @@ WORKDIR /app
 
 RUN mkdir -p /root/.bun/install/cache
 
-COPY package.json ./
+COPY package.json bun.lock ./
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install
