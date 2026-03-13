@@ -3,9 +3,7 @@ import { definePreview } from '@storybook/react-vite';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import-x/no-relative-parent-imports
 import '@/app/styles/index.scss';
-// eslint-disable-next-line import-x/no-relative-parent-imports
 import { StoreContext, type IRootStore } from '@/shared/lib/store';
 
 // Initialize MSW

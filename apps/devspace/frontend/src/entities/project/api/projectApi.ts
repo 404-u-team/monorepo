@@ -17,7 +17,7 @@ export async function fetchProjectSlots(projectId: string): Promise<IProjectSlot
 }
 
 export interface FetchProjectsParameters {
-    page?: number | undefined;
+    start_at?: number | undefined;
     limit?: number | undefined;
     search?: string | undefined;
     status?: 'open' | 'closed' | undefined;
@@ -34,7 +34,7 @@ export async function fetchProjects(parameters?: FetchProjectsParameters): Promi
     const response = await apiClient.get<IProject[]>('/projects', { params: parameters });
 
     const items = response.data;
-    const totalCountHeader = response.headers['x-total-count'];
+    const totalCountHeader = response.headers['x-total-count'] as string | undefined;
     const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
     let total: number;

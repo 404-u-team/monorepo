@@ -1,5 +1,4 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
-// eslint-disable-next-line import-x/no-relative-parent-imports
 import { apiClient } from '@/shared/api/client';
 import { rootStore } from '@/app/providers/store';
 
