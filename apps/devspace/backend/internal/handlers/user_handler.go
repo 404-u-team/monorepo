@@ -61,7 +61,7 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 	err = h.userService.UpdateMe(userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrEmptyPayload) {
-			c.JSON(http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrUserNotFound) {
@@ -69,7 +69,7 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, services.ErrUserConflict) {
-			c.JSON(http.StatusConflict, err.Error())
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 		c.Status(http.StatusInternalServerError)

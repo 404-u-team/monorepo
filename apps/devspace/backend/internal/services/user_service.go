@@ -4,14 +4,13 @@ import (
 	"errors"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserService interface {
-	GetMe(userID uuid.UUID) (*models.User, error)
+	GetMe(userID uuid.UUID) (*dto.GetMeResponse, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
 }
 
@@ -23,7 +22,7 @@ func NewUserService(repo repository.UserRepository) *userService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) GetMe(userID uuid.UUID) (*models.User, error) {
+func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
 	user, err := s.repo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -32,7 +31,20 @@ func (s *userService) GetMe(userID uuid.UUID) (*models.User, error) {
 		return nil, ErrInternal
 	}
 
-	return user, nil
+	userSkills, err := s.repo.GetUserSkills(userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	getMeResponse := dto.GetMeResponse{
+		ID:        userID,
+		Email:     user.Email,
+		Nickname:  user.Nickname,
+		AvatarUri: "",
+		Bio:       user.Bio,
+		Skills:    userSkills,
+	}
+	return &getMeResponse, nil
 }
 
 func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {

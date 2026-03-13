@@ -3,9 +3,9 @@ package models
 import "github.com/google/uuid"
 
 type SkillCategory struct {
-	ID       uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	ParentID uuid.UUID `gorm:"column:parent_id;type:uuid"`
-	Name     string    `gorm:"column:name; not null"`
+	ID       uuid.UUID  `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	ParentID *uuid.UUID `gorm:"column:parent_id;type:uuid"`
+	Name     string     `gorm:"column:name; not null"`
 
 	Parent *SkillCategory `gorm:"foreignKey:ParentID"`
 }

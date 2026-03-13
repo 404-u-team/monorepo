@@ -32,7 +32,8 @@ func newPostgresConnection(loggerEnabled bool, dsn string) *gorm.DB {
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
-			Logger: gormLogger,
+			Logger:         gormLogger,
+			TranslateError: true,
 		}
 
 		db, err := gorm.Open(postgres.Open(dsn), &gormConfig)
