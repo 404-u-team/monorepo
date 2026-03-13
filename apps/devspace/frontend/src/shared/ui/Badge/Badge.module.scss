@@ -1,12 +1,19 @@
 .badge {
     display: inline-flex;
     align-items: center;
+    gap: 0.375rem;
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.25;
     border-radius: 100px;
     white-space: nowrap;
-    background-color: var(--brand--subtle);
-    color: var(--brand);
+    background-color: var(--badge--bg, var(--brand--subtle));
+    color: var(--badge--text, var(--brand));
+}
+
+.icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
 }
