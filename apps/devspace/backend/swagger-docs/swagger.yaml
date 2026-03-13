@@ -434,10 +434,10 @@ paths:
     delete:
       summary: Удалить навык
       deprecated: false
-      description: Позволяет удалить навык uuid. Доступен только админам
+      description: Позволяет удалить навык. Доступен только админам
       tags: []
       parameters:
-        - name: uuid
+        - name: skill_id
           in: path
           description: ''
           required: true
