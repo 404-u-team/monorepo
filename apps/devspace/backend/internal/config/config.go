@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	APIPort string
+	APIPort        string
+	AllowAnyOrigin bool
 
 	DBPort     string
 	DBHost     string
@@ -36,7 +37,8 @@ func LoadConfig() Config {
 	_ = godotenv.Load()
 
 	return Config{
-		APIPort: getEnv("API_PORT", "8080"),
+		APIPort:        getEnv("API_PORT", "8080"),
+		AllowAnyOrigin: getEnvAsBool("ALLOW_ANY_ORIGIN", false),
 
 		DBPort:     getEnv("DB_PORT", "5432"),
 		DBHost:     getEnv("DB_HOST", "localhost"),
