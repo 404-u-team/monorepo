@@ -4,9 +4,9 @@ import "github.com/google/uuid"
 
 type User struct {
 	ID           uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	Email        string    `gorm:"unique; column:email; not null"`
-	PasswordHash string    `gorm:"column:password_hash; not null" json:"-"` //не сериализуем хэш т.к. чувствительные данные
-	Nickname     string    `gorm:"column:nickname; not null"`
+	Email        string    `gorm:"column:email;unique; not null"`
+	PasswordHash string    `gorm:"column:password_hash; not null"`
+	Nickname     string    `gorm:"column:nickname;unique; not null"`
 	AvatarUrl    string    `gorm:"column:avatar_url; null"`
 	MainRole     string    `gorm:"column:main_role; null"`
 	Bio          string    `gorm:"column:bio; null"`
