@@ -3,6 +3,11 @@ info:
   title: API Платформы для проектов
   description: API для управления пользователями, навыками, идеями, проектами и откликами.
   version: 1.0.0
+servers:
+  - url: https://be.dev-main.stand.devspace.404.ms0ur.dev
+    description: Основной стенд (ветка main)
+  - url: http://localhost:8080
+    description: Локальный сервер для разработки (стандартный порт)
 tags:
   - name: Аутентификация
   - name: Пользователи
