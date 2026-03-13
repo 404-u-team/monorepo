@@ -21,7 +21,7 @@ const statusOptions = [
 ];
 
 export function ProjectList({ projects, totalPages }: ProjectListProps): JSX.Element {
-    const searchParameters = useSearch({ strict: false });
+    const searchParameters = useSearch({ strict: false }) as SearchParameters;
     const navigate = useNavigate({ from: '/projects' });
 
     const handleSearch = (value: string): void => {

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { fetchProjects } from '@/entities/project';
+import { fetchProjects, type PaginatedProjects } from '@/entities/project';
 import { ProjectList } from '@/widgets/ProjectList';
 
 export interface ProjectSearch {
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/projects')({
 });
 
 function ProjectsPage(): React.JSX.Element {
-    const data = Route.useLoaderData();
+    const data = Route.useLoaderData() as PaginatedProjects;
 
     return (
         <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
