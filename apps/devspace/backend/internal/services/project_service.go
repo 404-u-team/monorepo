@@ -17,6 +17,8 @@ type ProjectService interface {
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
 	DeleteProjectByID(projectID, userID uuid.UUID) error
+	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error)
+	GetUserRequests(userID uuid.UUID) ([]models.Request, error)
 }
 
 type projectService struct {
@@ -126,4 +128,29 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (s *projectService) GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error) {
+	// Проверяем, является ли пользователь лидером проекта
+	isLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if !isLeader {
+		return nil, ErrUserNotLeader
+	}
+
+	requests, err := s.repo.GetProjectRequests(projectID, slotID, status)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	return requests, nil
+}
+
+func (s *projectService) GetUserRequests(userID uuid.UUID) ([]models.Request, error) {
+	requests, err := s.repo.GetUserRequests(userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	return requests, nil
 }

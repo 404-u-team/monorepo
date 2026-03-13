@@ -19,6 +19,8 @@ type ProjectRepository interface {
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
 	DeleteProjectByID(projectID uuid.UUID) (int, error)
 	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
+	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error)
+	GetUserRequests(userID uuid.UUID) ([]models.Request, error)
 }
 
 type projectRepository struct {
@@ -176,4 +178,38 @@ func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bo
 		return false, result.Error
 	}
 	return count == 1, nil
+}
+
+func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.Request, error) {
+	var requests []models.Request
+	query := r.conn.
+		Preload("User").
+		Preload("Slot").
+		Preload("Slot.Skill").
+		Preload("Slot.Project").
+		Joins("JOIN project_slot ON project_slot.id = request.slot_id").
+		Where("project_slot.project_id = ?", projectID)
+
+	if slotID != nil {
+		query = query.Where("request.slot_id = ?", *slotID)
+	}
+	if status != nil && *status != "" {
+		query = query.Where("request.status = ?", *status)
+	}
+
+	err := query.Find(&requests).Error
+	return requests, err
+}
+
+func (r *projectRepository) GetUserRequests(userID uuid.UUID) ([]models.Request, error) {
+	var requests []models.Request
+	err := r.conn.
+		Preload("User").
+		Preload("Slot").
+		Preload("Slot.Project").
+		Preload("Slot.Project.Leader").
+		Preload("Slot.Skill").
+		Where("user_id = ?", userID).
+		Find(&requests).Error
+	return requests, err
 }
