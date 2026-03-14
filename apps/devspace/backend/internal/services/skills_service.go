@@ -21,7 +21,7 @@ func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillC
 	}
 
 	if req.Search != nil {
-		query = query.Where("name LIKE ?", *req.Search+"%")
+		query = query.Where("name ILIKE ?", *req.Search+"%")
 	}
 
 	if req.Limit != nil {
