@@ -25,7 +25,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}
 	if config.AllowAnyOrigin {
-		corsConfig.AllowOrigins = []string{"*"}
+		corsConfig.AllowOriginFunc = func(origin string) bool {
+			return true
+		}
 	} else {
 		corsConfig.AllowOrigins = []string{"http://localhost:3000"}
 	}
