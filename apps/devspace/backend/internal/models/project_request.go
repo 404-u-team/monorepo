@@ -14,4 +14,4 @@ type Request struct {
 	User User        `gorm:"foreignKey:UserID"`
 }
 
-func (r *Request) TableName() string { return "Request" }
+func (r *Request) TableName() string { return "Project_Request" }
