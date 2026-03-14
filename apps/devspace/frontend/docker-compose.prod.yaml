@@ -3,6 +3,8 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.prod
+        args:
+            - VITE_API_URL=http://be.dev-main.stand.devspace.404.ms0ur.dev/api
         env_file:
             - .env.stand
         ports:
