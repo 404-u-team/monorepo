@@ -88,6 +88,7 @@ func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
 	if h.config.AllowAnyOrigin {
 		sameSite = http.SameSiteNoneMode
 	}
+	c.SetSameSite(sameSite)
 	c.SetCookie(
 		"refresh_token",
 		token,
