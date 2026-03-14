@@ -42,7 +42,7 @@ func (h *authHandler) Register(c *gin.Context) {
 		return
 	}
 
-	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds, h.config.AllowAnyOrigin)
 	c.JSON(http.StatusCreated, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
@@ -64,7 +64,7 @@ func (h *authHandler) Login(c *gin.Context) {
 		return
 	}
 
-	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds, h.config.AllowAnyOrigin)
 	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
@@ -79,13 +79,13 @@ func (h *authHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds)
+	setTokenIntoCookie(c, tokenResponse.RefreshToken, h.config.JWTRefreshTokenExpirationInSeconds, h.config.AllowAnyOrigin)
 	c.JSON(http.StatusOK, gin.H{"access_token": tokenResponse.AccessToken})
 }
 
-func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
+func setTokenIntoCookie(c *gin.Context, token string, expirationTime int, allowAnyOrigin bool) {
 	sameSite := http.SameSiteLaxMode
-	if h.config.AllowAnyOrigin {
+	if allowAnyOrigin {
 		sameSite = http.SameSiteNoneMode
 	}
 	c.SetSameSite(sameSite)
