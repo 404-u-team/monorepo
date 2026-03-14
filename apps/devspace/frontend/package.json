@@ -24,7 +24,8 @@
     "msw": "^2.12.10",
     "msw-storybook-addon": "^2.0.6",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "simple-icons": "^16.11.0"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.1",

@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero, Benefits, HowItWorks, TargetAudience, CallToAction } from "@/widgets/Landing";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -7,8 +8,12 @@ export const Route = createFileRoute("/")({
 
 function Index(): JSX.Element {
   return (
-    <div className="p-2">
-      <h3>Welcome! This is the home page.</h3>
-    </div>
+    <>
+      <Hero />
+      <Benefits />
+      <HowItWorks />
+      <TargetAudience />
+      <CallToAction />
+    </>
   );
 }
