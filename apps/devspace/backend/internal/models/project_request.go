@@ -2,7 +2,7 @@ package models
 
 import "github.com/google/uuid"
 
-type Request struct {
+type ProjectRequest struct {
 	ID          uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
 	SlotID      uuid.UUID `gorm:"column:slot_id;type:uuid; not null"`
 	UserID      uuid.UUID `gorm:"column:user_id;type:uuid; not null"`
@@ -14,4 +14,4 @@ type Request struct {
 	User User        `gorm:"foreignKey:UserID"`
 }
 
-func (r *Request) TableName() string { return "Project_Request" }
+func (r *ProjectRequest) TableName() string { return "Project_Request" }

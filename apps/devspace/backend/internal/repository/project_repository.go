@@ -181,10 +181,10 @@ func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bo
 }
 
 func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error) {
-	var requests []models.Request
+	var requests []models.ProjectRequest
 
 	query := r.conn.
-		Model(&models.Request{}). // важно!
+		Model(&models.ProjectRequest{}). // важно!
 		Preload("User", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "email", "nickname", "avatar_url", "main_role", "bio", "is_admin")
 		}).
@@ -209,7 +209,7 @@ func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid
 }
 
 func (r *projectRepository) GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error) {
-	var requests []models.Request
+	var requests []models.ProjectRequest
 
 	err := r.conn.
 		Preload("User", func(db *gorm.DB) *gorm.DB {
