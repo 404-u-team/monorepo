@@ -1,6 +1,7 @@
 import { type ReactNode, type JSX } from 'react';
 import { clsx } from 'clsx';
-import { SearchInput, Pagination } from '@/shared/ui';
+import { SearchInput } from '../SearchInput/SearchInput';
+import { Pagination } from '../Pagination/Pagination';
 import styles from './DataListLayout.module.scss';
 
 export interface DataListLayoutProps {

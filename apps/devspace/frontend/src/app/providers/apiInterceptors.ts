@@ -9,9 +9,9 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 export const verifyInterceptors = (): void => {
     // Add Access token to every outgoing request and handle /auth routes baseURL
     apiClient.interceptors.request.use((config) => {
-        if (config.url?.startsWith('/auth')) {
+        if (config.url?.startsWith('/auth') === true) {
             const currentBaseURL = config.baseURL ?? apiClient.defaults.baseURL;
-            if (currentBaseURL?.endsWith('/api')) {
+            if (currentBaseURL?.endsWith('/api') === true) {
                 config.baseURL = currentBaseURL.slice(0, -4);
             }
         }
