@@ -9,6 +9,7 @@ type Idea struct {
 	Description    string    `gorm:"column:description; not null"`
 	ViewsCount     uint      `gorm:"column:views_count; not null"`
 	FavoritesCount uint      `gorm:"column:favorites_count; not null"`
+	Category       string    `gorm:"column:category; not null"`
 
 	Author User `gorm:"foreignKey:AuthorID"`
 }
