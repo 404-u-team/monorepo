@@ -53,7 +53,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	slotHandler := handlers.NewSlotHandler(slotService)
 	ideaHandler := handlers.NewIdeaHandler(dbConn)
 
-	api := router.Group("/api")
+	api := router.Group("")
 	{
 		// публичные эндпоинты
 		api.POST("/register", authHandler.Register)
