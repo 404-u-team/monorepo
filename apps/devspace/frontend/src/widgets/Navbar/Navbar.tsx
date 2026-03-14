@@ -33,7 +33,7 @@ export const Navbar = observer(function Navbar(): JSX.Element {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/" className={styles.link}>
+                        <Link to="/ideas" className={styles.link}>
                             Идеи
                         </Link>
                     </li>

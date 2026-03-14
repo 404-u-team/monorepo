@@ -6,3 +6,4 @@ export { Skeleton, type SkeletonProps } from "./Skeleton/Skeleton";
 export { Pagination, type PaginationProps } from "./Pagination/Pagination";
 export { SearchInput, type SearchInputProps } from "./SearchInput/SearchInput";
 export { Dropdown, type DropdownProps, type DropdownOption } from "./Dropdown/Dropdown";
+export { DataListLayout, type DataListLayoutProps } from "./DataListLayout/DataListLayout";
