@@ -56,9 +56,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	api := router.Group("")
 	{
 		// публичные эндпоинты
-		api.POST("/register", authHandler.Register)
-		api.POST("/login", authHandler.Login)
-		api.POST("/refresh", authHandler.Refresh)
+		api.POST("/auth/register", authHandler.Register)
+		api.POST("/auth/login", authHandler.Login)
+		api.POST("auth/refresh", authHandler.Refresh)
 		api.GET("/skills", skillHandler.GetSkills)
 		api.GET("/skills/:id", skillHandler.GetSkillByID)
 
