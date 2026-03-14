@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataListLayout } from './DataListLayout';
-import { Badge } from '../../ui';
+import { Badge } from '@/shared/ui';
 
 const meta = {
     title: 'shared/DataListLayout',
