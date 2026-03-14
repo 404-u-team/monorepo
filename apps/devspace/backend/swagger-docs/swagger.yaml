@@ -1491,6 +1491,8 @@ components:
           format: uuid
         nickname:
           type: string
+        main_role:
+          type: string
         avatar_uri:
           type: string
           format: uri
