@@ -1,0 +1,91 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text--primary);
+        margin: 0;
+    }
+
+    .subtitle {
+        font-size: 16px;
+        color: var(--text--secondary);
+        margin: 0;
+    }
+}
+
+.controlsBlock {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .search {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .extraControls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-shrink: 0;
+    }
+}
+
+.mainArea {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+}
+
+.sidebar {
+    flex-shrink: 0;
+    width: 280px;
+
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+}
+
+.contentArea {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing their container */
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.empty {
+    padding: 64px 0;
+    text-align: center;
+    color: var(--text--secondary);
+    font-size: 16px;
+    background-color: var(--bg--surface);
+    border-radius: 12px;
+}
+
+.pagination {
+    margin-top: 0;
+    display: flex;
+    justify-content: center;
+}

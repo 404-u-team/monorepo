@@ -7,8 +7,15 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 export const verifyInterceptors = (): void => {
-    // Add Access token to every outgoing request
+    // Add Access token to every outgoing request and handle /auth routes baseURL
     apiClient.interceptors.request.use((config) => {
+        if (config.url?.startsWith('/auth')) {
+            const currentBaseURL = config.baseURL ?? apiClient.defaults.baseURL;
+            if (currentBaseURL?.endsWith('/api')) {
+                config.baseURL = currentBaseURL.slice(0, -4);
+            }
+        }
+
         const token = rootStore.userStore.accessToken;
         if (typeof token === 'string' && token.length > 0) {
             config.headers.set('Authorization', `Bearer ${token}`);
@@ -27,8 +34,11 @@ export const verifyInterceptors = (): void => {
                     originalRequest._isRetry = true;
 
                     try {
+                        const baseURL = apiClient.defaults.baseURL ?? '/api';
+                        const authBaseURL = baseURL.endsWith('/api') ? baseURL.slice(0, -4) : baseURL;
+
                         const refreshResponse = await axios.post<{ accessToken: string }>(
-                            `${apiClient.defaults.baseURL ?? '/api'}/auth/refresh`,
+                            `${authBaseURL}/auth/refresh`,
                             {},
                             { withCredentials: true }
                         );
