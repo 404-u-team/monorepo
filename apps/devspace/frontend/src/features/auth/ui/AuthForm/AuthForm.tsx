@@ -2,6 +2,7 @@ import { useState, type JSX, type SyntheticEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from '@tanstack/react-router';
 import { useStore } from '@/shared/lib/store';
 import { apiClient } from '@/shared/api/client';
 import { Button, Input } from '@/shared/ui';
@@ -28,6 +29,7 @@ type AuthMode = 'login' | 'register';
 
 export const AuthForm = observer((): JSX.Element => {
     const { userStore } = useStore() as { userStore: UserStore };
+    const navigate = useNavigate();
 
     const [mode, setMode] = useState<AuthMode>('login');
     const [nickname, setNickname] = useState('');
@@ -48,13 +50,13 @@ export const AuthForm = observer((): JSX.Element => {
         setIsLoading(true);
         try {
             const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
-            const payload = mode === 'login' ? { email, password } : { email, password, nickname };
+            const payload = mode === 'login' ? { login: email, password } : { email, password, nickname };
             const response = await apiClient.post<{ accessToken: string; user: IUser }>(endpoint, payload);
             const { accessToken, user } = response.data;
             userStore.setAccessToken(accessToken);
             userStore.setUser(user);
-            // Optionally redirect after login, navigation logic is better to be handled upstream
-            // But for this component, we can assume success state handled by store
+
+            void navigate({ to: '/' });
         } catch (error_: unknown) {
             if (axios.isAxiosError(error_)) {
                 const data = error_.response?.data as { message?: string } | undefined;
@@ -94,14 +96,16 @@ export const AuthForm = observer((): JSX.Element => {
                     </div>
                 )}
                 <div className={styles.field}>
-                    <span className={styles.label}>Электронная почта</span>
+                    <span className={styles.label}>
+                        {mode === 'login' ? 'Email или имя пользователя' : 'Электронная почта'}
+                    </span>
                     <Input
-                        placeholder="your.email@example.com"
+                        placeholder={mode === 'login' ? 'your.email@example.com или username' : 'your.email@example.com'}
                         iconLeft={<Mail size={20} />}
                         value={email}
                         onChange={(event) => { setEmail(event.target.value); }}
                         required
-                        type="email"
+                        type={mode === 'login' ? 'text' : 'email'}
                     />
                 </div>
 

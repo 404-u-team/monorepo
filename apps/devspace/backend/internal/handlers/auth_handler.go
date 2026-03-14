@@ -84,7 +84,10 @@ func (h *authHandler) Refresh(c *gin.Context) {
 }
 
 func setTokenIntoCookie(c *gin.Context, token string, expirationTime int) {
-	c.SetSameSite(http.SameSiteLaxMode)
+	sameSite := http.SameSiteLaxMode
+	if h.config.AllowAnyOrigin {
+		sameSite = http.SameSiteNoneMode
+	}
 	c.SetCookie(
 		"refresh_token",
 		token,
