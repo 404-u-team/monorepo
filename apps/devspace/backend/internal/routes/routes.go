@@ -87,6 +87,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
 			protected.POST("POST/projects/:projectID/slots/:slotID/apply", projectRequestHandler.CreateProjectRequestApply)
+			protected.POST("POST/projects/:projectID/slots/:slotID/invite", projectRequestHandler.CreateProjectRequestInvite)
 
 			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
