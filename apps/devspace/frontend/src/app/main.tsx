@@ -28,6 +28,9 @@ configure({
     reactionRequiresObservable: true,
 });
 
+// Initial auth check
+void rootStore.userStore.checkAuth();
+
 // Configure Axios with FSD-compliant rules
 verifyInterceptors();
 
