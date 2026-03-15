@@ -15,6 +15,8 @@ type SlotRepository interface {
 	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
 	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
 	IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error)
+	IsSlotExists(slotID uuid.UUID) (bool, error)
+	IsSlotOpen(slotID uuid.UUID) (bool, error)
 }
 
 type slotRepository struct {
@@ -98,6 +100,15 @@ func (r *slotRepository) DeleteSlotByID(slotID, projectID uuid.UUID) (int, error
 	return int(result.RowsAffected), nil
 }
 
+func (r *slotRepository) IsSlotExists(slotID uuid.UUID) (bool, error) {
+	var count int64
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Count(&count)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count == 1, nil
+}
+
 func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error) {
 	var count int64
 	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Where("project_id = ?", projectID).Count(&count)
@@ -105,4 +116,13 @@ func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (boo
 		return false, result.Error
 	}
 	return count == 1, nil
+}
+
+func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
+	var status string
+	result := r.conn.Model(&models.ProjectSlot{}).Select("status").Where("id = ?", slotID).First(&status)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return status == "open", nil
 }

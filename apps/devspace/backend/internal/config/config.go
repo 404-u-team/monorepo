@@ -57,8 +57,8 @@ func LoadConfig() Config {
 		KeyLength:   getEnvAsInt("ARGON_KEY_LEN", 32),
 
 		JWTSecret:                          getEnv("JWT_SECRET", "not-secret-anymore"),
-		JWTAccessTokenExpirationInSeconds:  getEnvAsInt("JWT_EXPIRE_TIME", 900),
-		JWTRefreshTokenExpirationInSeconds: getEnvAsInt("JWT_EXPIRE_TIME", 604800),
+		JWTAccessTokenExpirationInSeconds:  getEnvAsInt("JWT_ACCESS_TOKEN_EXPIRE_TIME", 900),
+		JWTRefreshTokenExpirationInSeconds: getEnvAsInt("JWT_REFRESH_TOKEN_EXPIRE_TIME", 604800),
 	}
 }
 

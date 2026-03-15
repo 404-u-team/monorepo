@@ -38,12 +38,14 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	userRepo := repository.NewUserRepository(dbConn)
 	projectRepo := repository.NewProjectRepository(dbConn)
 	slotRepo := repository.NewSlotRepository(dbConn)
+	projectRequestRepo := repository.NewProjectRequestRepository(dbConn)
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
 	projectService := services.NewProjectService(projectRepo)
 	slotService := services.NewSlotService(slotRepo, projectRepo)
+	projectRequestService := services.NewProjectRequestService(projectRequestRepo, slotRepo, projectRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
@@ -52,13 +54,14 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
 	ideaHandler := handlers.NewIdeaHandler(dbConn)
+	projectRequestHandler := handlers.NewProjectRequestHandler(projectRequestService)
 
 	api := router.Group("")
 	{
 		// публичные эндпоинты
 		api.POST("/auth/register", authHandler.Register)
 		api.POST("/auth/login", authHandler.Login)
-		api.POST("auth/refresh", authHandler.Refresh)
+		api.POST("/auth/refresh", authHandler.Refresh)
 		api.GET("/skills", skillHandler.GetSkills)
 		api.GET("/skills/:id", skillHandler.GetSkillByID)
 
@@ -84,6 +87,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.POST("/projects/:projectID/slots", slotHandler.CreateSlot)
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
+
+			protected.POST("/projects/:projectID/slots/:slotID/apply", projectRequestHandler.CreateProjectRequestApply)
+			protected.POST("/projects/:projectID/slots/:slotID/invite", projectRequestHandler.CreateProjectRequestInvite)
 
 			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
