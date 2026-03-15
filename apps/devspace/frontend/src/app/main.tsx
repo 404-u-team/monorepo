@@ -9,11 +9,9 @@ import { rootStore } from '@/app/providers/store';
 import { verifyInterceptors } from '@/app/providers/apiInterceptors';
 
 // Import the generated route tree
-// eslint-disable-next-line import-x/no-unresolved
 import { routeTree } from '@/app/generated/routeTree.gen'
 
 // Create a new router instance
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const router = createRouter({ routeTree })
 
 // Register the router instance for type safety
@@ -29,6 +27,9 @@ configure({
     computedRequiresReaction: true,
     reactionRequiresObservable: true,
 });
+
+// Initial auth check
+void rootStore.userStore.checkAuth();
 
 // Configure Axios with FSD-compliant rules
 verifyInterceptors();

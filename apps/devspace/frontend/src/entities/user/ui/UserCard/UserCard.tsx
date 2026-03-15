@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
 // import { apiClient } from "../api-client";
 // import type {
@@ -36,7 +36,7 @@ export function UserCard({
   const mainRole = "Frontend Developer";
   const description =
     "Люблю React и TypeScript Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima consequatur cum doloribus asperiores exercitationem ipsum incidunt odit provident quia, delectus sequi ullam perspiciatis facilis eveniet cumque deleniti at laboriosam. Impedit!";
-  const skill_id = ["react", "css"];
+  const skill_id = useMemo(() => ["react", "css"], []);
 
   // export const usersApi = {
   //   getMyProfile: (token: string) =>
@@ -97,7 +97,7 @@ export function UserCard({
     return (): void => {
       ro.disconnect();
     };
-  }, [skill_id]);
+  }, [skill_id, needsScroll]);
 
   return (
     <div className={styles.userCard}>
