@@ -120,7 +120,7 @@ func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (boo
 
 func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
 	var status string
-	result := r.conn.Model(&models.ProjectSlot{}).Select("status").Where("id = ?", slotID).First(status)
+	result := r.conn.Model(&models.ProjectSlot{}).Select("status").Where("id = ?", slotID).First(&status)
 	if result.Error != nil {
 		return false, result.Error
 	}

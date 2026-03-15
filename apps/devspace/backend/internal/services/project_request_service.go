@@ -95,7 +95,7 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 	payloadUserID, err := uuid.Parse(payload.UserID)
 	if err != nil {
 		log.Println("Ошибка при конвертировании userID в UUID")
-		return nil, ErrUnauthorized
+		return nil, ErrBadRequest
 	}
 
 	// нельзя пригласить самого себя

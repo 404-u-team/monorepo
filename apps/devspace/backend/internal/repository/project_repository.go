@@ -195,10 +195,10 @@ func (r *projectRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid
 		Where("Slot.project_id = ?", projectID)
 
 	if slotID != nil {
-		query = query.Where("request.slot_id = ?", *slotID)
+		query = query.Where("slot_id = ?", *slotID)
 	}
 	if status != nil && *status != "" {
-		query = query.Where("request.status = ?", *status)
+		query = query.Where("status = ?", *status)
 	}
 
 	if err := query.Find(&requests).Error; err != nil {

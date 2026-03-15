@@ -102,7 +102,7 @@ func (h *projectRequestHandler) CreateProjectRequestInvite(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		if errors.Is(err, services.ErrSlotIsClosed) || errors.Is(err, services.ErrCantInviteYourself) {
+		if errors.Is(err, services.ErrSlotIsClosed) || errors.Is(err, services.ErrCantInviteYourself) || errors.Is(err, services.ErrBadRequest) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

@@ -8,7 +8,7 @@ import (
 )
 
 type ProjectRequestRepository interface {
-	CreateProjectReqeust(projectRequest *models.ProjectRequest) error
+	CreateProjectRequest(projectRequest *models.ProjectRequest) error
 }
 
 type projectRequestRepository struct {
@@ -19,10 +19,10 @@ func NewProjectRequestRepository(conn *gorm.DB) ProjectRequestRepository {
 	return &projectRequestRepository{conn: conn}
 }
 
-func (r *projectRequestRepository) CreateProjectReqeust(projectRequest *models.ProjectRequest) error {
+func (r *projectRequestRepository) CreateProjectRequest(projectRequest *models.ProjectRequest) error {
 	result := r.conn.Create(projectRequest)
 	if result.Error != nil {
-		log.Println("Ошибка при создании проекта: ", result.Error)
+		log.Println("Ошибка при создании запроса на проект: ", result.Error)
 		return result.Error
 	}
 
