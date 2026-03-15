@@ -17,6 +17,12 @@ import (
 )
 
 func newPostgresConnection(loggerEnabled bool, dsn string) *gorm.DB {
+	gormConfig := gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+		TranslateError: true,
+	}
 	if loggerEnabled {
 		gormLogger := logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -28,13 +34,7 @@ func newPostgresConnection(loggerEnabled bool, dsn string) *gorm.DB {
 			},
 		)
 
-		gormConfig := gorm.Config{
-			NamingStrategy: schema.NamingStrategy{
-				SingularTable: true,
-			},
-			Logger: gormLogger,
-		}
-
+		gormConfig.Logger = gormLogger
 		db, err := gorm.Open(postgres.Open(dsn), &gormConfig)
 		if err != nil {
 			log.Fatalf("got error during connection to postgres, %v", err)
@@ -43,7 +43,7 @@ func newPostgresConnection(loggerEnabled bool, dsn string) *gorm.DB {
 		return db
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn))
+	db, err := gorm.Open(postgres.Open(dsn), &gormConfig)
 	if err != nil {
 		log.Fatalf("got error during connection to postgres, %v", err)
 	}

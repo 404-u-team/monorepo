@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 
@@ -8,7 +9,8 @@ import (
 )
 
 type Config struct {
-	APIPort string
+	APIPort        string
+	AllowAnyOrigin bool
 
 	DBPort     string
 	DBHost     string
@@ -35,12 +37,13 @@ func LoadConfig() Config {
 	_ = godotenv.Load()
 
 	return Config{
-		APIPort: getEnv("API_PORT", "8080"),
+		APIPort:        getEnv("API_PORT", "8080"),
+		AllowAnyOrigin: getEnvAsBool("ALLOW_ANY_ORIGIN", false),
 
 		DBPort:     getEnv("DB_PORT", "5432"),
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres"),
+		DBPassword: getEnv("DB_PASSWORD", "password"),
 		DBName:     getEnv("DB_NAME", "devspace"),
 		SSLMode:    getEnv("DB_SSLMODE", "disable"),
 
@@ -54,8 +57,8 @@ func LoadConfig() Config {
 		KeyLength:   getEnvAsInt("ARGON_KEY_LEN", 32),
 
 		JWTSecret:                          getEnv("JWT_SECRET", "not-secret-anymore"),
-		JWTAccessTokenExpirationInSeconds:  getEnvAsInt("JWT_EXPIRE_TIME", 900),
-		JWTRefreshTokenExpirationInSeconds: getEnvAsInt("JWT_EXPIRE_TIME", 604800),
+		JWTAccessTokenExpirationInSeconds:  getEnvAsInt("JWT_ACCESS_TOKEN_EXPIRE_TIME", 900),
+		JWTRefreshTokenExpirationInSeconds: getEnvAsInt("JWT_REFRESH_TOKEN_EXPIRE_TIME", 604800),
 	}
 }
 
@@ -63,6 +66,7 @@ func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
+	log.Println("Не получилось найти '", key, "' в локальном окружении. Использую '", fallback, "'")
 	return fallback
 }
 
@@ -72,6 +76,7 @@ func getEnvAsInt(key string, fallback int) int {
 			return value
 		}
 	}
+	log.Println("Не получилось найти '", key, "' в локальном окружении. Использую '", fallback, "'")
 	return fallback
 }
 
@@ -79,5 +84,6 @@ func getEnvAsBool(key string, fallback bool) bool {
 	if value := os.Getenv(key); value != "" {
 		return value == "true" || value == "1" || value == "yes"
 	}
+	log.Println("Не получилось найти '", key, "' в локальном окружении. Использую '", fallback, "'")
 	return fallback
 }

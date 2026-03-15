@@ -42,7 +42,9 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    ".storybook/preview.ts",
+    ".storybook/vitest.setup.ts"
   ],
   "references": []
 }

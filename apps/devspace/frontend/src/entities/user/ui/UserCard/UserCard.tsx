@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import styles from "./UserCard.module.scss";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
 import { apiClient } from "@/shared/api/client";
 import { Button } from "@/shared/ui";

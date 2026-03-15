@@ -1,9 +1,10 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import type { IUser } from "./IUser";
 
 export class UserStore {
     user: IUser | undefined = undefined;
-    accessToken: string | undefined = undefined;
+    accessToken: string | undefined = localStorage.getItem('accessToken') ?? undefined;
+    isAuthLoading = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -15,17 +16,58 @@ export class UserStore {
 
     setAccessToken(token: string): void {
         this.accessToken = token;
+        localStorage.setItem('accessToken', token);
     }
 
     invalidateToken(): void {
         this.accessToken = undefined;
+        localStorage.removeItem('accessToken');
     }
 
     invalidateUser(): void {
         this.user = undefined;
     }
 
+    async checkAuth(): Promise<void> {
+        console.warn('checking auth')
+        if (this.accessToken === undefined) return;
+
+        runInAction(() => {
+            this.isAuthLoading = true;
+        });
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL as string}users/me`, {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`,
+                },
+            });
+
+            if (response.ok) {
+                const user = await response.json() as IUser;
+                runInAction(() => {
+                    this.user = user;
+                });
+            } else {
+                runInAction(() => {
+                    this.invalidateToken();
+                    this.invalidateUser();
+                });
+            }
+        } catch (error) {
+            console.error('Check auth error:', error);
+            runInAction(() => {
+                this.invalidateToken();
+                this.invalidateUser();
+            });
+        } finally {
+            runInAction(() => {
+                this.isAuthLoading = false;
+            });
+        }
+    }
+
     get isAuthenticated(): boolean {
-        return this.user !== undefined && this.accessToken !== undefined;
+        return this.accessToken !== undefined;
     }
 }
