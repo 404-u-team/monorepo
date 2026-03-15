@@ -80,7 +80,7 @@ func (s *projectRequestService) CreateProjectRequestApply(payload *dto.CreatePro
 		projectRequest.CoverLetter = *payload.CoverLetter
 	}
 
-	if err := s.projectRequestRepo.CreateProjectReqeust(&projectRequest); err != nil {
+	if err := s.projectRequestRepo.CreateProjectRequest(&projectRequest); err != nil {
 		log.Println("Ошибка при создании заявки на проект: ", err)
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrProjectRequestConflict
@@ -153,7 +153,7 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 		projectRequest.CoverLetter = *payload.CoverLetter
 	}
 
-	if err := s.projectRequestRepo.CreateProjectReqeust(&projectRequest); err != nil {
+	if err := s.projectRequestRepo.CreateProjectRequest(&projectRequest); err != nil {
 		log.Println("Ошибка при создании заявки на проект: ", err)
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrProjectRequestConflict
