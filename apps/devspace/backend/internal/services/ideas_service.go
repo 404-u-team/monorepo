@@ -54,3 +54,14 @@ func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*mo
 
 	return &idea, nil
 }
+
+func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
+	var idea models.Idea
+
+	res := db.Where("id = ?", id).First(&idea)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &idea, nil
+}
