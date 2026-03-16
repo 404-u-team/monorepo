@@ -1,54 +1,54 @@
-import type { JSX } from "react";
-import styles from "./UserCard.module.scss";
-import { useEffect, useRef, useState, useMemo } from "react";
-import InviteButton from "@/entities/user/ui/UserCard/InviteButton";
-import { apiClient } from "@/shared/api/client";
+import { useEffect, useRef, useState, type JSX } from "react";
+import { clsx } from "clsx";
 import { Button } from "@/shared/ui";
+import { fetchUserById } from "../../api/userApi";
+import type { IUserResponse } from "../../model/IUserResponse";
+import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
+import InviteButton from "./InviteButton";
+import styles from "./UserCard.module.scss";
 
-interface UserCardProps {
-  user_id: string;
-  project_id?: string;
-  slot_id?: string;
-  inviteButton?: React.ReactNode;
-}
-
-interface UserData {
-  avatar_uri: string;
-  main_role: string;
-  nickname: string;
-  bio: string;
-  skills: string[];
+export interface UserCardProps {
+  id: string;
+  to?: string | undefined;
+  className?: string | undefined;
+  project_id?: string | undefined;
+  slot_id?: string | undefined;
+  onInvite?: (id: string) => Promise<void>;
 }
 
 export function UserCard({
-  user_id,
+  id,
+  to,
+  className,
   project_id,
   slot_id,
 }: UserCardProps): JSX.Element {
+  const [user, setUser] = useState<IUserResponse | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
   const skillBoxReference = useRef<HTMLDivElement>(null);
   const scrollReference = useRef<HTMLDivElement>(null);
   const [needsScroll, setNeedsScroll] = useState(false);
-  const [userData, setUserData] = useState<UserData | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const fetchUserData = async (): Promise<void> => {
-      try {
-        setLoading(true);
-        const response = await apiClient.get<UserData>(`/users/${user_id}`);
-        setUserData(response.data);
-        setError(undefined);
-      } catch (error_) {
-        setError("Ошибка загрузки данных пользователя");
-        console.error("Error fetching user data:", error_);
-      } finally {
-        setLoading(false);
-      }
-    };
+    let cancelled = false;
 
-    void fetchUserData();
-  }, [user_id]);
+    async function load(): Promise<void> {
+      try {
+        const data = await fetchUserById(id);
+        if (cancelled) return;
+        setUser(data);
+      } catch {
+        // handled by future error state
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    void load();
+    return (): void => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     const checkOverflow = (): void => {
@@ -69,72 +69,63 @@ export function UserCard({
     return (): void => {
       ro.disconnect();
     };
-  }, [userData?.skills, needsScroll]);
+  }, [user?.skills, needsScroll]);
 
-  if (loading) {
-    return (
-      <div className={styles.userCard}>
-        <div>Загрузка...</div>
-      </div>
-    );
+  if (isLoading || user === undefined) {
+    return <UserCardSkeleton className={className} />;
   }
 
-  if (error !== undefined) {
-    return (
-      <div className={styles.userCard}>
-        <div>{error}</div>
-      </div>
-    );
-  }
-
-  if (userData === undefined) {
-    return (
-      <div className={styles.userCard}>
-        <div>Данные не найдены</div>
-      </div>
-    );
-  }
-
-  const { avatar_uri, main_role, bio, skills, nickname } = userData;
+  const Wrapper = to !== undefined ? "a" : "article";
+  const wrapperProps = to !== undefined ? { href: to } : {};
 
   return (
-    <div className={styles.userCard}>
-      <div className={styles.cardHeader}>
-        <div className={styles.avatarUri}>
-          <img src={avatar_uri} alt="avatar" />
+    <Wrapper
+      {...wrapperProps}
+      className={clsx(styles.card, to !== undefined && styles.link, className)}
+    >
+      <div className={styles.header}>
+        <div className={styles.avatarWrapper}>
+          <img
+            className={styles.avatar}
+            src={user.avatar_uri}
+            alt={user.nickname}
+            onError={(event) => {
+              (event.target as HTMLImageElement).style.display = "none";
+            }}
+          />
         </div>
+
         <div className={styles.textInfo}>
-          <div className={styles.userId}>{nickname}</div>
-          <div className={styles.mainRole}>{main_role}</div>
+          <div className={styles.nickname}>{user.nickname}</div>
+          <span className={styles.mainRole}>{user.main_role}</span>
         </div>
       </div>
-      <div className={styles.bio}>{bio}</div>
+
+      <div className={styles.bio}>{user.bio}</div>
 
       <div
         ref={skillBoxReference}
-        className={`${styles.skillBox ?? ""} ${needsScroll ? (styles.skillBoxWithMask ?? "") : ""}`}
+        className={clsx(
+          styles.skillBox,
+          needsScroll && styles.skillBoxWithMask,
+        )}
       >
         <div
           ref={scrollReference}
-          className={`${styles.scroll ?? ""} ${needsScroll ? (styles.scrollAnimated ?? "") : ""}`}
+          className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
         >
-          {needsScroll
-            ? [...skills, ...skills].map((uuid, index) => (
-                <div
-                  key={`${uuid}-${String(index)}`}
-                  className={styles.skillName}
-                >
-                  {uuid}
+          {(needsScroll ? [...user.skills, ...user.skills] : user.skills).map(
+            (skill, index) => {
+              const skillName = typeof skill === "string" ? skill : skill.name;
+              const uniqueKey = `${typeof skill === "string" ? skill : JSON.stringify(skill)}-${String(index)}`;
+
+              return (
+                <div key={uniqueKey} className={styles.skillName}>
+                  {skillName}
                 </div>
-              ))
-            : [...skills].map((uuid, index) => (
-                <div
-                  key={`${uuid}-${String(index)}`}
-                  className={styles.skillName}
-                >
-                  {uuid}
-                </div>
-              ))}
+              );
+            },
+          )}
         </div>
       </div>
 
@@ -146,7 +137,7 @@ export function UserCard({
           <InviteButton project_id={project_id} slot_id={slot_id} />
         )}
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
