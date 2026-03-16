@@ -14,6 +14,7 @@ type Project struct {
 	Description *string    `gorm:"column:description"`
 	Status      string     `gorm:"column:status; not null"`
 	CreatedAt   time.Time  `gorm:"column:created_at; not null"`
+	UpdatedAt   time.Time  `gorm:"column:updated_at; not null"`
 
 	Leader User `gorm:"foreignKey:LeaderID"`
 	Idea   Idea `gorm:"foreignKey:IdeaID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
