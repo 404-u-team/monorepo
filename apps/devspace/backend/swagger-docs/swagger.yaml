@@ -588,6 +588,9 @@ paths:
                                     example: >-
                                         Идея создания приложения с использованием AI для практики
                                         разговорной речи.
+                                content:
+                                    type: string
+                                    example: "**Md текст**"
                                 category:
                                     type: string
                                     example: Education
@@ -677,6 +680,8 @@ paths:
                                 title:
                                     type: string
                                 description:
+                                    type: string
+                                content:
                                     type: string
                 required: true
             responses:
@@ -1713,6 +1718,8 @@ components:
                 title:
                     type: string
                 description:
+                    type: string
+                content:
                     type: string
                 author_id:
                     type: string

@@ -42,9 +42,14 @@ func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*mo
 		idea.Description = *req.Description
 	}
 
+	if req.Content != nil {
+		idea.Content = req.Content
+	}
+
 	if req.Category != nil {
 		idea.Category = *req.Category
 	}
+
 	// в ходе create gorm скорректирует нужные поля у сущности, вроде id
 	res := db.Create(&idea)
 
