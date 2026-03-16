@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type ProjectSlot struct {
 	ID              uuid.UUID  `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
@@ -10,6 +14,7 @@ type ProjectSlot struct {
 	Title           string     `gorm:"column:title; not null"`
 	Description     *string    `gorm:"column:description"`
 	Status          string     `gorm:"column:status; not null"`
+	CreatedAt       time.Time  `gorm:"column:created_at; not null"`
 
 	Project Project       `gorm:"foreignKey:ProjectID"`
 	Skill   SkillCategory `gorm:"foreignKey:SkillCategoryID"`

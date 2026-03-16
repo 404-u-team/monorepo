@@ -57,7 +57,7 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 		return
 	}
 
-	err = h.slotService.CreateSlot(projectID, userID, &payload)
+	slot, err := h.slotService.CreateSlot(projectID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotLeader) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -75,7 +75,7 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.JSON(http.StatusCreated, slot)
 }
 
 func (h *slotHandler) UpdateSlotByID(c *gin.Context) {

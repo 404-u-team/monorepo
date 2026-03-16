@@ -12,7 +12,7 @@ import (
 
 type SlotService interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
-	CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) error
+	CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*models.ProjectSlot, error)
 	UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error
 	DeleteSlotByID(slotID, projectID, userID uuid.UUID) error
 }
@@ -34,22 +34,22 @@ func (s *slotService) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error
 	return projectSlots, nil
 }
 
-func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) error {
+func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*models.ProjectSlot, error) {
 	// есть ли такой проект
 	_, err := s.projectRepo.GetProjectByID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrProjectNotFound
+			return nil, ErrProjectNotFound
 		}
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	if !isUserProjectLeader {
-		return ErrUserNotLeader
+		return nil, ErrUserNotLeader
 	}
 
 	// создание слота
@@ -66,14 +66,14 @@ func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.Creat
 	err = s.slotRepo.CreateSlot(projectID, slot)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return ErrSlotConflict
+			return nil, ErrSlotConflict
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return ErrProjectNotFound
+			return nil, ErrProjectNotFound
 		}
-		return ErrInternal
+		return nil, ErrInternal
 	}
-	return nil
+	return slot, nil
 }
 
 func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error {
