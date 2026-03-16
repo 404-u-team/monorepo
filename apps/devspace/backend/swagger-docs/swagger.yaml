@@ -482,7 +482,7 @@ paths:
                   schema:
                       type: boolean
             responses:
-                "200":
+                "204":
                     description: Навык успешно удален
                     headers: {}
                 "401":

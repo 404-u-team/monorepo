@@ -151,7 +151,7 @@ func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
 		return
 	}
 
-	context.Status(http.StatusOK)
+	context.Status(http.StatusNoContent)
 }
 
 func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
