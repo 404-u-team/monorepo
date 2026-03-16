@@ -274,8 +274,8 @@ paths:
                 - Навыки
             parameters:
                 - name: skill_id
-                  in: query
-                  description: UUID навыка, который фактически читает текущая реализация обработчика
+                  in: path
+                  description: UUID навыка
                   required: true
                   schema:
                       type: string
