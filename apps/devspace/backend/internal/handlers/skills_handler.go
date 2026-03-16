@@ -94,17 +94,7 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 	var dbErr error
 	var skill *models.SkillCategory
 
-	if context.Param("id") == "" {
-		skill, dbErr = services.CreateSkill(req.Name, nil, ch.db)
-	} else {
-		UUID, parceErr := uuid.Parse(context.Param("id"))
-		if parceErr != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": "Битый uuid"})
-			return
-		}
-
-		skill, dbErr = services.CreateSkill(req.Name, &UUID, ch.db)
-	}
+	skill, dbErr = services.CreateSkill(req.Name, req.ParentId, ch.db)
 	if dbErr != nil {
 		//Навык с таким именем уже есть
 		if errors.Is(dbErr, gorm.ErrDuplicatedKey) {

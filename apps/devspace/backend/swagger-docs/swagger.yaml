@@ -197,7 +197,7 @@ paths:
                                     example: Full-stack разработчик
                 required: true
             responses:
-                "201":
+                "200":
                     description: Профиль успешно обновлен
                     content:
                         application/json:
@@ -1634,6 +1634,9 @@ components:
                     type: string
                 bio:
                     type: string
+                created_at:
+                    type: string
+                    format: date-time
                 skills:
                     type: array
                     items:
