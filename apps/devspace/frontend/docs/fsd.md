@@ -121,30 +121,73 @@ import { api } from '@/shared/api/client'
 Каждый слайс (папка внутри слоя) имеет **единственную точку входа** — `index.ts`.
 Импортировать напрямую из внутренних папок слайса **запрещено**.
 
+### Эталонная структура слайса
+
 ```
-entities/user/
-├── index.ts              # Публичное API — единственный способ импортировать снаружи
-├── model/
-│   ├── UserStore.ts
-│   └── user.types.ts
-└── ui/
-    ├── UserCard.tsx
-    └── UserCard.module.scss
+entities/idea/                          # Слайс
+├── index.ts                            # Публичное API — единственный способ импортировать снаружи
+│
+├── model/                              # Типы, интерфейсы, сторы, бизнес-логика
+│   ├── IIdea.ts                        # Интерфейс сущности
+│   └── IdeaStore.ts                    # MobX observable store (при необходимости)
+│
+├── api/                                # Запросы к бэкенду, относящиеся к слайсу
+│   └── ideaApi.ts                      # fetchIdeaById, toggleFavorite и т.д.
+│
+├── lib/                                # Хуки, утилиты, хелперы слайса
+│   ├── useIdea.ts                      # Кастомный React-хук
+│   └── formatIdea.ts                   # Функции-утилиты (форматирование, валидация)
+│
+├── config/                             # Константы и конфигурация слайса
+│   └── ideaConfig.ts                   # Магические числа, маппинги, enum-значения
+│
+└── ui/                                 # React-компоненты сущности
+    ├── IdeaCard/                       # Один компонент — одна папка
+    │   ├── IdeaCard.tsx
+    │   ├── IdeaCard.module.scss        # CSS Modules стили
+    │   └── IdeaCard.stories.tsx        # Storybook stories
+    └── IdeaCardSkeleton/
+        ├── IdeaCardSkeleton.tsx
+        └── IdeaCardSkeleton.module.scss
+```
+
+### Сегменты слайса
+
+| Сегмент | Назначение | Обязательный |
+|---------|-----------|-------------|
+| `model/` | Типы, интерфейсы (`I*.ts`), MobX-сторы, бизнес-логика | Да |
+| `api/` | Функции запросов к бэкенду (используют `apiClient` из shared) | По необходимости |
+| `ui/` | React-компоненты с `.module.scss` и `.stories.tsx` | По необходимости |
+| `lib/` | Кастомные React-хуки (`use*.ts`), утилиты, хелперы, специфичные для слайса | По необходимости |
+| `config/` | Константы, enum-маппинги, конфигурация (не env) | По необходимости |
+
+> **Когда добавлять `lib/` и `config/`?** Если хук или утилита нужны **только внутри одного слайса** — кладите в `lib/`. Если они могут быть полезны глобально — выносите в `shared/lib/`. Аналогично: `config/` для констант привязанных к слайсу, `shared/config/` для глобальных.
+
+### Публичное API (`index.ts`)
+
+```ts
+// entities/idea/index.ts — реэкспортируем только то, что нужно снаружи
+export { IdeaCard } from './ui/IdeaCard/IdeaCard'
+export type { IIdea } from './model/IIdea'
+export { fetchIdeaById } from './api/ideaApi'
 ```
 
 ```ts
-// Правильно
-import { UserStore } from '@/entities/user'
+// ✅ Правильно
+import { IdeaCard } from '@/entities/idea'
 
-// Неправильно — нарушение публичного API
-import { UserStore } from '@/entities/user/model/UserStore'
+// ❌ Неправильно — нарушение публичного API
+import { IdeaCard } from '@/entities/idea/ui/IdeaCard/IdeaCard'
 ```
+
+### Внутренние импорты
 
 Внутри самого слайса (между его файлами) — относительные импорты допустимы:
 
 ```ts
-// внутри entities/user/ui/UserCard.tsx — ок
-import type { User } from '../model/user.types'
+// внутри entities/idea/ui/IdeaCard/IdeaCard.tsx — ок
+import type { IIdea } from '../../model/IIdea'
+import { fetchIdeaById } from '../../api/ideaApi'
 ```
 
 ---

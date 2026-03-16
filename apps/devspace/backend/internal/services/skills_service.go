@@ -21,7 +21,7 @@ func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillC
 	}
 
 	if req.Search != nil {
-		query = query.Where("name LIKE ?%", req.Search)
+		query = query.Where("name ILIKE ?", *req.Search+"%")
 	}
 
 	if req.Limit != nil {
@@ -72,7 +72,7 @@ func GetSkillById(id uuid.UUID, db *gorm.DB) (*models.SkillCategory, error) {
 }
 
 func CreateSkill(name string, parentUUID *uuid.UUID, db *gorm.DB) error {
-	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentID: *parentUUID})
+	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentID: parentUUID})
 
 	if res.Error != nil {
 		return res.Error

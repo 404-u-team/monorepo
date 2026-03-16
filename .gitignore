@@ -93,7 +93,7 @@ Temporary Items
 
 # Env file
 .env
-.env.*
+#.env.*
 
 # IDE
 .zed

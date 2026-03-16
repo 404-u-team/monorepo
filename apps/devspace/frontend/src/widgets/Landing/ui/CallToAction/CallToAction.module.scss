@@ -1,0 +1,83 @@
+.cta {
+  padding: 100px 0;
+  background-color: var(--bg--main);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.content {
+  background: linear-gradient(135deg, var(--brand) 0%, #0047A3 100%);
+  border-radius: 24px;
+  padding: 80px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgb(0 94 217 / 15%);
+}
+
+/* Background decorative circles */
+.content::before,
+.content::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 5%);
+}
+
+.content::before {
+  width: 300px;
+  height: 300px;
+  top: -100px;
+  left: -50px;
+}
+
+.content::after {
+  width: 400px;
+  height: 400px;
+  bottom: -150px;
+  right: -100px;
+}
+
+.title {
+  color: var(--text--onPrimary);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 20px;
+  position: relative;
+  z-index: 2;
+
+  @media (width <= 768px) {
+    font-size: 2rem;
+  }
+}
+
+.subtitle {
+  color: rgb(255 255 255 / 85%);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.actions {
+  position: relative;
+  z-index: 2;
+}
+
+.button {
+  background-color: var(--bg--main) !important;
+  color: var(--brand) !important;
+  font-weight: 700;
+  padding: 16px 32px;
+  font-size: 1.125rem;
+
+  &:hover {
+    background-color: var(--bg--surface) !important;
+  }
+}
