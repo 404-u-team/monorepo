@@ -10,8 +10,8 @@ type SkillCategoriesListRequest struct {
 }
 
 type SkillCategoryAddRequest struct {
-	ParentId *string `json:"parent_id"`
-	Name     string  `json:"name"`
+	ParentId *uuid.UUID `json:"parent_id"`
+	Name     string     `json:"name"`
 }
 
 type SkillCategoryResponse struct {

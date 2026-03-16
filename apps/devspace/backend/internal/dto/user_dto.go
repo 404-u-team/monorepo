@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -10,6 +12,7 @@ type GetMeResponse struct {
 	Nickname  string                  `json:"nickname"`
 	AvatarUri string                  `json:"avatar_uri"`
 	Bio       string                  `json:"bio"`
+	CreatedAt time.Time               `json:"created_at"`
 	Skills    []SkillCategoryResponse `json:"skills"`
 }
 

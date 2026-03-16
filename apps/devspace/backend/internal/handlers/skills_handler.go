@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"errors"
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
+	"github.com/google/uuid"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
@@ -69,7 +71,7 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			context.Status(http.StatusOK)
+			context.Status(http.StatusNotFound)
 		} else {
 			context.Status(http.StatusInternalServerError)
 			log.Println("Ошибка обращения к БД:", dbErr.Error())
@@ -90,18 +92,9 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 	}
 
 	var dbErr error
+	var skill *models.SkillCategory
 
-	if context.Param("id") == "" {
-		dbErr = services.CreateSkill(req.Name, nil, ch.db)
-	} else {
-		UUID, parceErr := uuid.Parse(context.Param("id"))
-		if parceErr != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": "Битый uuid"})
-			return
-		}
-
-		dbErr = services.CreateSkill(req.Name, &UUID, ch.db)
-	}
+	skill, dbErr = services.CreateSkill(req.Name, req.ParentId, ch.db)
 	if dbErr != nil {
 		//Навык с таким именем уже есть
 		if errors.Is(dbErr, gorm.ErrDuplicatedKey) {
@@ -118,7 +111,7 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 		return
 	}
 
-	context.Status(http.StatusCreated)
+	context.JSON(http.StatusCreated, skill)
 }
 
 func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
@@ -148,27 +141,25 @@ func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
 		return
 	}
 
-	context.Status(http.StatusOK)
+	context.Status(http.StatusNoContent)
 }
 
 func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
-	rawUUID := context.Param("id")
-	parsed, parseErr := uuid.Parse(rawUUID)
-
-	if rawUUID == "" || parseErr != nil {
+	var req dto.BaseSkillRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
 		context.Status(http.StatusBadRequest)
 		return
 	}
 
 	// это защищенный путь, userID не может не существовать
 	userID, _ := context.Get(middleware.UserIdKey)
-	dbErr := services.AddSkillToUser(parsed, userID.(uuid.UUID), ch.db)
+	userSkill, dbErr := services.AddSkillToUser(req.SkillID, userID.(uuid.UUID), ch.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Навыка с таким uuid не существует"})
 		} else if errors.Is(dbErr, services.ErrRowAlreadyExists) {
-			context.JSON(http.StatusBadRequest, gin.H{"error": dbErr.Error()})
+			context.JSON(http.StatusConflict, gin.H{"error": dbErr.Error()})
 		} else {
 			context.Status(http.StatusInternalServerError)
 			log.Println("Ошибка добавления навыка пользователю в БД:" + dbErr.Error())
@@ -176,7 +167,7 @@ func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
 		return
 	}
 
-	context.Status(http.StatusCreated)
+	context.JSON(http.StatusCreated, userSkill)
 }
 
 func (ch *skillsHandler) DeleteSelfSkill(context *gin.Context) {

@@ -15,7 +15,7 @@ type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
 	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
-	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error
+	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
 	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error)
 	GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error)
@@ -79,30 +79,36 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 
 	return project, nil
 }
-func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) error {
+func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error) {
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	if !isUserProjectLeader {
-		return ErrUserNotLeader
+		return nil, ErrUserNotLeader
 	}
 
 	// обновление проекта по ID
 	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return ErrProjectConflict
+			return nil, ErrProjectConflict
 		}
-		return ErrInternal
+		return nil, ErrInternal
 	}
 
 	if rowsAffected == 0 {
-		return ErrProjectNotFound
+		return nil, ErrProjectNotFound
 	}
 
-	return nil
+	// получаем обновленный проект для возвращения
+	project, err := s.repo.GetProjectByID(projectID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return project, nil
 }
 
 func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
