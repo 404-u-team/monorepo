@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
+	"github.com/google/uuid"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
@@ -69,7 +70,7 @@ func (ch *skillsHandler) GetSkillByID(context *gin.Context) {
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			context.Status(http.StatusOK)
+			context.Status(http.StatusNotFound)
 		} else {
 			context.Status(http.StatusInternalServerError)
 			log.Println("Ошибка обращения к БД:", dbErr.Error())
@@ -168,7 +169,7 @@ func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
 		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Навыка с таким uuid не существует"})
 		} else if errors.Is(dbErr, services.ErrRowAlreadyExists) {
-			context.JSON(http.StatusBadRequest, gin.H{"error": dbErr.Error()})
+			context.JSON(http.StatusConflict, gin.H{"error": dbErr.Error()})
 		} else {
 			context.Status(http.StatusInternalServerError)
 			log.Println("Ошибка добавления навыка пользователю в БД:" + dbErr.Error())
