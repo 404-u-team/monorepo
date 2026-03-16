@@ -197,7 +197,7 @@ paths:
                                     example: Full-stack разработчик
                 required: true
             responses:
-                "200":
+                "201":
                     description: Профиль успешно обновлен
                     content:
                         application/json:

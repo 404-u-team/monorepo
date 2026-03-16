@@ -11,7 +11,7 @@ import (
 
 type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.GetMeResponse, error)
-	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
+	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.GetMeResponse, error)
 }
 
 type userService struct {
@@ -47,27 +47,32 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
 	return &getMeResponse, nil
 }
 
-func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
+func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.GetMeResponse, error) {
 	if updateRequest.Nickname == nil && updateRequest.Bio == nil {
-		return ErrEmptyPayload
+		return nil, ErrEmptyPayload
 	}
 
 	exists, err := s.repo.IsUserExistByID(userID)
 	if err != nil {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	if !exists {
-		return ErrUserNotFound
+		return nil, ErrUserNotFound
 	}
 
 	err = s.repo.UpdateUserByID(userID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return ErrUserConflict
+			return nil, ErrUserConflict
 		}
 
-		return ErrInternal
+		return nil, ErrInternal
 	}
 
-	return nil
+	getMeResponse, err := s.GetMe(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return getMeResponse, nil
 }
