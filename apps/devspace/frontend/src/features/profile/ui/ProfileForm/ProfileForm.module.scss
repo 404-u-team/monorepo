@@ -1,0 +1,207 @@
+.profileGrid {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  max-width: 1900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.column1 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.miniProfile {
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
+  padding: 20px;
+  border: 1px solid var(--border--divider);
+}
+
+.pov {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
+  border: 1px solid var(--border--divider);
+}
+
+.profileButton,
+.notificationButton {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.column2 {
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
+  border: 1px solid var(--border--divider);
+  max-height: fit-content;
+}
+
+.avatarChange {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background-color: var(--bg--surface);
+  border-radius: 16px;
+
+  h3 {
+    margin: 16px 0 12px;
+    font-size: 16px;
+    color: var(--text--disabled);
+  }
+}
+
+.avatar {
+  margin: 0 0 16px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.changeAvaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mySkills {
+  h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+  }
+}
+
+.searchBox {
+  margin-bottom: 16px;
+}
+
+.skillShowcase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 24px;
+  min-height: 40px;
+}
+
+.saveButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+
+  button {
+    flex: 1;
+  }
+}
+
+.column3 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settingsGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.settingBox {
+  width: 300px;
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
+  border: 1px solid var(--border--divider);
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text--secondary);
+  }
+}
+
+.bio {
+  width: 2fr;
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
+  border: 1px solid var(--border--divider);
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text--secondary);
+  }
+}
+
+.bioInput {
+  width: 90%;
+  padding: 12px;
+  border: 1px solid var(--border--divider);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border--active);
+  }
+}
+
+.miniNav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border--divider);
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  button {
+    justify-content: flex-start;
+    padding: 8px 0;
+  }
+}
+
+.feed {
+  background-color: var(--bg--main);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border--divider);
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
