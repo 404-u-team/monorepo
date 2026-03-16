@@ -11,6 +11,7 @@ import (
 
 type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
+	GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
 	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
 	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
@@ -36,6 +37,17 @@ func (r *slotRepository) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, er
 	}
 
 	return slots, nil
+}
+
+func (r *slotRepository) GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error) {
+	var slot models.ProjectSlot
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).First(&slot)
+	if result.Error != nil {
+		log.Println("Ошибка при получении слота проекта по ID: ", result.Error)
+		return nil, result.Error
+	}
+
+	return &slot, nil
 }
 
 func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error {

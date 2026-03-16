@@ -13,7 +13,7 @@ import (
 type SlotService interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*models.ProjectSlot, error)
-	UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error
+	UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*models.ProjectSlot, error)
 	DeleteSlotByID(slotID, projectID, userID uuid.UUID) error
 }
 
@@ -76,44 +76,49 @@ func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.Creat
 	return slot, nil
 }
 
-func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) error {
+func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*models.ProjectSlot, error) {
 	// проверка на пустой payload
 	if updateRequest.SkillCategoryID == nil && updateRequest.Title == nil && updateRequest.Description == nil && updateRequest.Status == nil {
-		return ErrEmptyPayload
+		return nil, ErrEmptyPayload
 	}
 
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	if !isUserProjectLeader {
-		return ErrUserNotLeader
+		return nil, ErrUserNotLeader
 	}
 
 	// принадлежит ли слот данному проекту
 	isSlotBelongsToProject, err := s.slotRepo.IsSlotBelongToProject(slotID, projectID)
 	if err != nil {
-		return ErrInternal
+		return nil, ErrInternal
 	}
 	if !isSlotBelongsToProject {
-		return ErrSlotNotFound
+		return nil, ErrSlotNotFound
 	}
 
 	// обновление слота по ID
 	rowsAffected, err := s.slotRepo.UpdateSlotByID(slotID, projectID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return ErrSlotConflict
+			return nil, ErrSlotConflict
 		}
-		return ErrInternal
+		return nil, ErrInternal
 	}
 
 	if rowsAffected == 0 {
-		return ErrSlotNotFound
+		return nil, ErrSlotNotFound
 	}
 
-	return nil
+	slot, err := s.slotRepo.GetSlotByID(slotID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return slot, nil
 }
 
 func (s *slotService) DeleteSlotByID(slotID, projectID, userID uuid.UUID) error {

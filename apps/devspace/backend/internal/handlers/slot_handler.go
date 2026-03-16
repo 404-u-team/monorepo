@@ -108,7 +108,7 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 		return
 	}
 
-	err = h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
+	slot, err := h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrEmptyPayload) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -130,7 +130,7 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, slot)
 }
 
 func (h *slotHandler) DeleteSlotByID(c *gin.Context) {
