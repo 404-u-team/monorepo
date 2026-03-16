@@ -67,7 +67,7 @@ func (ih *ideaHandler) GetIdeaByID(ctx *gin.Context) {
 
 	converted, parseError := uuid.Parse(id)
 
-	if id == "" || parseError != nil {
+	if parseError != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
