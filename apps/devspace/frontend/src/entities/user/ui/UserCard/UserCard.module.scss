@@ -1,25 +1,26 @@
-.userCard {
+.card {
   display: grid;
   margin: 10px;
-  max-width: 400px;
-  max-height: 300px;
-  background-color: var(--bg--surface);
+  width: 400px;
+  height: 300px;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
   border-radius: 12px;
 }
 
-.cardHeader {
+.header {
   display: flex;
   align-items: center;
 }
 
-.avatarUri {
+.avatarWrapper {
   margin-top: 19px;
   margin-left: 15px;
   width: 100px;
   height: 100px;
 }
 
-.avatarUri img {
+.avatarWrapper img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -27,12 +28,10 @@
 }
 
 .textInfo {
-  align-items: flex;
-  margin-top: 17px;
-  margin-left: 15px;
+  margin: 10px;
 }
 
-.userId {
+.nickname {
   font-size: 18px;
   font-weight: 500;
   line-height: 24px;
@@ -48,14 +47,14 @@
   text-decoration: none;
 }
 
-.description {
+.bio {
   margin-left: 15px;
   margin-top: 20px;
-  max-height: 100px;
   max-width: 380px;
   font-size: 12px;
   color: var(--text--primary);
   font-weight: 400;
+  max-height: 45px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
