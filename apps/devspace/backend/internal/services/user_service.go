@@ -42,6 +42,7 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
 		Nickname:  user.Nickname,
 		AvatarUri: "",
 		Bio:       user.Bio,
+		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
 	}
 	return &getMeResponse, nil
