@@ -71,14 +71,15 @@ func GetSkillById(id uuid.UUID, db *gorm.DB) (*models.SkillCategory, error) {
 	return &targetSkill, nil
 }
 
-func CreateSkill(name string, parentUUID *uuid.UUID, db *gorm.DB) error {
-	res := db.Table("Skill_Category").Create(&models.SkillCategory{Name: name, ParentID: parentUUID})
+func CreateSkill(name string, parentUUID *uuid.UUID, db *gorm.DB) (*models.SkillCategory, error) {
+	skill := models.SkillCategory{Name: name, ParentID: parentUUID}
+	res := db.Table("Skill_Category").Create(&skill)
 
 	if res.Error != nil {
-		return res.Error
+		return nil, res.Error
 	}
 
-	return nil
+	return &skill, nil
 }
 
 func DeleteSkill(id uuid.UUID, cascade bool, db *gorm.DB) error {
