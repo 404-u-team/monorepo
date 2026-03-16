@@ -165,7 +165,7 @@ func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
 
 	// это защищенный путь, userID не может не существовать
 	userID, _ := context.Get(middleware.UserIdKey)
-	dbErr := services.AddSkillToUser(parsed, userID.(uuid.UUID), ch.db)
+	userSkill, dbErr := services.AddSkillToUser(parsed, userID.(uuid.UUID), ch.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
@@ -179,7 +179,7 @@ func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
 		return
 	}
 
-	context.Status(http.StatusCreated)
+	context.JSON(http.StatusCreated, userSkill)
 }
 
 func (ch *skillsHandler) DeleteSelfSkill(context *gin.Context) {
