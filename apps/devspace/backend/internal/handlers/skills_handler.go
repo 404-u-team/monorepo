@@ -145,17 +145,15 @@ func (ch *skillsHandler) DeleteSkill(context *gin.Context) {
 }
 
 func (ch *skillsHandler) AddSkillToSelf(context *gin.Context) {
-	rawUUID := context.Param("id")
-	parsed, parseErr := uuid.Parse(rawUUID)
-
-	if rawUUID == "" || parseErr != nil {
+	var req dto.BaseSkillRequest
+	if err := context.ShouldBindJSON(&req); err != nil {
 		context.Status(http.StatusBadRequest)
 		return
 	}
 
 	// это защищенный путь, userID не может не существовать
 	userID, _ := context.Get(middleware.UserIdKey)
-	userSkill, dbErr := services.AddSkillToUser(parsed, userID.(uuid.UUID), ch.db)
+	userSkill, dbErr := services.AddSkillToUser(req.SkillID, userID.(uuid.UUID), ch.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrForeignKeyViolated) {
