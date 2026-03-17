@@ -7,6 +7,7 @@ type Idea struct {
 	AuthorID       uuid.UUID `gorm:"column:author_id;type:uuid" json:"author_id"`
 	Title          string    `gorm:"column:title; not null; unique" json:"title"`
 	Description    string    `gorm:"column:description; not null" json:"description"`
+	Content        *string   `gorm:"column:content" json:"content"`
 	ViewsCount     uint      `gorm:"column:views_count; not null" json:"views_count"`
 	FavoritesCount uint      `gorm:"column:favorites_count; not null" json:"favorites_count"`
 	Category       string    `gorm:"column:category; not null" json:"category"`
