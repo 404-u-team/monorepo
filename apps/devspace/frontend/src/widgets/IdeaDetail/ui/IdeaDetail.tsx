@@ -200,7 +200,7 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
                                     alt={author.nickname}
                                     onError={(event) => {
                                         const target = event.currentTarget;
-                                        target.onerror = null;
+                                        target.onerror = undefined as unknown as typeof target.onerror;
                                         target.style.display = 'none';
                                     }}
                                 />
