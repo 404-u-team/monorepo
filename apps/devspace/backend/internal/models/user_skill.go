@@ -6,8 +6,8 @@ type UserSkill struct {
 	UserID  uuid.UUID `gorm:"column:user_id;type:uuid;primaryKey" json:"user_id"`
 	SkillID uuid.UUID `gorm:"column:skill_id;type:uuid;primaryKey" json:"skill_id"`
 
-	User  User          `gorm:"foreignKey:UserID"`
-	Skill SkillCategory `gorm:"foreignKey:SkillID"`
+	User  User          `gorm:"foreignKey:UserID" json:"-"`
+	Skill SkillCategory `gorm:"foreignKey:SkillID" json:"-"`
 }
 
 func (us *UserSkill) TableName() string { return "User_Skill" }

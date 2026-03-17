@@ -15,8 +15,8 @@ type ProjectRequest struct {
 	CoverLetter string    `gorm:"column:cover_letter; not null" json:"cover_letter"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null" json:"created_at"`
 
-	Slot ProjectSlot `gorm:"foreignKey:SlotID"`
-	User User        `gorm:"foreignKey:UserID"`
+	Slot ProjectSlot `gorm:"foreignKey:SlotID" json:"-"`
+	User User        `gorm:"foreignKey:UserID" json:"-"`
 }
 
 func (r *ProjectRequest) TableName() string { return "Project_Request" }
