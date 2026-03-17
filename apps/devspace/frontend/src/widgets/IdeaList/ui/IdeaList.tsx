@@ -18,7 +18,7 @@ export interface IdeaListProps {
 
 export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
     const { userStore } = useStore();
-    const searchParameters = useSearch({ strict: false });
+    const searchParameters = useSearch({ from: '/ideas' });
     const navigate = useNavigate({ from: '/ideas' });
 
   const handleSearch = (value: string): void => {
@@ -51,11 +51,11 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
         <DataListLayout
             title="Идеи"
             subtitle="Найдите вдохновение или присоединяйтесь к реализации новой задумки"
-            searchValue={(searchParameters as Record<string, string>).search ?? ''}
+            searchValue={searchParameters.search ?? ''}
             onSearchChange={handleSearch}
             isEmpty={ideas.length === 0}
             emptyMessage="Идеи не найдены"
-            currentPage={Number((searchParameters as Record<string, string>).page) || 1}
+            currentPage={searchParameters.page ?? 1}
             totalPages={totalPages}
             onPageChange={handlePageChange}
             controlsNode={controlsNode}

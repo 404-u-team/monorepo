@@ -2,40 +2,30 @@ import { apiClient } from '@/shared/api/client';
 import type { IIdea } from '../model/IIdea';
 
 interface RawIdea {
-    id?: string;
-    ID?: string;
-    title?: string;
-    Title?: string;
-    description?: string;
-    Description?: string;
+    id: string;
+    title: string;
+    description: string;
     content?: string;
-    Content?: string;
     category?: string;
-    Category?: string;
-    author_id?: string;
-    AuthorID?: string;
-    created_at?: string;
-    CreatedAt?: string;
-    updated_at?: string;
-    UpdatedAt?: string;
+    author_id: string;
+    created_at: string;
+    updated_at: string;
     views_count?: number;
-    ViewsCount?: number;
     favorites_count?: number;
-    FavoritesCount?: number;
 }
 
 function mapIdea(data: RawIdea): IIdea {
     return {
-        id: data.id ?? data.ID ?? '',
-        title: data.title ?? data.Title ?? '',
-        description: data.description ?? data.Description ?? '',
-        content: data.content ?? data.Content,
-        category: data.category ?? data.Category,
-        author_id: data.author_id ?? data.AuthorID ?? '',
-        created_at: data.created_at ?? data.CreatedAt ?? '',
-        updated_at: data.updated_at ?? data.UpdatedAt ?? '',
-        views_count: data.views_count ?? data.ViewsCount ?? 0,
-        favorites_count: data.favorites_count ?? data.FavoritesCount ?? 0,
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        category: data.category,
+        author_id: data.author_id,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        views_count: data.views_count ?? 0,
+        favorites_count: data.favorites_count ?? 0,
     };
 }
 
