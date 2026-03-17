@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './../../routes/__root'
 import { Route as ProjectsRouteImport } from './../../routes/projects'
-import { Route as ProfileRouteImport } from './../../routes/profile'
 import { Route as IdeasRouteImport } from './../../routes/ideas'
 import { Route as AuthRouteImport } from './../../routes/auth'
 import { Route as IndexRouteImport } from './../../routes/index'
@@ -20,11 +19,6 @@ import { Route as IdeaIdeaIdRouteImport } from './../../routes/idea.$ideaId'
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IdeasRoute = IdeasRouteImport.update({
@@ -57,7 +51,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/ideas': typeof IdeasRoute
-  '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/idea/$ideaId': typeof IdeaIdeaIdRoute
   '/idea/new': typeof IdeaNewRoute
@@ -66,7 +59,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/ideas': typeof IdeasRoute
-  '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/idea/$ideaId': typeof IdeaIdeaIdRoute
   '/idea/new': typeof IdeaNewRoute
@@ -76,7 +68,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/ideas': typeof IdeasRoute
-  '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/idea/$ideaId': typeof IdeaIdeaIdRoute
   '/idea/new': typeof IdeaNewRoute
@@ -90,9 +81,8 @@ export interface FileRouteTypes {
     | '/projects'
     | '/idea/$ideaId'
     | '/idea/new'
-    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/ideas' | '/projects' | '/idea/$ideaId' | '/idea/new' | '/profile'
+  to: '/' | '/auth' | '/ideas' | '/projects' | '/idea/$ideaId' | '/idea/new'
   id:
     | '__root__'
     | '/'
@@ -101,14 +91,12 @@ export interface FileRouteTypes {
     | '/projects'
     | '/idea/$ideaId'
     | '/idea/new'
-    | '/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   IdeasRoute: typeof IdeasRoute
-  ProfileRoute: typeof ProfileRoute
   ProjectsRoute: typeof ProjectsRoute
   IdeaIdeaIdRoute: typeof IdeaIdeaIdRoute
   IdeaNewRoute: typeof IdeaNewRoute
@@ -121,13 +109,6 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ideas': {
@@ -172,7 +153,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   IdeasRoute: IdeasRoute,
-  ProfileRoute: ProfileRoute,
   ProjectsRoute: ProjectsRoute,
   IdeaIdeaIdRoute: IdeaIdeaIdRoute,
   IdeaNewRoute: IdeaNewRoute,
