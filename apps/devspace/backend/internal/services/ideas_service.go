@@ -51,11 +51,7 @@ func GetIdeasList(req dto.GetListIdeasRequest, db *gorm.DB) ([]models.Idea, erro
 }
 
 func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*models.Idea, error) {
-	idea := models.Idea{AuthorID: authorId, Title: req.Title}
-
-	if req.Description != nil {
-		idea.Description = *req.Description
-	}
+	idea := models.Idea{AuthorID: authorId, Title: req.Title, Description: req.Description}
 
 	if req.Content != nil {
 		idea.Content = req.Content
