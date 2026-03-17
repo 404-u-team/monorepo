@@ -55,6 +55,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	slotHandler := handlers.NewSlotHandler(slotService)
 	ideaHandler := handlers.NewIdeaHandler(dbConn)
 	projectRequestHandler := handlers.NewProjectRequestHandler(projectRequestService)
+	testDataHandler := handlers.NewTestDataHandler(services.NewTestDataService(dbConn, config))
 
 	api := router.Group("")
 	{
@@ -71,6 +72,11 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 		api.GET("/ideas", ideaHandler.GetIdeas)
 		api.GET("/ideas/:id", ideaHandler.GetIdeaByID)
+
+		// тестовые данные (dev-only)
+		api.GET("/generate-test-data", testDataHandler.Start)
+		api.GET("/generate-test-data/status", testDataHandler.Status)
+		api.GET("/generate-test-data/cancel", testDataHandler.Cancel)
 
 		// защищенные
 		protected := api.Group("")
