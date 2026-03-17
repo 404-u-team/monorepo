@@ -1802,6 +1802,9 @@ components:
                 id:
                     type: string
                     format: uuid
+                author_id:
+                    type: string
+                    format: uuid
                 title:
                     type: string
                 description:
@@ -1809,9 +1812,12 @@ components:
                 content:
                     type: string
                     nullable: true
-                author_id:
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
+                category:
                     type: string
-                    format: uuid
                 created_at:
                     type: string
                     format: date-time
