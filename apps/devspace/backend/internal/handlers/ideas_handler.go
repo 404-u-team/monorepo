@@ -2,21 +2,23 @@ package handlers
 
 import (
 	"errors"
+	"log"
+	"net/http"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
 )
 
 type ideaHandler struct {
-	db *gorm.DB
+	ideaService services.IdeaService
+	db          *gorm.DB
 }
 
-func NewIdeaHandler(db *gorm.DB) ideaHandler {
-	return ideaHandler{db: db}
+func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB) ideaHandler {
+	return ideaHandler{ideaService: ideaService, db: db}
 }
 
 func (ih *ideaHandler) GetIdeas(ctx *gin.Context) {
@@ -84,4 +86,53 @@ func (ih *ideaHandler) GetIdeaByID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, idea)
+}
+
+func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
+	// получение ideaID из параметров
+	ideaIDStr := c.Param("ideaID")
+
+	ideaID, err := uuid.Parse(ideaIDStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrIdeaNotFound.Error()})
+	}
+
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// получение payload
+	var payload dto.UpdateIdeaRequest
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Println("Ошибка при парсинге: ", err.Error())
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if payload.Title == nil && payload.Description == nil {
+		log.Println("Все поля пустые, нечего изменять")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Все поля пустые, нечего изменять"})
+		return
+	}
+
+	idea, err := h.ideaService.UpdateIdeaByID(ideaID, userID, &payload)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotAuthor) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		}
+		if errors.Is(err, services.ErrIdeaConflict) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrIdeaNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, idea)
 }

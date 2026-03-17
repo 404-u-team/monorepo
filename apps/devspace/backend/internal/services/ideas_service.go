@@ -1,11 +1,26 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type IdeaService interface {
+	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
+}
+
+type ideaService struct {
+	repo repository.IdeaRepository
+}
+
+func NewIdeaService(repo repository.IdeaRepository) IdeaService {
+	return &ideaService{repo: repo}
+}
 
 func GetIdeasList(req dto.GetListIdeasRequest, db *gorm.DB) ([]models.Idea, error) {
 	query := db.Model(&models.Idea{})
@@ -69,4 +84,39 @@ func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
 		return nil, res.Error
 	}
 	return &idea, nil
+}
+
+func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error) {
+	// является ли пользователь владельцем данной идеи
+	isUserProjectLeader, err := s.repo.IsUserIdeaAuthor(ideaID, userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if !isUserProjectLeader {
+		return nil, ErrUserNotAuthor
+	}
+
+	// обновление проекта по ID
+	rowsAffected, err := s.repo.UpdateIdeaByID(ideaID, updateRequest)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrIdeaConflict
+		}
+		return nil, ErrInternal
+	}
+
+	if rowsAffected == 0 {
+		return nil, ErrIdeaNotFound
+	}
+
+	// получаем обновленную идею для возвращения
+	idea, err := s.repo.GetIdeaByID(ideaID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIdeaNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	return idea, nil
 }

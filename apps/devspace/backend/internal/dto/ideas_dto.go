@@ -15,3 +15,8 @@ type CreateIdeaRequest struct {
 	Content     *string `json:"content"`
 	Category    *string `json:"category"`
 }
+
+type UpdateIdeaRequest struct {
+	Title       *string `json:"title" binding:"min=3,max=255"`
+	Description *string `json:"description" binding:"min=3,max=255"`
+}

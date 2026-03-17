@@ -97,8 +97,8 @@ paths:
                                     type: string
                                     format: password
                         example:
-                            login: Einar_Kuphal@gmail.com
-                            password: _VmgGaB1xNOl8Op
+                            login: user@example.com
+                            password: securePassword123
                 required: true
             responses:
                 "200":
