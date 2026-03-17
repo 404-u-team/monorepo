@@ -61,3 +61,27 @@ func (ih *ideaHandler) AddIdea(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, idea)
 }
+
+func (ih *ideaHandler) GetIdeaByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	converted, parseError := uuid.Parse(id)
+
+	if parseError != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	idea, dbErr := services.GetIdeaByID(converted, ih.db)
+	if dbErr != nil {
+		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
+			ctx.Status(http.StatusNotFound)
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+			log.Println("Ошибка получения идеи из БД по uuid: " + dbErr.Error())
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, idea)
+}

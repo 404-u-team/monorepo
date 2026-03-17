@@ -70,6 +70,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
 		api.GET("/ideas", ideaHandler.GetIdeas)
+		api.GET("/ideas/:id", ideaHandler.GetIdeaByID)
 
 		// защищенные
 		protected := api.Group("")
