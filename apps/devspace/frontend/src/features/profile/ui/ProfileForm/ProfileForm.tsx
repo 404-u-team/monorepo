@@ -8,20 +8,31 @@ import { Camera, Save, X } from "lucide-react";
 import { ProjectCard } from "@/entities/project";
 
 //Вопрос 1: как запросить все скиллы, статусы и тд
-//Вопрос 2: уведы где и когда и надо ли вообще
-//Вопрос 3: в навыках в сваггере пока что нет цвета, делаем или нет
 
 interface ProfileFormProps {
   id: string;
 }
 
 interface UserData {
+  id: string;
   nickname: string;
   avatar_uri: string;
   main_role: string;
   bio: string;
   skills: string[];
   email: string;
+  status?: string;
+}
+
+interface UpdateUserData {
+  nickname?: string;
+  bio?: string;
+}
+
+interface Skill {
+  label: string;
+  value: string;
+  color: string;
 }
 
 const statusOptions = [
@@ -38,6 +49,7 @@ const roleOptions = [
   { label: "Project Manager", value: "pm" },
 ];
 
+//Временные моки, пока API не готово
 const mockSkills = [
   { label: "React", value: "react", color: "3B82F6" },
   { label: "TypeScript", value: "ts", color: "34D399" },
@@ -46,16 +58,19 @@ const mockSkills = [
 ];
 
 export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
-  const [, setUserData] = useState<UserData | undefined>(undefined);
+  const [userData, setUserData] = useState<UserData>();
   const [loading, setLoading] = useState(true);
-  const [, setError] = useState<string | undefined>(undefined);
-
-  const [nickname, setNickname] = useState("@maxik");
-  const [email, setEmail] = useState("auth@gmail.com");
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
   const [status, setStatus] = useState("searching");
   const [role, setRole] = useState("frontend");
   const [bio, setBio] = useState("");
   const [searchSkill, setSearchSkill] = useState("");
+  const [initialNickname, setInitialNickname] = useState("");
+  const [initialBio, setInitialBio] = useState("");
 
   const project_id = "1";
   const avatar_uri =
@@ -65,9 +80,19 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
     const fetchUserData = async (): Promise<void> => {
       try {
         setLoading(true);
-        const response = await apiClient.get<UserData>(`/users/${id}`);
-        setUserData(response.data);
         setError(undefined);
+        const endpoint = `/profile`;
+        const response = await apiClient.get<UserData>(endpoint);
+        const data = response.data;
+        setUserData(data);
+        setNickname(data.nickname || "");
+        setEmail(data.email || "");
+        setBio(data.bio || "");
+        setRole(data.main_role || "frontend");
+        //setStatus(data.status || "searching");
+
+        setInitialNickname(data.nickname || "");
+        setInitialBio(data.bio || "");
       } catch (error_) {
         setError("Ошибка загрузки данных пользователя");
         console.error("Error fetching user data:", error_);
@@ -75,8 +100,51 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
         setLoading(false);
       }
     };
+
     void fetchUserData();
   }, [id]);
+
+  const handleSaveProfile = async (): Promise<void> => {
+    const hasNicknameChanged = nickname !== initialNickname;
+    const hasBioChanged = bio !== initialBio;
+
+    if (!hasNicknameChanged && !hasBioChanged) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(undefined);
+      setSaveSuccess(false);
+
+      const updateData: UpdateUserData = {};
+
+      if (hasNicknameChanged) {
+        updateData.nickname = nickname;
+      }
+      if (hasBioChanged) {
+        updateData.bio = bio;
+      }
+      await apiClient.put("/users/me", updateData);
+      setInitialNickname(nickname);
+      setInitialBio(bio);
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (error_) {
+      setError("Ошибка при сохранении изменений");
+      console.error("Error saving user data:", error_);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const handleCancelChanges = (): void => {
+    setNickname(initialNickname);
+    setBio(initialBio);
+  };
+
+  const hasChanges = nickname !== initialNickname || bio !== initialBio;
 
   if (loading) {
     return (
@@ -90,6 +158,22 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
           <Skeleton height={30} width="40%" />
           <Skeleton height={200} borderRadius={16} />
         </div>
+      </div>
+    );
+  }
+
+  if (error !== undefined && !userData) {
+    return (
+      <div className={styles.errorContainer}>
+        <p className={styles.error}>{error}</p>
+        <Button
+          variant="primary"
+          onClick={() => {
+            window.location.reload();
+          }}
+        >
+          Попробовать снова
+        </Button>
       </div>
     );
   }
@@ -114,6 +198,16 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
       <div className={styles.column2}>
         <h2>Настройки профиля</h2>
 
+        {saveSuccess && (
+          <div className={styles.successMessage}>
+            Изменения успешно сохранены!
+          </div>
+        )}
+
+        {error !== undefined && (
+          <div className={styles.errorMessage}>{error}</div>
+        )}
+
         <div className={styles.avatarChange}>
           <img src={avatar_uri} alt="Avatar" className={styles.avatar} />
           <h3>Редактировать изображение профиля</h3>
@@ -135,7 +229,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
           />
 
           <div className={styles.skillShowcase}>
-            {mockSkills.map((skill) => (
+            {mockSkills.map((skill: Skill) => (
               <Badge key={skill.value} color={skill.color}>
                 {skill.label}
               </Badge>
@@ -143,11 +237,19 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
           </div>
 
           <div className={styles.saveButtons}>
-            <Button variant="primary">
+            <Button
+              variant="primary"
+              onClick={() => void handleSaveProfile()}
+              disabled={isSaving || !hasChanges}
+            >
               <Save size={25} />
-              Сохранить изменения
+              {isSaving ? "Сохранение..." : "Сохранить изменения"}
             </Button>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              onClick={handleCancelChanges}
+              disabled={isSaving || !hasChanges}
+            >
               <X size={16} />
               Отмена
             </Button>
@@ -189,6 +291,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
                 setEmail(event_.target.value);
               }}
               className={styles.settingInput}
+              disabled
             />
           </div>
 
@@ -202,6 +305,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
             />
           </div>
         </div>
+
         <div className={styles.bio}>
           <h3>Описание</h3>
           <textarea
@@ -214,16 +318,9 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
             rows={4}
           />
         </div>
-        {/* <div className={styles.miniNav}>
-          <h3>Быстрая навигация</h3>
-          <Button variant="clear">Проекты</Button>
-          <Button variant="clear">Команды</Button>
-          <Button variant="clear">Достижения</Button>
-        </div> */}
 
         <div className={styles.feed}>
           <h3>Лента активности</h3>
-          {/* <p className={styles.emptyFeed}>Здесь пока ничего нет</p> */}
           <ProjectCard projectId={project_id} />
         </div>
       </div>
