@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { JSX } from "react";
 import { Button } from "@/shared/ui/Button/Button";
 import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
+import { inviteUserToSlot } from "@/entities/user/api/userApi";
 
 interface InviteButtonProps {
   project_id?: string | undefined;
@@ -19,30 +20,27 @@ const InviteButton = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInvite = async (): Promise<void> => {
-    if (project_id === undefined || slot_id === undefined) return;
+    if (
+      project_id === undefined ||
+      slot_id === undefined ||
+      user_id === undefined
+    ) {
+      return;
+    }
 
     setIsLoading(true);
     try {
       if (onInvite) {
-        await onInvite(String(user_id));
+        await onInvite(user_id);
       } else {
-        const response = await fetch(
-          `/api/projects/${project_id}/slots/${slot_id}/invite`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              user_id: user_id,
-            }),
-          },
-        );
-
-        if (!response.ok) throw new Error("Ошибка отправки");
+        await inviteUserToSlot({
+          project_id,
+          slot_id,
+          id: user_id,
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Ошибка приглашения:", error);
     } finally {
       setIsLoading(false);
     }
