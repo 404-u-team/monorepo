@@ -25,6 +25,11 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
 
     useEffect(() => {
         isCancelled.current = false;
+        setIsLoading(true);
+        setIdea(undefined);
+        setAuthor(undefined);
+        setFavoritesCount(0);
+        setIsFavorite(false);
 
         async function load(): Promise<void> {
             try {
