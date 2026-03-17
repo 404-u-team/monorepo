@@ -40,8 +40,9 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
                     onSubmit={(event) => { void handleSubmit(event); }}
                 >
                     <div className={styles.field}>
-                        <label className={styles.label}>Название идеи</label>
+                        <label className={styles.label} htmlFor="idea-title">Название идеи</label>
                         <Input
+                            id="idea-title"
                             placeholder="Введите название..."
                             value={title}
                             onChange={(event_) => { setTitle(event_.target.value); }}
@@ -50,8 +51,9 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
                         />
                     </div>
                     <div className={styles.field}>
-                        <label className={styles.label}>Категория</label>
+                        <label className={styles.label} htmlFor="idea-category">Категория</label>
                         <Input
+                            id="idea-category"
                             placeholder="Например: Education, Technology..."
                             value={category}
                             onChange={(event_) => { setCategory(event_.target.value); }}
@@ -59,8 +61,9 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
                         />
                     </div>
                     <div className={styles.field}>
-                        <label className={styles.label}>Краткое описание</label>
+                        <label className={styles.label} htmlFor="idea-description">Краткое описание</label>
                         <textarea
+                            id="idea-description"
                             className={styles.textarea}
                             placeholder="Краткое описание вашей идеи..."
                             value={description}
@@ -69,8 +72,9 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
                         />
                     </div>
                     <div className={styles.field}>
-                        <label className={styles.label}>Содержимое</label>
+                        <label className={styles.label} htmlFor="idea-content">Содержимое</label>
                         <MdEditor
+                            id="idea-content"
                             value={content}
                             onChange={setContent}
                             placeholder="Напишите подробное содержимое идеи..."
