@@ -1,9 +1,37 @@
 import { apiClient } from '@/shared/api/client';
 import type { IIdea } from '../model/IIdea';
 
+interface RawIdea {
+    id: string;
+    title: string;
+    description: string;
+    content?: string;
+    category?: string;
+    author_id: string;
+    created_at: string;
+    updated_at: string;
+    views_count?: number;
+    favorites_count?: number;
+}
+
+function mapIdea(data: RawIdea): IIdea {
+    return {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        category: data.category,
+        author_id: data.author_id,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        views_count: data.views_count ?? 0,
+        favorites_count: data.favorites_count ?? 0,
+    };
+}
+
 export async function fetchIdeaById(ideaId: string): Promise<IIdea> {
-    const response = await apiClient.get<IIdea>(`/ideas/${ideaId}`);
-    return response.data;
+    const response = await apiClient.get<RawIdea>(`/ideas/${ideaId}`);
+    return mapIdea(response.data);
 }
 
 export async function toggleIdeaFavorite(ideaId: string): Promise<{ is_favorite: boolean }> {
@@ -25,9 +53,9 @@ export interface PaginatedIdeas {
 }
 
 export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<PaginatedIdeas> {
-    const response = await apiClient.get<IIdea[]>('/ideas', { params: parameters });
+    const response = await apiClient.get<RawIdea[]>('/ideas', { params: parameters });
 
-    const items = response.data;
+    const items = response.data.map((item) => mapIdea(item));
     const totalCountHeader = response.headers['x-total-count'] as string | undefined;
     const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
@@ -41,8 +69,6 @@ export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<Pag
         total = parsedTotal;
         totalPages = Math.ceil(total / limit);
     } else {
-        // Fallback when the backend does not provide X-Total-Count:
-        // use at least the number of items we've seen so far.
         total = startAt + items.length;
         totalPages = Math.max(1, Math.ceil(total / limit));
     }
@@ -52,4 +78,32 @@ export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<Pag
         total,
         totalPages,
     };
+}
+
+export async function createIdea(data: {
+    title: string;
+    description?: string;
+    content?: string;
+    category?: string;
+}): Promise<IIdea> {
+    const response = await apiClient.post<RawIdea>('/ideas', data);
+    return mapIdea(response.data);
+}
+
+export async function updateIdea(ideaId: string, data: {
+    title?: string;
+    description?: string;
+    content?: string;
+    category?: string;
+}): Promise<IIdea> {
+    const response = await apiClient.put<RawIdea>(`/ideas/${ideaId}`, data);
+    return mapIdea(response.data);
+}
+
+export async function deleteIdea(ideaId: string): Promise<void> {
+    await apiClient.delete(`/ideas/${ideaId}`);
+}
+
+export async function createProjectFromIdea(ideaId: string): Promise<void> {
+    await apiClient.post(`/ideas/${ideaId}/project`);
 }

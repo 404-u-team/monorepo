@@ -44,7 +44,14 @@ export class UserStore {
             });
 
             if (response.ok) {
-                const user = await response.json() as IUser;
+                const data = await response.json() as Record<string, unknown>;
+                const user: IUser = {
+                    id: data.id as string,
+                    nickname: data.nickname as string,
+                    email: data.email as string,
+                    avatarUrl: (data.avatar_uri ?? data.avatarUrl) as string | undefined,
+                    bio: data.bio as string | undefined,
+                };
                 runInAction(() => {
                     this.user = user;
                 });

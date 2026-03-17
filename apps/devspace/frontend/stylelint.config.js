@@ -31,6 +31,18 @@ export default {
             "rules": {
                 "scale-unlimited/declaration-strict-value": null
             }
+        },
+        {
+            "files": ["src/**/MdEditor.module.scss", "src/**/MdRenderer.module.scss"],
+            "rules": {
+                "selector-pseudo-class-no-unknown": [
+                    true,
+                    {
+                        "ignorePseudoClasses": ["global"]
+                    }
+                ],
+                "selector-class-pattern": null
+            }
         }
     ]
 }
