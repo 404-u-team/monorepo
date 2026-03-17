@@ -656,6 +656,9 @@ paths:
                 "404":
                     description: Идея не найдена
                     headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security: []
         put:
             summary: Редактировать идею
@@ -702,6 +705,12 @@ paths:
                 "404":
                     description: Идея не найдена
                     headers: {}
+                "409":
+                    description: Идея с таким названием уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security:
                 - BearerAuth: []
         delete:
@@ -731,6 +740,9 @@ paths:
                     headers: {}
                 "404":
                     description: Идея не найдена
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
