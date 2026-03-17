@@ -11,7 +11,7 @@ type Idea struct {
 	FavoritesCount uint      `gorm:"column:favorites_count; not null" json:"favorites_count"`
 	Category       string    `gorm:"column:category; not null" json:"category"`
 
-	Author User `gorm:"foreignKey:AuthorID"`
+	Author User `gorm:"foreignKey:AuthorID" json:"-"`
 }
 
 func (i *Idea) TableName() string { return "Idea" }

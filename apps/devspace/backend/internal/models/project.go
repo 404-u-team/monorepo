@@ -16,8 +16,8 @@ type Project struct {
 	CreatedAt   time.Time  `gorm:"column:created_at; not null" json:"created_at"`
 	UpdatedAt   time.Time  `gorm:"column:updated_at; not null" json:"updated_at"`
 
-	Leader User `gorm:"foreignKey:LeaderID"`
-	Idea   Idea `gorm:"foreignKey:IdeaID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Leader User `gorm:"foreignKey:LeaderID" json:"-"`
+	Idea   Idea `gorm:"foreignKey:IdeaID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 }
 
 func (p *Project) TableName() string { return "Project" }
