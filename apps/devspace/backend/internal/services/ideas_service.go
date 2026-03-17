@@ -84,11 +84,11 @@ func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
 
 func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error) {
 	// является ли пользователь владельцем данной идеи
-	isUserProjectLeader, err := s.repo.IsUserIdeaAuthor(ideaID, userID)
+	isUserIdeaAuthor, err := s.repo.IsUserIdeaAuthor(ideaID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
-	if !isUserProjectLeader {
+	if !isUserIdeaAuthor {
 		return nil, ErrUserNotAuthor
 	}
 
