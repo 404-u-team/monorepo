@@ -1721,6 +1721,7 @@ components:
                     type: string
                 content:
                     type: string
+                    nullable: true
                 author_id:
                     type: string
                     format: uuid
