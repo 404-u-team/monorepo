@@ -16,6 +16,7 @@ tags:
     - name: Проекты
     - name: Слоты проектов
     - name: Отклики
+    - name: Тестовые данные
 paths:
     /auth/register:
         post:
@@ -1564,6 +1565,72 @@ paths:
                     headers: {}
             security:
                 - BearerAuth: []
+    /generate-test-data:
+        get:
+            summary: Запустить генерацию тестовых данных
+            description: >-
+                Асинхронно генерирует тестовые данные: 500 пользователей, 800 навыков,
+                1000 идей, 1000 проектов (со слотами и без). Возвращает 409, если
+                генерация уже запущена.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Генерация успешно запущена
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                        example: генерация тестовых данных запущена
+                    headers: {}
+                "409":
+                    description: Генерация уже запущена
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                    headers: {}
+            security: []
+    /generate-test-data/status:
+        get:
+            summary: Статус генерации тестовых данных
+            description: Возвращает текущее состояние и процент выполнения задания генерации.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Текущий статус генерации
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GenerationStatus"
+                    headers: {}
+            security: []
+    /generate-test-data/cancel:
+        get:
+            summary: Отменить генерацию тестовых данных
+            description: Останавливает текущее задание по генерации тестовых данных.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Задание успешно отменено
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                        example: задание на генерацию данных отменено
+                    headers: {}
+            security: []
 components:
     schemas:
         UserSkillLink:
@@ -1619,6 +1686,26 @@ components:
             properties:
                 error:
                     type: string
+        GenerationStatus:
+            type: object
+            properties:
+                running:
+                    type: boolean
+                    description: true, если задание сейчас выполняется
+                stage:
+                    type: string
+                    description: Название текущего этапа генерации
+                    example: projects
+                progress:
+                    type: integer
+                    description: Процент выполнения (0–100)
+                    example: 42
+                done:
+                    type: boolean
+                    description: true, если генерация завершена
+                error:
+                    type: string
+                    description: Сообщение об ошибке (если произошла ошибка)
         GetMeResponse:
             type: object
             properties:
