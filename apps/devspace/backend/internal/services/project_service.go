@@ -79,6 +79,7 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 
 	return project, nil
 }
+
 func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error) {
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
