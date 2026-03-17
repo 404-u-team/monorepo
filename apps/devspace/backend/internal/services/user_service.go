@@ -10,9 +10,9 @@ import (
 )
 
 type UserService interface {
-	GetMe(userID uuid.UUID) (*dto.GetMeResponse, error)
-	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.GetMeResponse, error)
-	GetUserByID(userID uuid.UUID) (*dto.GetMeResponse, error)
+	GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error)
+	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error)
+	GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error)
 }
 
 type userService struct {
@@ -23,7 +23,7 @@ func NewUserService(repo repository.UserRepository) *userService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
+func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 	user, err := s.repo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -37,7 +37,7 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
 		return nil, ErrInternal
 	}
 
-	getMeResponse := dto.GetMeResponse{
+	privateUserProfile := dto.PrivateUserProfile{
 		ID:        userID,
 		Email:     user.Email,
 		Nickname:  user.Nickname,
@@ -46,10 +46,10 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.GetMeResponse, error) {
 		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
 	}
-	return &getMeResponse, nil
+	return &privateUserProfile, nil
 }
 
-func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.GetMeResponse, error) {
+func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error) {
 	if updateRequest.Nickname == nil && updateRequest.Bio == nil {
 		return nil, ErrEmptyPayload
 	}
@@ -79,7 +79,7 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 	return getMeResponse, nil
 }
 
-func (s *userService) GetUserByID(userID uuid.UUID) (*dto.GetMeResponse, error) {
+func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error) {
 	user, err := s.repo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -93,13 +93,12 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.GetMeResponse, error) 
 		return nil, ErrInternal
 	}
 
-	getMeResponse := dto.GetMeResponse{
+	getMeResponse := dto.PublicUserProfile{
 		ID:        user.ID,
-		Email:     user.Email,
 		Nickname:  user.Nickname,
+		MainRole:  user.MainRole,
 		AvatarUri: user.AvatarUrl,
 		Bio:       user.Bio,
-		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
 	}
 
