@@ -11,10 +11,13 @@ import (
 
 type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
+	GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
 	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
 	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
 	IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error)
+	IsSlotExists(slotID uuid.UUID) (bool, error)
+	IsSlotOpen(slotID uuid.UUID) (bool, error)
 }
 
 type slotRepository struct {
@@ -34,6 +37,17 @@ func (r *slotRepository) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, er
 	}
 
 	return slots, nil
+}
+
+func (r *slotRepository) GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error) {
+	var slot models.ProjectSlot
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).First(&slot)
+	if result.Error != nil {
+		log.Println("Ошибка при получении слота проекта по ID: ", result.Error)
+		return nil, result.Error
+	}
+
+	return &slot, nil
 }
 
 func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error {
@@ -98,6 +112,15 @@ func (r *slotRepository) DeleteSlotByID(slotID, projectID uuid.UUID) (int, error
 	return int(result.RowsAffected), nil
 }
 
+func (r *slotRepository) IsSlotExists(slotID uuid.UUID) (bool, error) {
+	var count int64
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Count(&count)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return count == 1, nil
+}
+
 func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error) {
 	var count int64
 	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Where("project_id = ?", projectID).Count(&count)
@@ -105,4 +128,13 @@ func (r *slotRepository) IsSlotBelongToProject(slotID, projectID uuid.UUID) (boo
 		return false, result.Error
 	}
 	return count == 1, nil
+}
+
+func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
+	var status string
+	result := r.conn.Model(&models.ProjectSlot{}).Select("status").Where("id = ?", slotID).First(&status)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return status == "open", nil
 }

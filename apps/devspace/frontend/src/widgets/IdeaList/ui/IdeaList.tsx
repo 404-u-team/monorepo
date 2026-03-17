@@ -7,13 +7,13 @@ import { DataListLayout, Button } from '@/shared/ui';
 import { useStore } from '@/shared/lib/store';
 
 interface SearchParameters {
-    page?: number | undefined;
-    search?: string | undefined;
+  page?: number | undefined;
+  search?: string | undefined;
 }
 
 export interface IdeaListProps {
-    ideas: IIdea[];
-    totalPages: number;
+  ideas: IIdea[];
+  totalPages: number;
 }
 
 export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
@@ -21,18 +21,22 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
     const searchParameters = useSearch({ strict: false });
     const navigate = useNavigate({ from: '/ideas' });
 
-    const handleSearch = (value: string): void => {
-        void navigate({
-            search: (previous: SearchParameters) => ({ ...previous, search: value || undefined, page: 1 }),
-        });
-    };
+  const handleSearch = (value: string): void => {
+    void navigate({
+      search: (previous: SearchParameters) => ({
+        ...previous,
+        search: value || undefined,
+        page: 1,
+      }),
+    });
+  };
 
-    const handlePageChange = (page: number): void => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        void navigate({
-            search: (previous: SearchParameters) => ({ ...previous, page }),
-        });
-    };
+  const handlePageChange = (page: number): void => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    void navigate({
+      search: (previous: SearchParameters) => ({ ...previous, page }),
+    });
+  };
 
     const controlsNode = userStore.isAuthenticated ? (
         <Link to="/idea/new">

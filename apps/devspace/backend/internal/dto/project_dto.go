@@ -59,7 +59,7 @@ type SafeRequest struct {
 	User SafeUser           `gorm:"foreignKey:UserID"`
 }
 
-func FromRequest(req *models.Request) SafeRequest {
+func FromRequest(req *models.ProjectRequest) SafeRequest {
 	return SafeRequest{
 		ID:          req.ID,
 		SlotID:      req.SlotID,
@@ -72,7 +72,7 @@ func FromRequest(req *models.Request) SafeRequest {
 	}
 }
 
-func FromRequests(requests []models.Request) []SafeRequest {
+func FromRequests(requests []models.ProjectRequest) []SafeRequest {
 	result := make([]SafeRequest, len(requests))
 	for i, req := range requests {
 		result[i] = FromRequest(&req)
