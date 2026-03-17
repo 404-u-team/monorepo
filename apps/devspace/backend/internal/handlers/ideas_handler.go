@@ -121,6 +121,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotAuthor) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
 		}
 		if errors.Is(err, services.ErrIdeaConflict) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
