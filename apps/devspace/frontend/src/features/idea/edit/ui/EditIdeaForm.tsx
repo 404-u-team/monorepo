@@ -40,8 +40,9 @@ export const EditIdeaForm = observer(function EditIdeaForm({ idea, onSuccess, on
             onSubmit={(event) => { void handleSubmit(event); }}
         >
             <div className={styles.field}>
-                <label className={styles.label}>Название</label>
+                <label className={styles.label} htmlFor="idea-title">Название</label>
                 <Input
+                    id="idea-title"
                     value={title}
                     onChange={(event_) => { setTitle(event_.target.value); }}
                     placeholder="Введите название..."
@@ -50,8 +51,9 @@ export const EditIdeaForm = observer(function EditIdeaForm({ idea, onSuccess, on
                 />
             </div>
             <div className={styles.field}>
-                <label className={styles.label}>Категория</label>
+                <label className={styles.label} htmlFor="idea-category">Категория</label>
                 <Input
+                    id="idea-category"
                     value={category}
                     onChange={(event_) => { setCategory(event_.target.value); }}
                     placeholder="Например: Education, Technology..."
@@ -59,8 +61,9 @@ export const EditIdeaForm = observer(function EditIdeaForm({ idea, onSuccess, on
                 />
             </div>
             <div className={styles.field}>
-                <label className={styles.label}>Краткое описание</label>
+                <label className={styles.label} htmlFor="idea-description">Краткое описание</label>
                 <textarea
+                    id="idea-description"
                     className={styles.textarea}
                     value={description}
                     onChange={(event_) => { setDescription(event_.target.value); }}
@@ -69,8 +72,9 @@ export const EditIdeaForm = observer(function EditIdeaForm({ idea, onSuccess, on
                 />
             </div>
             <div className={styles.field}>
-                <label className={styles.label}>Содержимое</label>
+                <label className={styles.label} htmlFor="idea-content">Содержимое</label>
                 <MdEditor
+                    id="idea-content"
                     value={content}
                     onChange={setContent}
                     placeholder="Напишите подробное содержимое идеи..."
