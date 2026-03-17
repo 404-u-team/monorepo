@@ -1,9 +1,23 @@
 import { apiClient } from '@/shared/api/client';
 import type { IIdea } from '../model/IIdea';
 
+function mapIdea(data: any): IIdea {
+    return {
+        id: data.id || data.ID,
+        title: data.title || data.Title,
+        description: data.description || data.Description,
+        category: data.category || data.Category,
+        author_id: data.author_id || data.AuthorID,
+        created_at: data.created_at || data.CreatedAt,
+        updated_at: data.updated_at || data.UpdatedAt,
+        views_count: data.views_count ?? data.ViewsCount ?? 0,
+        favorites_count: data.favorites_count ?? data.FavoritesCount ?? 0,
+    };
+}
+
 export async function fetchIdeaById(ideaId: string): Promise<IIdea> {
-    const response = await apiClient.get<IIdea>(`/ideas/${ideaId}`);
-    return response.data;
+    const response = await apiClient.get<any>(`/ideas/${ideaId}`);
+    return mapIdea(response.data);
 }
 
 export async function toggleIdeaFavorite(ideaId: string): Promise<{ is_favorite: boolean }> {
@@ -25,9 +39,9 @@ export interface PaginatedIdeas {
 }
 
 export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<PaginatedIdeas> {
-    const response = await apiClient.get<IIdea[]>('/ideas', { params: parameters });
+    const response = await apiClient.get<any[]>('/ideas', { params: parameters });
 
-    const items = response.data;
+    const items = response.data.map(mapIdea);
     const totalCountHeader = response.headers['x-total-count'] as string | undefined;
     const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
@@ -41,8 +55,6 @@ export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<Pag
         total = parsedTotal;
         totalPages = Math.ceil(total / limit);
     } else {
-        // Fallback when the backend does not provide X-Total-Count:
-        // use at least the number of items we've seen so far.
         total = startAt + items.length;
         totalPages = Math.max(1, Math.ceil(total / limit));
     }
@@ -52,4 +64,22 @@ export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<Pag
         total,
         totalPages,
     };
+}
+
+export async function createIdea(data: { title: string; description: string }): Promise<IIdea> {
+    const response = await apiClient.post<any>('/ideas', data);
+    return mapIdea(response.data);
+}
+
+export async function updateIdea(ideaId: string, data: { title: string; description: string }): Promise<IIdea> {
+    const response = await apiClient.put<any>(`/ideas/${ideaId}`, data);
+    return mapIdea(response.data);
+}
+
+export async function deleteIdea(ideaId: string): Promise<void> {
+    await apiClient.delete(`/ideas/${ideaId}`);
+}
+
+export async function createProjectFromIdea(ideaId: string): Promise<void> {
+    await apiClient.post(`/ideas/${ideaId}/project`);
 }

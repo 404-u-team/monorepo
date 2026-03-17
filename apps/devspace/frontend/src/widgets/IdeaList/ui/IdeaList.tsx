@@ -1,7 +1,10 @@
 import { type JSX } from 'react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useNavigate, useSearch, Link } from '@tanstack/react-router';
+import { observer } from 'mobx-react-lite';
+import { Plus } from 'lucide-react';
 import { IdeaCard, type IIdea } from '@/entities/idea';
-import { DataListLayout } from '@/shared/ui';
+import { DataListLayout, Button } from '@/shared/ui';
+import { useStore } from '@/shared/lib/store';
 
 interface SearchParameters {
     page?: number | undefined;
@@ -13,7 +16,8 @@ export interface IdeaListProps {
     totalPages: number;
 }
 
-export function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
+export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
+    const { userStore } = useStore();
     const searchParameters = useSearch({ strict: false });
     const navigate = useNavigate({ from: '/ideas' });
 
@@ -30,6 +34,15 @@ export function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
         });
     };
 
+    const controlsNode = userStore.isAuthenticated ? (
+        <Link to="/idea/new">
+            <Button>
+                <Plus size={18} />
+                Добавить идею
+            </Button>
+        </Link>
+    ) : undefined;
+
     return (
         <DataListLayout
             title="Идеи"
@@ -41,13 +54,15 @@ export function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
             currentPage={Number((searchParameters as Record<string, string>).page) || 1}
             totalPages={totalPages}
             onPageChange={handlePageChange}
+            controlsNode={controlsNode}
         >
             {ideas.map((idea) => (
                 <IdeaCard
                     key={idea.id}
                     ideaId={idea.id}
+                    to={`/idea/${idea.id}`}
                 />
             ))}
         </DataListLayout>
     );
-}
+});
