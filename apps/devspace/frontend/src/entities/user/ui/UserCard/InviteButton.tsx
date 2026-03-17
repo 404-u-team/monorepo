@@ -1,10 +1,12 @@
 import { useState } from "react";
 import type { JSX } from "react";
+import { Button } from "@/shared/ui/Button/Button";
 import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
+import { inviteUserToSlot } from "@/entities/user/api/userApi";
 
 interface InviteButtonProps {
-  project_id?: string;
-  slot_id?: string;
+  project_id?: string | undefined;
+  slot_id?: string | undefined;
   user_id?: string;
   onInvite?: (userId: string) => Promise<void>;
 }
@@ -18,39 +20,35 @@ const InviteButton = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInvite = async (): Promise<void> => {
-    if (project_id === undefined || slot_id === undefined) return;
+    if (
+      project_id === undefined ||
+      slot_id === undefined ||
+      user_id === undefined
+    ) {
+      return;
+    }
 
     setIsLoading(true);
     try {
       if (onInvite) {
-        await onInvite(String(user_id));
+        await onInvite(user_id);
       } else {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(
-          `/api/projects/${project_id}/slots/${slot_id}/invite`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${String(token)}`,
-            },
-            body: JSON.stringify({
-              user_id: user_id,
-            }),
-          },
-        );
-
-        if (!response.ok) throw new Error("Ошибка отправки");
+        await inviteUserToSlot({
+          project_id,
+          slot_id,
+          id: user_id,
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Ошибка приглашения:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return project_id !== undefined && slot_id !== undefined ? (
-    <button
+  return (
+    <Button
+      variant="primary"
       className={styles.inviteButton}
       onClick={() => {
         handleInvite().catch(console.error);
@@ -58,8 +56,8 @@ const InviteButton = ({
       disabled={isLoading}
     >
       {isLoading ? "..." : "Пригласить"}
-    </button>
-  ) : undefined;
+    </Button>
+  );
 };
 
 export default InviteButton;
