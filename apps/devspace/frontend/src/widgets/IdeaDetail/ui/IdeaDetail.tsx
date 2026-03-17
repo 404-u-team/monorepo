@@ -198,6 +198,11 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
                                     className={styles.avatar}
                                     src={author.avatar_uri}
                                     alt={author.nickname}
+                                    onError={(event) => {
+                                        const target = event.currentTarget;
+                                        target.onerror = null;
+                                        target.style.display = 'none';
+                                    }}
                                 />
                                 <span className={styles.nickname}>{author.nickname}</span>
                             </div>
