@@ -80,7 +80,9 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, to, className }: Id
         >
             <div className={styles.imageWrapper}>
                 <div className={styles.imagePlaceholder} />
-                <Badge className={styles.categoryBadge}>{idea.category}</Badge>
+                {idea.category !== undefined && idea.category !== '' && (
+                    <Badge className={styles.categoryBadge}>{idea.category}</Badge>
+                )}
             </div>
 
             <div className={styles.content}>

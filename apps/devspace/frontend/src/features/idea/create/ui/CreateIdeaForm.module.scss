@@ -6,7 +6,7 @@
     max-width: 1200px;
     margin: 0 auto;
 
-    @media (max-width: 1024px) {
+    @media (width <= 1024px) {
         grid-template-columns: 1fr;
         gap: 3rem;
     }
@@ -32,6 +32,12 @@
 }
 
 .textareaWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;

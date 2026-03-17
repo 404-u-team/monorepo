@@ -2,7 +2,7 @@ import { useState, type JSX } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { observer } from 'mobx-react-lite';
 import { Plus } from 'lucide-react';
-import { Button, Input, Badge } from '@/shared/ui';
+import { Button, Input, Badge, MdEditor } from '@/shared/ui';
 import { createIdea } from '@/entities/idea';
 import styles from './CreateIdeaForm.module.scss';
 
@@ -10,17 +10,19 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('');
+    const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
 
-    const handleSubmit = async (event: React.FormEvent): Promise<void> => {
+    const handleSubmit = async (event: React.SyntheticEvent): Promise<void> => {
         event.preventDefault();
-        if (!title || !description) return;
+        if (!title) return;
 
         setIsSubmitting(true);
         setError(undefined);
         try {
-            const newIdea = await createIdea({ title, description });
+            const newIdea = await createIdea({ title, description, content, category });
             void navigate({ to: `/idea/${newIdea.id}` });
         } catch {
             setError('Произошла ошибка при создании идеи. Попробуйте снова.');
@@ -33,32 +35,53 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
         <div className={styles.wrapper}>
             <div className={styles.formSection}>
                 <h1 className={styles.title}>Добавить новую идею</h1>
-                <form className={styles.form} onSubmit={handleSubmit}>
-                    <div className={styles.textareaWrapper}>
+                <form 
+                    className={styles.form} 
+                    onSubmit={(event) => { void handleSubmit(event); }}
+                >
+                    <div className={styles.field}>
                         <label className={styles.label}>Название идеи</label>
                         <Input
                             placeholder="Введите название..."
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(event_) => { setTitle(event_.target.value); }}
                             required
                             disabled={isSubmitting}
                         />
                     </div>
-                    <div className={styles.textareaWrapper}>
-                        <label className={styles.label}>Описание</label>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Категория</label>
+                        <Input
+                            placeholder="Например: Education, Technology..."
+                            value={category}
+                            onChange={(event_) => { setCategory(event_.target.value); }}
+                            disabled={isSubmitting}
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Краткое описание</label>
                         <textarea
                             className={styles.textarea}
-                            placeholder="Опишите вашу идею подробно..."
+                            placeholder="Краткое описание вашей идеи..."
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            required
+                            onChange={(event_) => { setDescription(event_.target.value); }}
+                            disabled={isSubmitting}
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Содержимое</label>
+                        <MdEditor
+                            value={content}
+                            onChange={setContent}
+                            placeholder="Напишите подробное содержимое идеи..."
+                            height={360}
                             disabled={isSubmitting}
                         />
                     </div>
 
                     {error !== undefined && <p className={styles.error}>{error}</p>}
 
-                    <Button type="submit" fullWidth disabled={isSubmitting || !title || !description}>
+                    <Button type="submit" fullWidth disabled={isSubmitting || !title}>
                         <Plus size={18} />
                         Опубликовать идею
                     </Button>
@@ -71,7 +94,9 @@ export const CreateIdeaForm = observer(function CreateIdeaForm(): JSX.Element {
                     <article className={styles.mockCard}>
                         <div className={styles.imagePlaceholder}>
                             <div className={styles.gradient} />
-                            <Badge className={styles.badge}>Preview</Badge>
+                            {category !== '' && (
+                                <Badge className={styles.badge}>{category}</Badge>
+                            )}
                         </div>
                         <div className={styles.cardBody}>
                             <h3 className={styles.cardTitle}>{title || 'Заголовок идеи'}</h3>
