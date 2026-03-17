@@ -12,6 +12,7 @@ import (
 type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.GetMeResponse, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.GetMeResponse, error)
+	GetUserByID(userID uuid.UUID) (*dto.GetMeResponse, error)
 }
 
 type userService struct {
@@ -76,4 +77,31 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 	}
 
 	return getMeResponse, nil
+}
+
+func (s *userService) GetUserByID(userID uuid.UUID) (*dto.GetMeResponse, error) {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	userSkills, err := s.repo.GetUserSkills(user.ID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	getMeResponse := dto.GetMeResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Nickname:  user.Nickname,
+		AvatarUri: user.AvatarUrl,
+		Bio:       user.Bio,
+		CreatedAt: user.CreatedAt,
+		Skills:    userSkills,
+	}
+
+	return &getMeResponse, nil
 }

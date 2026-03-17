@@ -80,6 +80,28 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 	c.JSON(http.StatusOK, meResponse)
 }
 
+func (h *userHandler) GetUserByID(c *gin.Context) {
+	userIDStr := c.Param("userID")
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	getMeResponse, err := h.userService.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, getMeResponse)
+}
+
 func getUserId(c *gin.Context) (uuid.UUID, error) {
 	userIDAny, ok := c.Get(middleware.UserIdKey)
 	if !ok {
