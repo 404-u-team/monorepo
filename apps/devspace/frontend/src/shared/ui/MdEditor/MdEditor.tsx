@@ -49,6 +49,7 @@ const extraEditorCommands = [
 ];
 
 export interface MdEditorProps {
+    id?: string | undefined;
     value: string;
     onChange: (value: string) => void;
     height?: number | undefined;
@@ -59,6 +60,7 @@ export interface MdEditorProps {
 }
 
 export function MdEditor({
+    id,
     value,
     onChange,
     height = 360,
@@ -78,6 +80,7 @@ export function MdEditor({
                 {...(minHeight !== undefined ? { minHeight } : {})}
                 visibleDragbar={false}
                 textareaProps={{
+                    id,
                     placeholder,
                     disabled,
                 }}

@@ -13,11 +13,11 @@ import styles from './IdeaCard.module.scss';
 
 export interface IdeaCardProps {
     ideaId: string;
-    to?: string | undefined;
+    href?: string | undefined;
     className?: string | undefined;
 }
 
-export const IdeaCard = observer(function IdeaCard({ ideaId, to, className }: IdeaCardProps): JSX.Element {
+export const IdeaCard = observer(function IdeaCard({ ideaId, href, className }: IdeaCardProps): JSX.Element {
     const { userStore } = useStore();
 
     const [idea, setIdea] = useState<IIdea | undefined>(undefined);
@@ -70,13 +70,14 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, to, className }: Id
         return <IdeaCardSkeleton className={className} />;
     }
 
-    const Wrapper = to !== undefined ? Link : 'article';
-    const wrapperProps = to !== undefined ? { to } : {};
+    const targetHref = href ?? (ideaId !== '' ? `/idea/${ideaId}` : undefined);
+    const Wrapper = targetHref !== undefined ? Link : 'article';
+    const wrapperProps = targetHref !== undefined ? { to: targetHref } : {};
 
     return (
         <Wrapper
             {...wrapperProps}
-            className={clsx(styles.card, to !== undefined && styles.link, className)}
+            className={clsx(styles.card, targetHref !== undefined && styles.link, className)}
         >
             <div className={styles.imageWrapper}>
                 <div className={styles.imagePlaceholder} />

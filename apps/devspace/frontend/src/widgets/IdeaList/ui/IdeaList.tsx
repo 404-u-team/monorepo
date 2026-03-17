@@ -64,7 +64,7 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
                 <IdeaCard
                     key={idea.id}
                     ideaId={idea.id}
-                    to={`/idea/${idea.id}`}
+                    href={`/idea/${idea.id}`}
                 />
             ))}
         </DataListLayout>
