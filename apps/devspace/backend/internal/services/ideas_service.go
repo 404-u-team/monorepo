@@ -92,7 +92,7 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 		return nil, ErrUserNotAuthor
 	}
 
-	// обновление проекта по ID
+	// обновление идеи по ID
 	rowsAffected, err := s.repo.UpdateIdeaByID(ideaID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
