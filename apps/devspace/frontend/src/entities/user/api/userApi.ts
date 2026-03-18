@@ -8,15 +8,15 @@ export interface InviteToSlotParameters {
 }
 
 export interface IInviteResponse {
-  ID: string;
-  SlotID: string;
-  UserID: string;
-  ProjectID: string;
-  LeaderID: string;
-  CoverLetter: string;
-  CreatedAt: string;
-  Status: string;
-  Type: string;
+  id: string;
+  slot_id: string;
+  user_id: string;
+  project_id: string;
+  leader_id: string;
+  cover_letter: string;
+  created_at: string;
+  status: string;
+  type: string;
 }
 
 const userCache = new Map<string, Promise<IUserResponse>>();
