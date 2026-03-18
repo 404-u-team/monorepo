@@ -158,7 +158,7 @@ func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
 			return
 		} else {
 			ctx.Status(http.StatusInternalServerError)
-			log.Println("Ошибка получение прав пользователя на удаление записи: " + dbErr.Error())
+			log.Println("Ошибка получения прав пользователя на удаление записи: " + dbErr.Error())
 		}
 		return
 	}
@@ -170,10 +170,14 @@ func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
 
 	dbErr = services.DeleteIdeaByID(ideaID, ih.db)
 	if dbErr != nil {
-		ctx.Status(http.StatusInternalServerError)
-		log.Println("Ошибка удаления записи: " + dbErr.Error())
+		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "идеи с таким ID не существует"})
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+			log.Println("Ошибка удаления записи: " + dbErr.Error())
+		}
 		return
 	}
 
-	ctx.Status(204)
+	ctx.Status(http.StatusNoContent)
 }

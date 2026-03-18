@@ -129,18 +129,24 @@ func CheckRightsOnIdea(ideaID uuid.UUID, userID uuid.UUID, db *gorm.DB) (bool, e
 		return true, nil
 	}
 
-	var ownerID uuid.UUID
-	res = db.Model(&models.Idea{}).Where("id = ?", ideaID).Select("owner_id").First(&ownerID)
+	var authorID uuid.UUID
+	res = db.Model(&models.Idea{}).Where("id = ?", ideaID).Select("author_id").First(&authorID)
 
 	if res.Error != nil {
 		return false, res.Error
 	}
 
-	return ownerID == userID, nil
+	return authorID == userID, nil
 }
 
 func DeleteIdeaByID(ideaID uuid.UUID, db *gorm.DB) error {
 	res := db.Delete(&models.Idea{}, "id = ?", ideaID)
 
-	return res.Error
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
