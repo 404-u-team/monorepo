@@ -40,7 +40,7 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
                 if (cancelled) return;
                 setProject(data);
 
-                const occupiedUserIds = data.slots
+                const occupiedUserIds = (data.slots ?? [])
                     .map((s) => s.user_id)
                     .filter((uid): uid is string => uid !== null);
 
@@ -65,10 +65,12 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
         return <ProjectCardSkeleton className={className} />;
     }
 
-    const openSlots = project.slots.filter((s) => s.status === 'open');
+    const openSlots = (project.slots ?? []).filter((s) => s.status === 'open');
 
+    // Collect unique primary (1st level) skills only — secondary skills are shown on detail page
+    // TODO: When user primary skill is implemented, show slot skills relevant to the user's primary skill
     const uniqueSkills: IProjectSlotSkill[] = [];
-    for (const slot of project.slots) {
+    for (const slot of (project.slots ?? [])) {
         if (slot.skill !== undefined && !uniqueSkills.some((s) => s.id === slot.skill?.id)) {
             uniqueSkills.push(slot.skill);
         }

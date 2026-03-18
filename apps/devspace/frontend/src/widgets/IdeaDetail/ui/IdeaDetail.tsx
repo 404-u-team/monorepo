@@ -1,25 +1,27 @@
 import { useEffect, useState, useRef, type JSX } from 'react';
-import { useParams, Link } from '@tanstack/react-router';
+import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { observer } from 'mobx-react-lite';
-import { Heart, Eye, ArrowLeft, Rocket, Pencil } from 'lucide-react';
+import { Heart, Eye, ArrowLeft, Rocket, Pencil, Trash2 } from 'lucide-react';
 import { useStore } from '@/shared/lib/store';
-import { Button, Badge, IconCounter, Skeleton, MdRenderer } from '@/shared/ui';
+import { Button, Badge, IconCounter, Skeleton, MdRenderer, ConfirmModal } from '@/shared/ui';
 import { fetchUserById, type IUserResponse, type UserStore } from '@/entities/user';
-import { fetchIdeaById, toggleIdeaFavorite, createProjectFromIdea, type IIdea } from '@/entities/idea';
+import { fetchIdeaById, toggleIdeaFavorite, deleteIdea, type IIdea } from '@/entities/idea';
 import { EditIdeaForm } from '@/features/idea/edit';
 import styles from './IdeaDetail.module.scss';
 
 export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
     const { ideaId } = useParams({ from: '/idea/$ideaId' });
     const { userStore } = useStore() as unknown as { userStore: UserStore };
+    const navigate = useNavigate();
 
     const [idea, setIdea] = useState<IIdea | undefined>(undefined);
     const [author, setAuthor] = useState<IUserResponse | undefined>(undefined);
     const [isFavorite, setIsFavorite] = useState(false);
     const [favoritesCount, setFavoritesCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const isCancelled = useRef(false);
 
@@ -68,17 +70,27 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
         }
     };
 
-    const handleCreateProject = async (): Promise<void> => {
-        if (!userStore.isAuthenticated) return;
-        setIsCreatingProject(true);
+    const handleCreateProject = (): void => {
+        if (!idea) return;
+        void navigate({
+            to: '/project/new',
+            search: {
+                title: idea.title,
+                description: idea.description,
+                idea_id: idea.id,
+            },
+        });
+    };
+
+    const handleDelete = async (): Promise<void> => {
+        setIsDeleting(true);
         try {
-            await createProjectFromIdea(ideaId);
-            // Redirect to projects or show success
-            alert('Проект успешно создан!');
+            await deleteIdea(ideaId);
+            void navigate({ to: '/ideas' });
         } catch {
-            // handle error
+            setIsDeleting(false);
         } finally {
-            setIsCreatingProject(false);
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -153,15 +165,24 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
                     </div>
                     <div className={styles.actionButtons}>
                         {isAuthor && (
-                            <Button onClick={() => { setIsEditing(true); }}>
-                                <Pencil size={18} />
-                                Редактировать
-                            </Button>
+                            <>
+                                <Button onClick={() => { setIsEditing(true); }}>
+                                    <Pencil size={18} />
+                                    Редактировать
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => { setIsDeleteModalOpen(true); }}
+                                    disabled={isDeleting}
+                                >
+                                    <Trash2 size={18} />
+                                    Удалить
+                                </Button>
+                            </>
                         )}
                         {userStore.isAuthenticated && (
                             <Button
-                                onClick={() => { void handleCreateProject(); }}
-                                disabled={isCreatingProject}
+                                onClick={handleCreateProject}
                                 className={styles.createProjectBtn}
                             >
                                 <Rocket size={18} />
@@ -210,6 +231,17 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
                     </div>
                 </aside>
             </div>
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="Удалить идею?"
+                description="Вы уверены, что хотите удалить эту идею? Это действие нельзя отменить."
+                severity="danger"
+                confirmLabel="Удалить"
+                cancelLabel="Отмена"
+                isLoading={isDeleting}
+                onConfirm={() => { void handleDelete(); }}
+                onCancel={() => { setIsDeleteModalOpen(false); }}
+            />
         </div>
     );
 });
