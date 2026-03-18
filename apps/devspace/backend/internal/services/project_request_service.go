@@ -75,7 +75,7 @@ func (s *projectRequestService) CreateProjectRequestApply(payload *dto.CreatePro
 		SlotID: slotID,
 		UserID: userID,
 		Type:   "apply",
-		Status: "open",
+		Status: "pending",
 	}
 	if payload.CoverLetter != nil {
 		projectRequest.CoverLetter = *payload.CoverLetter
@@ -166,30 +166,39 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 }
 
 func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error) {
-	// является ли пользователь лидером данного проекта
+	// получение userID лидера проекта
 	projectID, err := s.projectRequestRepo.GetProjectIDByRequestID(requestID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrProjectRequestNotFound
 		}
+		return nil, ErrInternal
 	}
 
 	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
-	if !isUserProjectLeader {
-		return nil, ErrUserNotLeader
-	}
 
-	// проверка, что заявка в статусе ожидании
-	projectRequest, err := s.projectRequestRepo.GetProjectRequestByID(projectID)
+	// получение заявки
+	projectRequest, err := s.projectRequestRepo.GetProjectRequestByID(requestID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
+	// заявка должна быть в статусе ожидания
 	if projectRequest.Status != "pending" {
 		return nil, ErrProjectRequestNotPending
+	}
+
+	// если тип заявки "apply" то ее может принять/отклонить только лидер
+	if projectRequest.Type == "apply" && !isUserProjectLeader {
+		return nil, ErrUserNotLeader
+	}
+
+	// если тип заявки "invite", то ее может принять отклонить только пользователь заявки
+	if projectRequest.Type == "invite" && projectRequest.UserID != userID {
+		return nil, ErrProjectRequestDontBelongToUser
 	}
 
 	// обновление заявки
@@ -202,8 +211,14 @@ func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID
 		return nil, ErrProjectRequestNotFound
 	}
 
+	// добавление пользователя в слот проекта
+	err = s.projectSlotRepo.PutUserIntoSlot(projectRequest.SlotID, projectRequest.UserID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
 	// получаем обновленную заявку для возвращения
-	projectRequest, err = s.projectRequestRepo.GetProjectRequestByID(projectID)
+	projectRequest, err = s.projectRequestRepo.GetProjectRequestByID(requestID)
 	if err != nil {
 		return nil, ErrInternal
 	}

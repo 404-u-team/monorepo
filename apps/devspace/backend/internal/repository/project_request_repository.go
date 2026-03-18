@@ -49,8 +49,14 @@ func (r *projectRequestRepository) UpdateProjectRequest(requestID uuid.UUID, sta
 }
 
 func (r *projectRequestRepository) GetProjectIDByRequestID(requestID uuid.UUID) (uuid.UUID, error) {
+	var slotID uuid.UUID
+	result := r.conn.Model(&models.ProjectRequest{}).Select("slot_id").Where("request_id = ?", requestID).First(&slotID)
+	if result.Error != nil {
+		return uuid.Nil, result.Error
+	}
+
 	var projectID uuid.UUID
-	result := r.conn.Model(&models.ProjectRequest{}).Select("project_id").Where("request_id = ?", requestID).First(&projectID)
+	result = r.conn.Model(&models.ProjectSlot{}).Select("projectID").Where("id = ?", slotID).First(&projectID)
 	if result.Error != nil {
 		return uuid.Nil, result.Error
 	}

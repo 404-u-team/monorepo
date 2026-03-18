@@ -1483,7 +1483,7 @@ paths:
                                 $ref: "#/components/schemas/Request"
                     headers: {}
                 "400":
-                    description: Нельзя принять (заяка не  статусе ожидания)
+                    description: "Нельзя принять: заявка не в статусе ожидания"
                     headers: {}
                 "401":
                     description: Не авторизован
@@ -1524,7 +1524,7 @@ paths:
                                 $ref: "#/components/schemas/Request"
                     headers: {}
                 "400":
-                    description: Нельзя принять (заяка не  статусе ожидания)
+                    description: "Нельзя отклонить: заявка не в статусе ожидания"
                 "401":
                     description: Не авторизован
                     headers: {}
