@@ -11,6 +11,12 @@ type GetListIdeasRequest struct {
 
 type CreateIdeaRequest struct {
 	Title       string  `json:"title" binding:"required"`
-	Description *string `json:"description"`
+	Description string  `json:"description" binding:"required"`
+	Content     *string `json:"content"`
 	Category    *string `json:"category"`
+}
+
+type UpdateIdeaRequest struct {
+	Title       *string `json:"title" binding:"min=3,max=255"`
+	Description *string `json:"description" binding:"min=3,max=255"`
 }

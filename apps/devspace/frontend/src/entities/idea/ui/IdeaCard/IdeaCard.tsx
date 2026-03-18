@@ -8,14 +8,16 @@ import { fetchUserById, type IUserResponse } from '@/entities/user';
 import type { IIdea } from '../../model/IIdea';
 import { fetchIdeaById, toggleIdeaFavorite } from '../../api/ideaApi';
 import { IdeaCardSkeleton } from '../IdeaCardSkeleton/IdeaCardSkeleton';
+import { Link } from '@tanstack/react-router';
 import styles from './IdeaCard.module.scss';
 
 export interface IdeaCardProps {
     ideaId: string;
+    href?: string | undefined;
     className?: string | undefined;
 }
 
-export const IdeaCard = observer(function IdeaCard({ ideaId, className }: IdeaCardProps): JSX.Element {
+export const IdeaCard = observer(function IdeaCard({ ideaId, href, className }: IdeaCardProps): JSX.Element {
     const { userStore } = useStore();
 
     const [idea, setIdea] = useState<IIdea | undefined>(undefined);
@@ -68,11 +70,20 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, className }: IdeaCa
         return <IdeaCardSkeleton className={className} />;
     }
 
+    const targetHref = href ?? (ideaId !== '' ? `/idea/${ideaId}` : undefined);
+    const Wrapper = targetHref !== undefined ? Link : 'article';
+    const wrapperProps = targetHref !== undefined ? { to: targetHref } : {};
+
     return (
-        <article className={clsx(styles.card, className)}>
+        <Wrapper
+            {...wrapperProps}
+            className={clsx(styles.card, targetHref !== undefined && styles.link, className)}
+        >
             <div className={styles.imageWrapper}>
                 <div className={styles.imagePlaceholder} />
-                <Badge className={styles.categoryBadge}>{idea.category}</Badge>
+                {idea.category !== undefined && idea.category !== '' && (
+                    <Badge className={styles.categoryBadge}>{idea.category}</Badge>
+                )}
             </div>
 
             <div className={styles.content}>
@@ -108,6 +119,7 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, className }: IdeaCa
                         count={favoritesCount}
                         active={isFavorite}
                         onClick={(event) => {
+                            event.preventDefault();
                             event.stopPropagation();
                             void handleFavoriteClick();
                         }}
@@ -118,6 +130,6 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, className }: IdeaCa
                     />
                 </div>
             </div>
-        </article>
+        </Wrapper>
     );
 });

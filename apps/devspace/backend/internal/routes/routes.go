@@ -39,6 +39,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	projectRepo := repository.NewProjectRepository(dbConn)
 	slotRepo := repository.NewSlotRepository(dbConn)
 	projectRequestRepo := repository.NewProjectRequestRepository(dbConn)
+	ideaRepo := repository.NewIdeaRepository(dbConn)
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
@@ -46,6 +47,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	projectService := services.NewProjectService(projectRepo)
 	slotService := services.NewSlotService(slotRepo, projectRepo)
 	projectRequestService := services.NewProjectRequestService(projectRequestRepo, slotRepo, projectRepo)
+	ideaService := services.NewIdeaService(ideaRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
@@ -53,8 +55,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
-	ideaHandler := handlers.NewIdeaHandler(dbConn)
+	ideaHandler := handlers.NewIdeaHandler(ideaService, dbConn)
 	projectRequestHandler := handlers.NewProjectRequestHandler(projectRequestService)
+	testDataHandler := handlers.NewTestDataHandler(services.NewTestDataService(dbConn, config))
 
 	api := router.Group("")
 	{
@@ -62,6 +65,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.POST("/auth/register", authHandler.Register)
 		api.POST("/auth/login", authHandler.Login)
 		api.POST("/auth/refresh", authHandler.Refresh)
+
+		api.GET("/users/:userID", userHandler.GetUserByID)
+
 		api.GET("/skills", skillHandler.GetSkills)
 		api.GET("/skills/:id", skillHandler.GetSkillByID)
 
@@ -70,6 +76,12 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
 		api.GET("/ideas", ideaHandler.GetIdeas)
+		api.GET("/ideas/:id", ideaHandler.GetIdeaByID)
+
+		// тестовые данные (dev-only)
+		api.GET("/generate-test-data", testDataHandler.Start)
+		api.GET("/generate-test-data/status", testDataHandler.Status)
+		api.GET("/generate-test-data/cancel", testDataHandler.Cancel)
 
 		// защищенные
 		protected := api.Group("")
@@ -88,6 +100,11 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
+			protected.PUT("/requests/:projectRequestID/accept", projectRequestHandler.AcceptProjectRequest)
+			protected.PUT("/requests/:projectRequestID/reject", projectRequestHandler.RejectProjectRequest)
+
+			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
+
 			protected.POST("/projects/:projectID/slots/:slotID/apply", projectRequestHandler.CreateProjectRequestApply)
 			protected.POST("/projects/:projectID/slots/:slotID/invite", projectRequestHandler.CreateProjectRequestInvite)
 
@@ -95,6 +112,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
 
 			protected.POST("/ideas", ideaHandler.AddIdea)
+			protected.DELETE("/ideas/:id", ideaHandler.DeleteIdeaByID)
 		}
 
 		//только для админов

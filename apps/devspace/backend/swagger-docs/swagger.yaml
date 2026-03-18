@@ -16,6 +16,7 @@ tags:
     - name: Проекты
     - name: Слоты проектов
     - name: Отклики
+    - name: Тестовые данные
 paths:
     /auth/register:
         post:
@@ -42,7 +43,7 @@ paths:
                                 password:
                                     type: string
                                     format: password
-                                    minLength: 6
+                                    minLength: 8
                                     example: securePassword123
                                 nickname:
                                     type: string
@@ -54,9 +55,23 @@ paths:
             responses:
                 "201":
                     description: Пользователь успешно зарегистрирован
-                    headers: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/AccessTokenResponse"
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                            description: HttpOnly cookie с refresh_token
                 "400":
-                    description: Ошибка валидации (например, email уже существует)
+                    description: Ошибка валидации запроса
+                    headers: {}
+                "409":
+                    description: Пользователь с таким email уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security: []
     /auth/login:
@@ -82,68 +97,58 @@ paths:
                                     type: string
                                     format: password
                         example:
-                            login: Einar_Kuphal@gmail.com
-                            password: _VmgGaB1xNOl8Op
+                            login: user@example.com
+                            password: securePassword123
                 required: true
             responses:
                 "200":
-                    description: Успешный вход. Возвращает токены.
+                    description: Успешный вход. Возвращает access token.
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    access_token:
-                                        type: string
-                                    refresh_token:
-                                        type: string
-                                    token_type:
-                                        type: string
-                                        example: Bearer
+                                $ref: "#/components/schemas/AccessTokenResponse"
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                            description: HttpOnly cookie с refresh_token
+                "400":
+                    description: Ошибка валидации запроса
                     headers: {}
                 "401":
                     description: Неверные учетные данные
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security: []
     /auth/refresh:
         post:
             summary: Обновление Access токена
             deprecated: false
-            description: Получение новой пары токенов по Refresh токену.
+            description: Получение нового access token по refresh_token из HttpOnly cookie.
             tags:
                 - Аутентификация
             parameters: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            required:
-                                - refresh_token
-                            properties:
-                                refresh_token:
-                                    type: string
-                        example:
-                            refresh_token: ea Ut ipsum ad
-                required: true
             responses:
                 "200":
-                    description: Токены успешно обновлены.
+                    description: Access token успешно обновлен.
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    access_token:
-                                        type: string
-                                    refresh_token:
-                                        type: string
-                    headers: {}
+                                $ref: "#/components/schemas/AccessTokenResponse"
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                            description: HttpOnly cookie с новым refresh_token
                 "401":
                     description: Недействительный или просроченный Refresh токен
                     headers: {}
-            security:
-                - BearerAuth: []
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
+            security: []
     /users/me:
         get:
             summary: Получить свой профиль
@@ -152,23 +157,19 @@ paths:
             tags:
                 - Пользователи
             parameters: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties: {}
-                        example: {}
             responses:
                 "200":
                     description: Информация о профиле
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/PrivateUserProfile"
+                                $ref: "#/components/schemas/GetMeResponse"
                     headers: {}
                 "401":
                     description: Не авторизован
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -210,6 +211,12 @@ paths:
                 "401":
                     description: Не авторизован
                     headers: {}
+                "409":
+                    description: Пользователь с таким nickname уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security:
                 - BearerAuth: []
     /users/me/skills:
@@ -239,12 +246,22 @@ paths:
             responses:
                 "201":
                     description: Навык успешно добавлен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserSkillLink"
                     headers: {}
                 "400":
                     description: Навык уже существует у пользователя или не найден
                     headers: {}
                 "401":
                     description: Не авторизован
+                    headers: {}
+                "409":
+                    description: Пользователь с таким навыком уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -259,9 +276,8 @@ paths:
             parameters:
                 - name: skill_id
                   in: path
-                  description: ID навыка (категории) для удаления
+                  description: UUID навыка
                   required: true
-                  example: ""
                   schema:
                       type: string
                       format: uuid
@@ -269,11 +285,14 @@ paths:
                 "204":
                     description: Навык успешно удален
                     headers: {}
+                "400":
+                    description: Некорректные параметры запроса
+                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
-                "404":
-                    description: Навык не найден у пользователя
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -320,7 +339,8 @@ paths:
                   description: Фильтр по родительской категории (оставьте пустым для корневых)
                   required: false
                   schema:
-                      type: integer
+                      type: string
+                      format: uuid
                 - name: search
                   in: query
                   description: Поиск по названию навыка
@@ -351,6 +371,12 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/Skill"
                     headers: {}
+                "400":
+                    description: Ошибка query параметров
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security: []
         post:
             summary: Создать новый навык
@@ -360,14 +386,7 @@ paths:
                 модераторам/администраторам.
             tags:
                 - Навыки
-            parameters:
-                - name: Authorization
-                  in: header
-                  description: ""
-                  required: true
-                  example: ""
-                  schema:
-                      type: string
+            parameters: []
             requestBody:
                 content:
                     application/json:
@@ -397,8 +416,17 @@ paths:
                 "400":
                     description: Ошибка валидации
                     headers: {}
+                "401":
+                    description: Не авторизован
+                    headers: {}
                 "403":
                     description: Недостаточно прав
+                    headers: {}
+                "409":
+                    description: Навык с таким именем уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -426,15 +454,21 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Skill"
                     headers: {}
+                "400":
+                    description: UUID навыка невалиден
+                    headers: {}
                 "404":
                     description: Навык не найден
                     headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
             security: []
         delete:
             summary: Удалить навык
             deprecated: false
             description: Позволяет удалить навык. Доступен только админам
-            tags: []
+            tags:
+                - Навыки
             parameters:
                 - name: skill_id
                   in: path
@@ -448,36 +482,30 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                - name: Authorization
-                  in: header
-                  description: ""
-                  required: true
-                  example: ""
-                  schema:
-                      type: string
             responses:
-                "200":
-                    description: ""
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties: {}
+                "204":
+                    description: Навык успешно удален
+                    headers: {}
+                "401":
+                    description: Не авторизован
                     headers: {}
                 "403":
-                    description: ""
+                    description: Недостаточно прав
                     headers: {}
                 "404":
-                    description: ""
+                    description: Запись с таким id не существует
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties: {}
+                                $ref: "#/components/schemas/ErrorResponse"
                             example:
                                 error: Записи с таким id не существует
                     headers: {}
-            security: []
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
+            security:
+                - BearerAuth: []
     /ideas:
         get:
             summary: Список идей
@@ -507,16 +535,16 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                - name: page
+                - name: start_at
                   in: query
-                  description: ""
+                  description: Смещение для выборки
                   required: false
                   schema:
                       type: integer
-                      default: 1
+                      default: 0
                 - name: limit
                   in: query
-                  description: ""
+                  description: Максимальное количество записей
                   required: false
                   schema:
                       type: integer
@@ -530,6 +558,12 @@ paths:
                                 type: array
                                 items:
                                     $ref: "#/components/schemas/Idea"
+                    headers: {}
+                "400":
+                    description: Ошибка query параметров
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security: []
         post:
@@ -546,7 +580,6 @@ paths:
                             type: object
                             required:
                                 - title
-                                - description
                             properties:
                                 title:
                                     type: string
@@ -556,6 +589,12 @@ paths:
                                     example: >-
                                         Идея создания приложения с использованием AI для практики
                                         разговорной речи.
+                                content:
+                                    type: string
+                                    example: "**Md текст**"
+                                category:
+                                    type: string
+                                    example: Education
                 required: true
             responses:
                 "201":
@@ -570,6 +609,12 @@ paths:
                     headers: {}
                 "401":
                     description: Не авторизован
+                    headers: {}
+                "409":
+                    description: Идея с таким названием уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -611,6 +656,9 @@ paths:
                 "404":
                     description: Идея не найдена
                     headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security: []
         put:
             summary: Редактировать идею
@@ -637,6 +685,8 @@ paths:
                                     type: string
                                 description:
                                     type: string
+                                content:
+                                    type: string
                 required: true
             responses:
                 "200":
@@ -654,6 +704,12 @@ paths:
                     headers: {}
                 "404":
                     description: Идея не найдена
+                    headers: {}
+                "409":
+                    description: Идея с таким названием уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -684,6 +740,9 @@ paths:
                     headers: {}
                 "404":
                     description: Идея не найдена
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -791,16 +850,16 @@ paths:
                   required: false
                   schema:
                       type: string
-                - name: page
+                - name: start_at
                   in: query
-                  description: ""
+                  description: Смещение для выборки
                   required: false
                   schema:
                       type: integer
-                      default: 1
+                      default: 0
                 - name: limit
                   in: query
-                  description: ""
+                  description: Максимальное количество записей
                   required: false
                   schema:
                       type: integer
@@ -814,6 +873,12 @@ paths:
                                 type: array
                                 items:
                                     $ref: "#/components/schemas/Project"
+                    headers: {}
+                "400":
+                    description: Ошибка query параметров
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security: []
         post:
@@ -830,7 +895,6 @@ paths:
                             type: object
                             required:
                                 - title
-                                - description
                             properties:
                                 idea_id:
                                     type: string
@@ -858,6 +922,12 @@ paths:
                     headers: {}
                 "401":
                     description: Не авторизован
+                    headers: {}
+                "409":
+                    description: Проект с таким названием уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -895,6 +965,9 @@ paths:
                 "404":
                     description: Проект не найден
                     headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security: []
         put:
             summary: Редактировать проект
@@ -931,6 +1004,9 @@ paths:
                 "200":
                     description: Проект обновлен
                     headers: {}
+                "400":
+                    description: Ошибка валидации или пустой payload
+                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -940,12 +1016,18 @@ paths:
                 "404":
                     description: Проект не найден
                     headers: {}
+                "409":
+                    description: Проект с таким названием уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security:
                 - BearerAuth: []
         delete:
             summary: Удалить проект
             deprecated: false
-            description: Удаляет проект. Доступно только лидеру, если в проекте нет участников.
+            description: Удаляет проект. Доступно только лидеру, если у проекта нет связанных слотов.
             tags:
                 - Проекты
             parameters:
@@ -965,10 +1047,16 @@ paths:
                     description: Не авторизован
                     headers: {}
                 "403":
-                    description: Доступ запрещен (не лидер или есть команда)
+                    description: Доступ запрещен (не лидер)
                     headers: {}
                 "404":
                     description: Проект не найден
+                    headers: {}
+                "409":
+                    description: Проект нельзя удалить, пока существуют связанные слоты
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1000,6 +1088,9 @@ paths:
                     headers: {}
                 "404":
                     description: Проект не найден
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security: []
         post:
@@ -1049,7 +1140,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ProjectSlot"
+                                $ref: "#/components/schemas/ProjectSlotCreateResponse"
                     headers: {}
                 "400":
                     description: Ошибка валидации
@@ -1062,6 +1153,12 @@ paths:
                     headers: {}
                 "404":
                     description: Проект не найден
+                    headers: {}
+                "409":
+                    description: Слот с такими значениями уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1112,6 +1209,9 @@ paths:
                 "200":
                     description: Слот обновлен
                     headers: {}
+                "400":
+                    description: Ошибка валидации или пустой payload
+                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -1120,6 +1220,12 @@ paths:
                     headers: {}
                 "404":
                     description: Слот или проект не найден
+                    headers: {}
+                "409":
+                    description: Слот с такими значениями уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1158,6 +1264,9 @@ paths:
                     headers: {}
                 "404":
                     description: Слот или проект не найден
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1204,11 +1313,17 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/Request"
                     headers: {}
+                "400":
+                    description: Некорректный project_id или slot_id
+                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
                 "403":
                     description: Доступ запрещен (не лидер проекта)
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1262,6 +1377,12 @@ paths:
                     headers: {}
                 "404":
                     description: Слот или проект не найден
+                    headers: {}
+                "409":
+                    description: Такая заявка уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
                     headers: {}
             security:
                 - BearerAuth: []
@@ -1325,6 +1446,12 @@ paths:
                 "404":
                     description: Слот, проект или пользователь не найден
                     headers: {}
+                "409":
+                    description: Такая заявка уже существует
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security:
                 - BearerAuth: []
     /requests/{request_id}/accept:
@@ -1356,7 +1483,7 @@ paths:
                                 $ref: "#/components/schemas/Request"
                     headers: {}
                 "400":
-                    description: Нельзя принять (возможно, слот уже занят)
+                    description: "Нельзя принять: заявка не в статусе ожидания"
                     headers: {}
                 "401":
                     description: Не авторизован
@@ -1396,6 +1523,8 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Request"
                     headers: {}
+                "400":
+                    description: "Нельзя отклонить: заявка не в статусе ожидания"
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -1450,11 +1579,153 @@ paths:
                 "401":
                     description: Не авторизован
                     headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
             security:
                 - BearerAuth: []
+    /generate-test-data:
+        get:
+            summary: Запустить генерацию тестовых данных
+            description: >-
+                Асинхронно генерирует тестовые данные: 500 пользователей, 800 навыков,
+                1000 идей, 1000 проектов (со слотами и без). Возвращает 409, если
+                генерация уже запущена.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Генерация успешно запущена
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                        example: генерация тестовых данных запущена
+                    headers: {}
+                "409":
+                    description: Генерация уже запущена
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                    headers: {}
+            security: []
+    /generate-test-data/status:
+        get:
+            summary: Статус генерации тестовых данных
+            description: Возвращает текущее состояние и процент выполнения задания генерации.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Текущий статус генерации
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GenerationStatus"
+                    headers: {}
+            security: []
+    /generate-test-data/cancel:
+        get:
+            summary: Отменить генерацию тестовых данных
+            description: Останавливает текущее задание по генерации тестовых данных.
+            tags:
+                - Тестовые данные
+            parameters: []
+            responses:
+                "200":
+                    description: Задание успешно отменено
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                                        example: задание на генерацию данных отменено
+                    headers: {}
+            security: []
 components:
     schemas:
-        User:
+        UserSkillLink:
+            type: object
+            properties:
+                user_id:
+                    type: string
+                    format: uuid
+                skill_id:
+                    type: string
+                    format: uuid
+            required:
+                - user_id
+                - skill_id
+        ProjectSlotCreateResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                project_id:
+                    type: string
+                    format: uuid
+                skill_category_id:
+                    type: string
+                    format: uuid
+                title:
+                    type: string
+                description:
+                    type: string
+                    nullable: true
+                status:
+                    type: string
+                user_id:
+                    type: string
+                    format: uuid
+                    nullable: true
+            required:
+                - id
+                - project_id
+                - skill_category_id
+                - title
+                - status
+        AccessTokenResponse:
+            type: object
+            properties:
+                access_token:
+                    type: string
+            required:
+                - access_token
+        ErrorResponse:
+            type: object
+            properties:
+                error:
+                    type: string
+        GenerationStatus:
+            type: object
+            properties:
+                running:
+                    type: boolean
+                    description: true, если задание сейчас выполняется
+                stage:
+                    type: string
+                    description: Название текущего этапа генерации
+                    example: projects
+                progress:
+                    type: integer
+                    description: Процент выполнения (0–100)
+                    example: 42
+                done:
+                    type: boolean
+                    description: true, если генерация завершена
+                error:
+                    type: string
+                    description: Сообщение об ошибке (если произошла ошибка)
+        GetMeResponse:
             type: object
             properties:
                 id:
@@ -1467,21 +1738,40 @@ components:
                     type: string
                 avatar_uri:
                     type: string
-                    format: uri
                 bio:
                     type: string
                 created_at:
                     type: string
                     format: date-time
+                skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
         PrivateUserProfile:
-            allOf:
-                - $ref: "#/components/schemas/User"
-                - type: object
-                  properties:
-                      skills:
-                          type: array
-                          items:
-                              $ref: "#/components/schemas/Skill"
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                email:
+                    type: string
+                    format: email
+                nickname:
+                    type: string
+                main_role:
+                    type: string
+                avatar_uri:
+                    type: string
+                    format: uri
+                bio:
+                    type: string
+                skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+                created_at:
+                    type: string
+                    format: date-time
         PublicUserProfile:
             type: object
             properties:
@@ -1523,13 +1813,22 @@ components:
                 id:
                     type: string
                     format: uuid
+                author_id:
+                    type: string
+                    format: uuid
                 title:
                     type: string
                 description:
                     type: string
-                author_id:
+                content:
                     type: string
-                    format: uuid
+                    nullable: true
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
+                category:
+                    type: string
                 created_at:
                     type: string
                     format: date-time

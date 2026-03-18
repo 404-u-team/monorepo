@@ -38,7 +38,7 @@ export const verifyInterceptors = (): void => {
                         const authBaseURL = baseURL.endsWith('/api') ? baseURL.slice(0, -4) : baseURL;
 
                         const refreshResponse = await axios.post<{ accessToken: string }>(
-                            `${authBaseURL}/auth/refresh`,
+                            `${authBaseURL}auth/refresh`,
                             {},
                             { withCredentials: true }
                         );
