@@ -137,3 +137,43 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, idea)
 }
+
+func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
+	rawID := ctx.Param("id")
+	ideaID, parseErr := uuid.Parse(rawID)
+
+	if parseErr != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	//это защищенный путь, ID 100% существует
+	userID := ctx.MustGet("userID").(uuid.UUID)
+
+	canDelete, dbErr := services.CheckRightsOnIdea(ideaID, userID, ih.db)
+
+	if dbErr != nil {
+		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Запись с таким id не существует"})
+			return
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+			log.Println("Ошибка получение прав пользователя на удаление записи: " + dbErr.Error())
+		}
+		return
+	}
+
+	if !canDelete {
+		ctx.Status(http.StatusForbidden)
+		return
+	}
+
+	dbErr = services.DeleteIdeaByID(ideaID, ih.db)
+	if dbErr != nil {
+		ctx.Status(http.StatusInternalServerError)
+		log.Println("Ошибка удаления записи: " + dbErr.Error())
+		return
+	}
+
+	ctx.Status(204)
+}
