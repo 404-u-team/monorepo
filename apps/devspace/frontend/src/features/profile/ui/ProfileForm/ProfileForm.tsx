@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { apiClient } from "@/shared/api/client";
 import styles from "./ProfileForm.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UserCard from "@/entities/user/ui/UserCard/UserCard";
 import { Input, Button, Badge, Dropdown, Skeleton } from "@/shared/ui";
 import { Camera, Save, X } from "lucide-react";
@@ -91,6 +91,16 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
     void fetchUserData();
   }, [id]);
 
+  const saveSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (saveSuccessTimeoutRef.current !== null) {
+        clearTimeout(saveSuccessTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleSaveProfile = async (): Promise<void> => {
     const hasNicknameChanged = nickname !== initialNickname;
     const hasBioChanged = bio !== initialBio;
@@ -116,7 +126,12 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
       setInitialNickname(nickname);
       setInitialBio(bio);
       setSaveSuccess(true);
-      setTimeout(() => {
+
+      if (saveSuccessTimeoutRef.current !== null) {
+        clearTimeout(saveSuccessTimeoutRef.current);
+      }
+
+      saveSuccessTimeoutRef.current = setTimeout(() => {
         setSaveSuccess(false);
       }, 3000);
     } catch (error_) {
