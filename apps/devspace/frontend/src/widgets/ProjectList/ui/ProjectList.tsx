@@ -67,7 +67,7 @@ export function ProjectList({
   return (
     <DataListLayout
       title="Проекты"
-      subtitle="Найдите интересный проект и присоединяйтесь к командой работе"
+      subtitle="Найдите интересный проект и присоединяйтесь к командной работе"
       searchValue={(searchParameters as Record<string, string>).search ?? ""}
       onSearchChange={handleSearch}
       controlsNode={StatusFilter}

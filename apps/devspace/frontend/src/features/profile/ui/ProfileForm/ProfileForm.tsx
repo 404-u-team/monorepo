@@ -6,8 +6,7 @@ import UserCard from "@/entities/user/ui/UserCard/UserCard";
 import { Input, Button, Badge, Dropdown, Skeleton } from "@/shared/ui";
 import { Camera, Save, X } from "lucide-react";
 import { ProjectCard } from "@/entities/project";
-
-//Вопрос 1: как запросить все скиллы, статусы и тд
+import { statusOptions, roleOptions } from "@/shared/enums/ProfileEnums";
 
 interface ProfileFormProps {
   id: string;
@@ -35,20 +34,6 @@ interface Skill {
   color: string;
 }
 
-const statusOptions = [
-  { label: "В поиске", value: "searching" },
-  { label: "Рассматриваю предложения", value: "considering" },
-  { label: "Не ищу", value: "not_searching" },
-];
-
-const roleOptions = [
-  { label: "Frontend Developer", value: "frontend" },
-  { label: "Backend Developer", value: "backend" },
-  { label: "Fullstack Developer", value: "fullstack" },
-  { label: "UI/UX Designer", value: "designer" },
-  { label: "Project Manager", value: "pm" },
-];
-
 //Временные моки, пока API не готово
 const mockSkills = [
   { label: "React", value: "react", color: "3B82F6" },
@@ -71,9 +56,9 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
   const [searchSkill, setSearchSkill] = useState("");
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
-
   const project_id = "1";
   const avatar_uri =
+    userData?.avatar_uri ||
     "https://img.freepik.com/premium-photo/vector-cat-with-character-wearing-jacket_575980-16303.jpg?semt=ais_hybrid";
 
   useEffect(() => {
@@ -81,7 +66,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
       try {
         setLoading(true);
         setError(undefined);
-        const endpoint = `/profile`;
+        const endpoint = `/users/me`;
         const response = await apiClient.get<UserData>(endpoint);
         const data = response.data;
         setUserData(data);
@@ -209,7 +194,9 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
         )}
 
         <div className={styles.avatarChange}>
-          <img src={avatar_uri} alt="Avatar" className={styles.avatar} />
+          <div className={styles.avatar}>
+            <img src={avatar_uri} alt="Avatar" />
+          </div>
           <h3>Редактировать изображение профиля</h3>
           <Button variant="outline" className={styles.changeAvaButton}>
             <Camera size={16} />
@@ -232,6 +219,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
             {mockSkills.map((skill: Skill) => (
               <Badge key={skill.value} color={skill.color}>
                 {skill.label}
+                <X size={16} />
               </Badge>
             ))}
           </div>

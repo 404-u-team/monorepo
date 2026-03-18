@@ -18,13 +18,10 @@ const InviteButton = ({
   onInvite,
 }: InviteButtonProps): JSX.Element | undefined => {
   const [isLoading, setIsLoading] = useState(false);
-
+  const isMissingRequiredIds =
+    project_id === undefined || slot_id === undefined || user_id === undefined;
   const handleInvite = async (): Promise<void> => {
-    if (
-      project_id === undefined ||
-      slot_id === undefined ||
-      user_id === undefined
-    ) {
+    if (isMissingRequiredIds) {
       return;
     }
 
@@ -36,7 +33,7 @@ const InviteButton = ({
         await inviteUserToSlot({
           project_id,
           slot_id,
-          id: user_id,
+          user_id: user_id,
         });
       }
     } catch (error) {
@@ -53,7 +50,7 @@ const InviteButton = ({
       onClick={() => {
         handleInvite().catch(console.error);
       }}
-      disabled={isLoading}
+      disabled={isLoading || isMissingRequiredIds}
     >
       {isLoading ? "..." : "Пригласить"}
     </Button>

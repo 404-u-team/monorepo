@@ -4,19 +4,19 @@ import type { IUserResponse } from "../model/IUserResponse";
 export interface InviteToSlotParameters {
   project_id: string;
   slot_id: string;
-  id: string;
+  user_id: string;
 }
 
 export interface IInviteResponse {
-  cover_letter: string;
-  created_at: string;
-  id: string;
-  leader_id: string;
-  project_id: string;
-  slot_id: string;
-  status: string;
-  type: string;
-  user_id: string;
+  ID: string;
+  SlotID: string;
+  UserID: string;
+  ProjectID: string;
+  LeaderID: string;
+  CoverLetter: string;
+  CreatedAt: string;
+  Status: string;
+  Type: string;
 }
 
 const userCache = new Map<string, Promise<IUserResponse>>();
@@ -42,14 +42,11 @@ export function fetchUserById(userId: string): Promise<IUserResponse> {
 export function inviteUserToSlot({
   project_id,
   slot_id,
-  id,
+  user_id,
 }: InviteToSlotParameters): Promise<IInviteResponse> {
   return apiClient
-    .post<IInviteResponse>(
-      `/api/projects/${project_id}/slots/${slot_id}/invite`,
-      {
-        id: id,
-      },
-    )
+    .post<IInviteResponse>(`/projects/${project_id}/slots/${slot_id}/invite`, {
+      user_id,
+    })
     .then((response) => response.data);
 }
