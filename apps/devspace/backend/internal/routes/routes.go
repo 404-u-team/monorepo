@@ -100,6 +100,9 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.PUT("/projects/:projectID/slots/:slotID", slotHandler.UpdateSlotByID)
 			protected.DELETE("/projects/:projectID/slots/:slotID", slotHandler.DeleteSlotByID)
 
+			protected.PUT("/requests/:projectRequestID/accept", projectRequestHandler.AcceptProjectRequest)
+			protected.PUT("/requests/:projectRequestID/reject", projectRequestHandler.RejectProjectRequest)
+
 			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
 
 			protected.POST("/projects/:projectID/slots/:slotID/apply", projectRequestHandler.CreateProjectRequestApply)

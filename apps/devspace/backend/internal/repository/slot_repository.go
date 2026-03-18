@@ -18,6 +18,7 @@ type SlotRepository interface {
 	IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error)
 	IsSlotExists(slotID uuid.UUID) (bool, error)
 	IsSlotOpen(slotID uuid.UUID) (bool, error)
+	PutUserIntoSlot(slotID, userID uuid.UUID) error
 }
 
 type slotRepository struct {
@@ -137,4 +138,15 @@ func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
 		return false, result.Error
 	}
 	return status == "open", nil
+}
+
+func (r *slotRepository) PutUserIntoSlot(slotID, userID uuid.UUID) error {
+	updates := map[string]string{"user_id": userID.String(), "status": "closed"}
+
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Updates(updates)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
