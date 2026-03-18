@@ -21,26 +21,6 @@ export interface IInviteResponse {
 
 const userCache = new Map<string, Promise<IUserResponse>>();
 
-interface RawUser {
-    id: string;
-    nickname: string;
-    avatar_uri: string;
-    bio?: string;
-    main_role?: string;
-    skills?: ISkill[];
-}
-
-function mapUser(data: RawUser): IUserResponse {
-    return {
-        id: data.id,
-        nickname: data.nickname,
-        avatar_uri: data.avatar_uri,
-        bio: data.bio ?? '',
-        main_role: data.main_role ?? '',
-        skills: data.skills ?? [],
-    };
-}
-
 export function fetchUserById(userId: string): Promise<IUserResponse> {
   const cached = userCache.get(userId);
   if (cached !== undefined) {
@@ -67,20 +47,5 @@ export function inviteUserToSlot({
     .post<IInviteResponse>(`/projects/${project_id}/slots/${slot_id}/invite`, {
       user_id,
     })
-    .then((response) => response.data);
-}
-
-export function inviteUserToSlot({
-  project_id,
-  slot_id,
-  id,
-}: InviteToSlotParameters): Promise<IInviteResponse> {
-  return apiClient
-    .post<IInviteResponse>(
-      `/api/projects/${project_id}/slots/${slot_id}/invite`,
-      {
-        id: id,
-      },
-    )
     .then((response) => response.data);
 }
