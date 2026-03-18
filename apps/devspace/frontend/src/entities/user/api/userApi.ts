@@ -26,7 +26,6 @@ export function fetchUserById(userId: string): Promise<IUserResponse> {
   if (cached !== undefined) {
     return cached;
   }
-
   const request = apiClient
     .get<IUserResponse>(`/users/${userId}`)
     .then((response) => response.data)
