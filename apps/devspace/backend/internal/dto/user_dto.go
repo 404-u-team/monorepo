@@ -1,13 +1,26 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
-type GetMeResponse struct {
+type PrivateUserProfile struct {
 	ID        uuid.UUID               `json:"id"`
 	Email     string                  `json:"email"`
 	Nickname  string                  `json:"nickname"`
+	MainRole  string                  `json:"main_role"`
+	AvatarUri string                  `json:"avatar_uri"`
+	Bio       string                  `json:"bio"`
+	Skills    []SkillCategoryResponse `json:"skills"`
+	CreatedAt time.Time               `json:"created_at"`
+}
+
+type PublicUserProfile struct {
+	ID        uuid.UUID               `json:"id"`
+	Nickname  string                  `json:"nickname"`
+	MainRole  string                  `json:"main_role"`
 	AvatarUri string                  `json:"avatar_uri"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`

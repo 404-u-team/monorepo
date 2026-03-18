@@ -1,4 +1,5 @@
 export { IdeaCard, type IdeaCardProps } from './ui/IdeaCard/IdeaCard'
 export { IdeaCardSkeleton } from './ui/IdeaCardSkeleton/IdeaCardSkeleton'
 export type { IIdea } from './model/IIdea'
-export { fetchIdeaById, toggleIdeaFavorite, fetchIdeas } from './api/ideaApi'
+export { fetchIdeaById, fetchIdeas, toggleIdeaFavorite, createIdea, updateIdea, deleteIdea, createProjectFromIdea } from './api/ideaApi';
+export type { FetchIdeasParameters, PaginatedIdeas } from './api/ideaApi';

@@ -11,12 +11,14 @@ import (
 
 type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
+	GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
 	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
 	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
 	IsSlotBelongToProject(slotID, projectID uuid.UUID) (bool, error)
 	IsSlotExists(slotID uuid.UUID) (bool, error)
 	IsSlotOpen(slotID uuid.UUID) (bool, error)
+	PutUserIntoSlot(slotID, userID uuid.UUID) error
 }
 
 type slotRepository struct {
@@ -36,6 +38,17 @@ func (r *slotRepository) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, er
 	}
 
 	return slots, nil
+}
+
+func (r *slotRepository) GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error) {
+	var slot models.ProjectSlot
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).First(&slot)
+	if result.Error != nil {
+		log.Println("Ошибка при получении слота проекта по ID: ", result.Error)
+		return nil, result.Error
+	}
+
+	return &slot, nil
 }
 
 func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error {
@@ -125,4 +138,15 @@ func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
 		return false, result.Error
 	}
 	return status == "open", nil
+}
+
+func (r *slotRepository) PutUserIntoSlot(slotID, userID uuid.UUID) error {
+	updates := map[string]string{"user_id": userID.String(), "status": "closed"}
+
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Updates(updates)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

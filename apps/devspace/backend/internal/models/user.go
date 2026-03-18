@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
 	ID           uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
@@ -10,6 +14,7 @@ type User struct {
 	AvatarUrl    string    `gorm:"column:avatar_url; null"`
 	MainRole     string    `gorm:"column:main_role; null"`
 	Bio          string    `gorm:"column:bio; null"`
+	CreatedAt    time.Time `gorm:"column:created_at; not null"`
 	IsAdmin      bool      `gorm:"column:is_admin; not null"`
 }
 

@@ -59,7 +59,7 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 		return
 	}
 
-	err = h.userService.UpdateMe(userID, &payload)
+	meResponse, err := h.userService.UpdateMe(userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrEmptyPayload) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -77,7 +77,29 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, meResponse)
+}
+
+func (h *userHandler) GetUserByID(c *gin.Context) {
+	userIDStr := c.Param("userID")
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	getMeResponse, err := h.userService.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, getMeResponse)
 }
 
 func getUserId(c *gin.Context) (uuid.UUID, error) {
