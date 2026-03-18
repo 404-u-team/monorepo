@@ -120,3 +120,79 @@ func (h *projectRequestHandler) CreateProjectRequestInvite(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, projectRequest)
 }
+
+func (h *projectRequestHandler) AcceptProjectRequest(c *gin.Context) {
+	// получение projectRequest из параметров
+	projectRequestIDStr := c.Param("projectRequestID")
+	projectRequestID, err := uuid.Parse(projectRequestIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	// получение userID
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// одобрить заявку
+	project, err := h.projectRequestService.UpdateProjectRequest(projectRequestID, userID, "accepted")
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrProjectRequestNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrProjectRequestNotPending) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, project)
+}
+
+func (h *projectRequestHandler) RejectProjectRequest(c *gin.Context) {
+	// получение projectRequest из параметров
+	projectRequestIDStr := c.Param("projectRequestID")
+	projectRequestID, err := uuid.Parse(projectRequestIDStr)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	// получение userID
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	// одобрить заявку
+	project, err := h.projectRequestService.UpdateProjectRequest(projectRequestID, userID, "rejected")
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotLeader) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrProjectRequestNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrProjectRequestNotPending) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, project)
+}

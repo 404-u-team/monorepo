@@ -14,6 +14,7 @@ import (
 type ProjectRequestService interface {
 	CreateProjectRequestApply(payload *dto.CreateProjectRequestApplyRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
 	CreateProjectRequestInvite(payload *dto.CreateProjectRequestInviteRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
+	UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error)
 }
 
 type projectRequestService struct {
@@ -162,4 +163,50 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 	}
 
 	return &projectRequest, nil
+}
+
+func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error) {
+	// является ли пользователь лидером данного проекта
+	projectID, err := s.projectRequestRepo.GetProjectIDByRequestID(requestID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectRequestNotFound
+		}
+	}
+
+	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if !isUserProjectLeader {
+		return nil, ErrUserNotLeader
+	}
+
+	// проверка, что заявка в статусе ожидании
+	projectRequest, err := s.projectRequestRepo.GetProjectRequestByID(projectID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	if projectRequest.Status != "pending" {
+		return nil, ErrProjectRequestNotPending
+	}
+
+	// обновление заявки
+	rowsAffected, err := s.projectRequestRepo.UpdateProjectRequest(requestID, status)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	if rowsAffected == 0 {
+		return nil, ErrProjectRequestNotFound
+	}
+
+	// получаем обновленную заявку для возвращения
+	projectRequest, err = s.projectRequestRepo.GetProjectRequestByID(projectID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return projectRequest, nil
 }
