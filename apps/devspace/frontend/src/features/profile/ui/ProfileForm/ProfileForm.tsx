@@ -56,10 +56,12 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
   const [searchSkill, setSearchSkill] = useState("");
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
-  const project_id = "1";
+
   const avatar_uri =
-    userData?.avatar_uri ||
+    userData?.avatar_uri ??
     "https://img.freepik.com/premium-photo/vector-cat-with-character-wearing-jacket_575980-16303.jpg?semt=ais_hybrid";
+
+  const project_id = "1";
 
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {

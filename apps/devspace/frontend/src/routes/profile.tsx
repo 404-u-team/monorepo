@@ -8,17 +8,19 @@ export const Route = createFileRoute("/profile")({
   component: UsersMe,
 });
 
-function UsersMe(): JSX.Element | null {
-  const [userId, setUserId] = useState<string | null>();
+function UsersMe(): JSX.Element | undefined {
+  const [userId, setUserId] = useState<string>();
   useEffect(() => {
     let isMounted = true;
     const loadUser = async (): Promise<void> => {
       try {
         const response = await fetch("/users/me");
         if (!response.ok) {
-          throw new Error(`Failed to fetch current user: ${response.status}`);
+          throw new Error(
+            `Failed to fetch current user: ${String(response.status)}`,
+          );
         }
-        const data: { id?: string } = await response.json();
+        const data = (await response.json()) as { id?: string };
         if (isMounted && typeof data.id === "string") {
           setUserId(data.id);
         }
@@ -32,8 +34,8 @@ function UsersMe(): JSX.Element | null {
       isMounted = false;
     };
   }, []);
-  if (!userId) {
-    return null;
+  if (userId !== undefined) {
+    return <ProfileForm id={userId} />;
   }
-  return <ProfileForm id={userId} />;
+  return undefined;
 }
