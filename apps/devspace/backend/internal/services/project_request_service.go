@@ -183,6 +183,9 @@ func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID
 	// получение заявки
 	projectRequest, err := s.projectRequestRepo.GetProjectRequestByID(requestID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectRequestNotFound
+		}
 		return nil, ErrInternal
 	}
 
@@ -211,15 +214,20 @@ func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID
 		return nil, ErrProjectRequestNotFound
 	}
 
-	// добавление пользователя в слот проекта
-	err = s.projectSlotRepo.PutUserIntoSlot(projectRequest.SlotID, projectRequest.UserID)
-	if err != nil {
-		return nil, ErrInternal
+	// добавление пользователя в слот проекта, если статус == "accepted"
+	if status == "accepted" {
+		err = s.projectSlotRepo.PutUserIntoSlot(projectRequest.SlotID, projectRequest.UserID)
+		if err != nil {
+			return nil, ErrInternal
+		}
 	}
 
 	// получаем обновленную заявку для возвращения
 	projectRequest, err = s.projectRequestRepo.GetProjectRequestByID(requestID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectRequestNotFound
+		}
 		return nil, ErrInternal
 	}
 

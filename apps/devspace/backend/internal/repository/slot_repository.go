@@ -143,7 +143,7 @@ func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
 func (r *slotRepository) PutUserIntoSlot(slotID, userID uuid.UUID) error {
 	updates := map[string]string{"user_id": userID.String(), "status": "closed"}
 
-	result := r.conn.Model(&models.ProjectRequest{}).Where("id = ?", slotID).Updates(updates)
+	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Updates(updates)
 	if result.Error != nil {
 		return result.Error
 	}

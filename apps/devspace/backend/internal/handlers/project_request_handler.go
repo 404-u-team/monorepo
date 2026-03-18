@@ -140,7 +140,7 @@ func (h *projectRequestHandler) AcceptProjectRequest(c *gin.Context) {
 	// одобрить заявку
 	projectRequest, err := h.projectRequestService.UpdateProjectRequest(projectRequestID, userID, "accepted")
 	if err != nil {
-		if errors.Is(err, services.ErrUserNotLeader) {
+		if errors.Is(err, services.ErrUserNotLeader) || errors.Is(err, services.ErrProjectRequestDontBelongToUser) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
@@ -178,7 +178,7 @@ func (h *projectRequestHandler) RejectProjectRequest(c *gin.Context) {
 	// одобрить заявку
 	projectRequest, err := h.projectRequestService.UpdateProjectRequest(projectRequestID, userID, "rejected")
 	if err != nil {
-		if errors.Is(err, services.ErrUserNotLeader) {
+		if errors.Is(err, services.ErrUserNotLeader) || errors.Is(err, services.ErrProjectRequestDontBelongToUser) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
