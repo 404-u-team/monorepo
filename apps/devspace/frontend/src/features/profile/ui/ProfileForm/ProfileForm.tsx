@@ -5,12 +5,10 @@ import { useEffect, useState } from "react";
 import UserCard from "@/entities/user/ui/UserCard/UserCard";
 import { Input, Button, Badge, Dropdown, Skeleton } from "@/shared/ui";
 import { Camera, Save, X } from "lucide-react";
-import { ProjectCard } from "@/entities/project";
+//import { ProjectCard } from "@/entities/project";
 import { statusOptions, roleOptions } from "@/shared/enums/ProfileEnums";
 
-interface ProfileFormProps {
-  id: string;
-}
+export type ProfileFormProps = Record<string, never>;
 
 interface UserData {
   id: string;
@@ -42,7 +40,7 @@ const mockSkills = [
   { label: "UI/UX", value: "uiux", color: "8B5CF6" },
 ];
 
-export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
+export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const [userData, setUserData] = useState<UserData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -61,7 +59,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
     userData?.avatar_uri ??
     "https://img.freepik.com/premium-photo/vector-cat-with-character-wearing-jacket_575980-16303.jpg?semt=ais_hybrid";
 
-  const project_id = "1";
+  //const project_id = "1";
 
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
@@ -89,7 +87,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
     };
 
     void fetchUserData();
-  }, [id]);
+  }, []);
 
   const handleSaveProfile = async (): Promise<void> => {
     const hasNicknameChanged = nickname !== initialNickname;
@@ -170,7 +168,7 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
       <div className={styles.column1}>
         <h1>Мой Профиль</h1>
         <div className={styles.miniProfile}>
-          <UserCard id={id} />
+          {userData && <UserCard id={userData.id} />}
         </div>
         <div className={styles.pov}>
           <Button variant="primary" className={styles.profileButton}>
@@ -309,10 +307,10 @@ export function ProfileForm({ id }: ProfileFormProps): JSX.Element {
           />
         </div>
 
-        <div className={styles.feed}>
+        {/* <div className={styles.feed}>
           <h3>Лента активности</h3>
           <ProjectCard projectId={project_id} />
-        </div>
+        </div> */}
       </div>
     </div>
   );

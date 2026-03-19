@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ProfileForm } from "@/features/profile/ui/ProfileForm/ProfileForm";
+import { apiClient } from "@/shared/api/client";
+import { ProfileForm } from "@/features/profile";
 
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -12,15 +13,17 @@ function UsersMe(): JSX.Element | undefined {
   const [userId, setUserId] = useState<string>();
   useEffect(() => {
     let isMounted = true;
+
     const loadUser = async (): Promise<void> => {
       try {
-        const response = await fetch("/users/me");
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch current user: ${String(response.status)}`,
-          );
+        const response = await apiClient.get("/users/me");
+
+        if (response.data !== undefined) {
+          throw new Error("No data received from server");
         }
-        const data = (await response.json()) as { id?: string };
+
+        const data = response.data as { id?: string };
+
         if (isMounted && typeof data.id === "string") {
           setUserId(data.id);
         }
@@ -29,13 +32,15 @@ function UsersMe(): JSX.Element | undefined {
         console.error("Error loading current user profile:", error);
       }
     };
+
     void loadUser();
+
     return (): void => {
       isMounted = false;
     };
   }, []);
   if (userId !== undefined) {
-    return <ProfileForm id={userId} />;
+    return <ProfileForm />;
   }
   return undefined;
 }
