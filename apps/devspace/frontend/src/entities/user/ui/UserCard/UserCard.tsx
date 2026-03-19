@@ -13,7 +13,7 @@ export interface UserCardProps {
   className?: string | undefined;
   project_id?: string | undefined;
   slot_id?: string | undefined;
-  onInvite?: (UserId: string) => Promise<void>;
+  onInvite?: (userId: string) => Promise<void>;
 }
 
 export function UserCard({
