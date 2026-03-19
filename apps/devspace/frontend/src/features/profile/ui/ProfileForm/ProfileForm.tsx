@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import UserCard from "@/entities/user/ui/UserCard/UserCard";
 import { Input, Button, Badge, Dropdown, Skeleton } from "@/shared/ui";
 import { Camera, Save, X } from "lucide-react";
-//import { ProjectCard } from "@/entities/project";
+import { ProjectCard } from "@/entities/project";
 import { statusOptions, roleOptions } from "@/shared/enums/ProfileEnums";
 
 export type ProfileFormProps = Record<string, never>;
@@ -32,6 +32,27 @@ interface Skill {
   color: string;
 }
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  leader_id: string;
+  status: string;
+  idea_id: string | null;
+  created_at: string;
+  updated_at: string;
+  slots: {
+    id: string;
+    project_id: string;
+    skill_category_id: string;
+    title: string;
+    description: string;
+    status: string;
+    user_id: string | null;
+    created_at: string;
+  }[];
+}
+
 //Временные моки, пока API не готово
 const mockSkills = [
   { label: "React", value: "react", color: "3B82F6" },
@@ -42,6 +63,8 @@ const mockSkills = [
 
 export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const [userData, setUserData] = useState<UserData>();
+  const [userProjects, setUserProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,11 +78,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
 
-  const avatar_uri =
-    userData?.avatar_uri ??
+  const defaultAvatar =
     "https://img.freepik.com/premium-photo/vector-cat-with-character-wearing-jacket_575980-16303.jpg?semt=ais_hybrid";
-
-  //const project_id = "1";
+  const avatar_uri = userData?.avatar_uri ?? defaultAvatar;
 
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
@@ -78,6 +99,8 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
 
         setInitialNickname(data.nickname || "");
         setInitialBio(data.bio || "");
+
+        await fetchUserProjects(data.id);
       } catch (error_) {
         setError("Ошибка загрузки данных пользователя");
         console.error("Error fetching user data:", error_);
@@ -88,6 +111,20 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
 
     void fetchUserData();
   }, []);
+
+  const fetchUserProjects = async (userId: string): Promise<void> => {
+    try {
+      setProjectsLoading(true);
+      const response = await apiClient.get<Project[]>(
+        `/users/${userId}/projects`,
+      );
+      setUserProjects(response.data);
+    } catch (error_) {
+      console.error("Error fetching user projects:", error_);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
 
   const saveSuccessTimeoutReference = useRef<ReturnType<
     typeof setTimeout
@@ -141,12 +178,39 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       setIsSaving(false);
     }
   };
+
   const handleCancelChanges = (): void => {
     setNickname(initialNickname);
     setBio(initialBio);
   };
 
   const hasChanges = nickname !== initialNickname || bio !== initialBio;
+
+  const renderProjectsContent = (): JSX.Element => {
+    if (projectsLoading) {
+      return (
+        <div className={styles.projectsLoading}>
+          <Skeleton height={100} borderRadius={8} />
+          <Skeleton height={100} borderRadius={8} />
+          <Skeleton height={100} borderRadius={8} />
+        </div>
+      );
+    }
+
+    if (userProjects.length > 0) {
+      return (
+        <div className={styles.projectsList}>
+          {userProjects.map((project) => (
+            <ProjectCard key={project.id} projectId={project.id} />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <p className={styles.noProjects}>У вас пока нет активных проектов</p>
+    );
+  };
 
   if (loading) {
     return (
@@ -324,10 +388,10 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           />
         </div>
 
-        {/* <div className={styles.feed}>
+        <div className={styles.feed}>
           <h3>Лента активности</h3>
-          <ProjectCard projectId={project_id} />
-        </div> */}
+          {renderProjectsContent()}
+        </div>
       </div>
     </div>
   );
