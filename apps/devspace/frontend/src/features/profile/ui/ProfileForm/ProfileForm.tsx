@@ -89,12 +89,14 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
     void fetchUserData();
   }, []);
 
-  const saveSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveSuccessTimeoutReference = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (saveSuccessTimeoutRef.current !== null) {
-        clearTimeout(saveSuccessTimeoutRef.current);
+    return (): void => {
+      if (saveSuccessTimeoutReference.current !== null) {
+        clearTimeout(saveSuccessTimeoutReference.current);
       }
     };
   }, []);
@@ -125,11 +127,11 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       setInitialBio(bio);
       setSaveSuccess(true);
 
-      if (saveSuccessTimeoutRef.current !== null) {
-        clearTimeout(saveSuccessTimeoutRef.current);
+      if (saveSuccessTimeoutReference.current !== null) {
+        clearTimeout(saveSuccessTimeoutReference.current);
       }
 
-      saveSuccessTimeoutRef.current = setTimeout(() => {
+      saveSuccessTimeoutReference.current = setTimeout(() => {
         setSaveSuccess(false);
       }, 3000);
     } catch (error_) {
