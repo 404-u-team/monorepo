@@ -15,6 +15,8 @@ type ProjectRequestService interface {
 	CreateProjectRequestApply(payload *dto.CreateProjectRequestApplyRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
 	CreateProjectRequestInvite(payload *dto.CreateProjectRequestInviteRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
 	UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error)
+	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error)
+	GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error)
 }
 
 type projectRequestService struct {
@@ -232,4 +234,30 @@ func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID
 	}
 
 	return projectRequest, nil
+}
+
+func (s *projectRequestService) GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error) {
+	// Проверяем, является ли пользователь лидером проекта
+	isLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if !isLeader {
+		return nil, ErrUserNotLeader
+	}
+
+	// получаем список заявок по проекту (+ фильтры по slotID и status)
+	requests, err := s.projectRequestRepo.GetProjectRequests(projectID, slotID, status)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	return requests, nil
+}
+
+func (s *projectRequestService) GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error) {
+	requests, err := s.projectRequestRepo.GetUserRequests(userID)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	return requests, nil
 }

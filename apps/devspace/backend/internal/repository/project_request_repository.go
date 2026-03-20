@@ -13,6 +13,8 @@ type ProjectRequestRepository interface {
 	UpdateProjectRequest(requestID uuid.UUID, status string) (int, error)
 	GetProjectIDByRequestID(requestID uuid.UUID) (uuid.UUID, error)
 	GetProjectRequestByID(requestID uuid.UUID) (*models.ProjectRequest, error)
+	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error)
+	GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error)
 }
 
 type projectRequestRepository struct {
@@ -73,4 +75,41 @@ func (r *projectRequestRepository) GetProjectRequestByID(requestID uuid.UUID) (*
 	}
 
 	return &projectRequest, nil
+}
+
+func (r *projectRequestRepository) GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error) {
+	var requests []models.ProjectRequest
+
+	result := r.conn.Model(&models.ProjectRequest{}).
+		Joins("JOIN \"Project_Slot\" ON \"Project_Slot\".id = \"Project_Request\".slot_id").
+		Where("\"Project_Slot\".project_id = ?", projectID)
+
+	// фильтр по slotID, если не nil
+	if slotID != nil {
+		result = result.Where("\"Project_Request\".slot_id = ?", *slotID)
+	}
+
+	// фильтр по status, если не nil
+	if status != nil {
+		result = result.Where("\"Project_Request\".status = ?", *status)
+	}
+
+	result = result.Find(&requests)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return requests, nil
+}
+
+func (r *projectRequestRepository) GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error) {
+	var requests []models.ProjectRequest
+
+	result := r.conn.Model(&models.ProjectRequest{}).Where("user_id = ?", userID).Where("type = ?", "apply").Find(&requests)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return requests, nil
 }

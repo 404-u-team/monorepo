@@ -30,3 +30,13 @@ type UpdateUserRequest struct {
 	Nickname *string `json:"nickname" binding:"min=3,max=50"`
 	Bio      *string `json:"bio" binding:"min=3,max=255"`
 }
+
+type SafeUser struct {
+	ID        uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	Email     string    `gorm:"unique; column:email; not null"`
+	Nickname  string    `gorm:"column:nickname; not null"`
+	AvatarUrl string    `gorm:"column:avatar_url; null"`
+	MainRole  string    `gorm:"column:main_role; null"`
+	Bio       string    `gorm:"column:bio; null"`
+	IsAdmin   bool      `gorm:"column:is_admin; not null"`
+}

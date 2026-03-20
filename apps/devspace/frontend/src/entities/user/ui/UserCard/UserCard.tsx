@@ -13,7 +13,7 @@ export interface UserCardProps {
   className?: string | undefined;
   project_id?: string | undefined;
   slot_id?: string | undefined;
-  onInvite?: (id: string) => Promise<void>;
+  onInvite?: (userId: string) => Promise<void>;
 }
 
 export function UserCard({
@@ -22,6 +22,7 @@ export function UserCard({
   className,
   project_id,
   slot_id,
+  onInvite,
 }: UserCardProps): JSX.Element {
   const [user, setUser] = useState<IUserResponse | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,7 +135,12 @@ export function UserCard({
           Профиль
         </Button>
         {project_id !== undefined && slot_id !== undefined && (
-          <InviteButton project_id={project_id} slot_id={slot_id} />
+          <InviteButton
+            project_id={project_id}
+            slot_id={slot_id}
+            user_id={id}
+            {...(onInvite ? { onInvite } : {})}
+          />
         )}
       </div>
     </Wrapper>

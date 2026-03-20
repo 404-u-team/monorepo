@@ -782,44 +782,6 @@ paths:
                     headers: {}
             security:
                 - BearerAuth: []
-    /ideas/{idea_id}/project:
-        post:
-            summary: Создать проект на основе идеи
-            deprecated: false
-            description: >-
-                Создает новый проект, копируя title и description из идеи. Лидером
-                становится автор идеи.
-            tags:
-                - Идеи
-                - Проекты
-            parameters:
-                - name: idea_id
-                  in: path
-                  description: ""
-                  required: true
-                  example: ""
-                  schema:
-                      type: string
-                      format: uuid
-            responses:
-                "201":
-                    description: Проект успешно создан
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Project"
-                    headers: {}
-                "401":
-                    description: Не авторизован
-                    headers: {}
-                "403":
-                    description: Только автор идеи может создавать проект
-                    headers: {}
-                "404":
-                    description: Идея не найдена
-                    headers: {}
-            security:
-                - BearerAuth: []
     /projects:
         get:
             summary: Список проектов
@@ -899,6 +861,7 @@ paths:
                                 idea_id:
                                     type: string
                                     format: uuid
+                                    example: null
                                     description: >-
                                         ID идеи, если проект создается на ее основе (альтернатива
                                         прямому созданию)
@@ -908,6 +871,9 @@ paths:
                                 description:
                                     type: string
                                     example: Разработка мобильного приложения для изучения языков с AI.
+                                content:
+                                    type: string
+                                    example: "**Очень крутое описание**"
                 required: true
             responses:
                 "201":
@@ -994,6 +960,8 @@ paths:
                                     type: string
                                 description:
                                     type: string
+                                content:
+                                    type: string
                                 status:
                                     type: string
                                     enum:
@@ -1003,7 +971,10 @@ paths:
             responses:
                 "200":
                     description: Проект обновлен
-                    headers: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Project"
                 "400":
                     description: Ошибка валидации или пустой payload
                     headers: {}
@@ -1845,6 +1816,9 @@ components:
                     type: string
                 description:
                     type: string
+                content:
+                    type: string
+                    nullable: true
                 leader_id:
                     type: string
                     format: uuid

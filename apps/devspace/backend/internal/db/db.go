@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,7 +11,9 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/auth"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -58,18 +59,24 @@ func InitDB(c *config.Config) *gorm.DB {
 	return db
 }
 
-func CreateEntity(db *gorm.DB, entity any) error {
-	res := db.Create(entity)
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrDuplicatedKey) {
-			return ErrUniqueKeyDupl
-		}
-		log.Printf("failed to create %v: %v\n", entity, res.Error)
+func CreateAdmin(dbConn *gorm.DB, config config.Config) {
+	hash, err := auth.HashPassword("admin", &config)
+	if err != nil {
+		log.Fatalln("error when creating admin user: ", err)
 	}
 
-	if res.RowsAffected == 0 {
-		return ErrUniqueKeyDupl
+	var count int64
+	result := dbConn.Model(&models.User{}).Where("nickname = ?", "admin").Count(&count)
+	if result.Error != nil {
+		log.Fatalln("error when creating admin user: ", err)
+	}
+	if count != 0 {
+		log.Println("admin user already created")
+		return
 	}
 
-	return nil
+	result = dbConn.Create(&models.User{Email: "admin@mail.com", PasswordHash: hash, Nickname: "admin", IsAdmin: true})
+	if result.Error != nil {
+		log.Fatalln("error when creating admin user: ", err)
+	}
 }

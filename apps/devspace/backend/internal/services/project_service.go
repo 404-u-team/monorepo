@@ -17,8 +17,6 @@ type ProjectService interface {
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
-	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error)
-	GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error)
 }
 
 type projectService struct {
@@ -50,6 +48,9 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	}
 	if payload.IdeaID != nil {
 		project.IdeaID = payload.IdeaID
+	}
+	if payload.Content != nil {
+		project.Content = payload.Content
 	}
 	if err := s.repo.CreateProject(project); err != nil {
 		log.Println("Ошибка при создании проекта: ", err)
@@ -135,29 +136,4 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	}
 
 	return nil
-}
-
-func (s *projectService) GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]dto.SafeRequest, error) {
-	// Проверяем, является ли пользователь лидером проекта
-	isLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
-	if err != nil {
-		return nil, ErrInternal
-	}
-	if !isLeader {
-		return nil, ErrUserNotLeader
-	}
-
-	requests, err := s.repo.GetProjectRequests(projectID, slotID, status)
-	if err != nil {
-		return nil, ErrInternal
-	}
-	return requests, nil
-}
-
-func (s *projectService) GetUserRequests(userID uuid.UUID) ([]dto.SafeRequest, error) {
-	requests, err := s.repo.GetUserRequests(userID)
-	if err != nil {
-		return nil, ErrInternal
-	}
-	return requests, nil
 }
