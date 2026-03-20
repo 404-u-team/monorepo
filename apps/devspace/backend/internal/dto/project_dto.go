@@ -8,6 +8,7 @@ type CreateProjectRequest struct {
 	IdeaID      *uuid.UUID `json:"idea_id"`
 	Title       string     `json:"title" binding:"required,min=3,max=255"`
 	Description *string    `json:"description" binding:"omitempty,min=3,max=255"`
+	Content     *string    `json:"content"`
 }
 
 type GetProjectsQuery struct {
@@ -22,4 +23,5 @@ type UpdateProjectRequest struct {
 	Title       *string `json:"title" binding:"min=3,max=255"`
 	Description *string `json:"description" binding:"min=3,max=255"`
 	Status      *string `json:"status" binding:"omitempty,oneof=open closed"`
+	Content     *string `json:"content"`
 }
