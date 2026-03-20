@@ -137,6 +137,10 @@ func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest
 		updates["status"] = *updateRequest.Status
 	}
 
+	if updateRequest.Content != nil {
+		updates["content"] = *updateRequest.Content
+	}
+
 	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Updates(updates)
 	if result.Error != nil {
 		return 0, result.Error

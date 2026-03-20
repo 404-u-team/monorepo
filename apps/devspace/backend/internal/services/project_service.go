@@ -49,6 +49,9 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	if payload.IdeaID != nil {
 		project.IdeaID = payload.IdeaID
 	}
+	if payload.Content != nil {
+		project.Content = payload.Content
+	}
 	if err := s.repo.CreateProject(project); err != nil {
 		log.Println("Ошибка при создании проекта: ", err)
 		return nil, ErrInternal

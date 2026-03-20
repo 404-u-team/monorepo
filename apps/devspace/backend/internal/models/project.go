@@ -12,6 +12,7 @@ type Project struct {
 	IdeaID      *uuid.UUID `gorm:"column:idea_id;type:uuid" json:"idea_id"`
 	Title       string     `gorm:"column:title;unique; not null" json:"title"`
 	Description *string    `gorm:"column:description" json:"description"`
+	Content     *string    `gorm:"column:content" json:"content"`
 	Status      string     `gorm:"column:status; not null" json:"status"`
 	CreatedAt   time.Time  `gorm:"column:created_at; not null" json:"created_at"`
 	UpdatedAt   time.Time  `gorm:"column:updated_at; not null" json:"updated_at"`

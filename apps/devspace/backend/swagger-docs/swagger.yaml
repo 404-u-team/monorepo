@@ -871,6 +871,9 @@ paths:
                                 description:
                                     type: string
                                     example: Разработка мобильного приложения для изучения языков с AI.
+                                content:
+                                    type: string
+                                    example: "**Очень крутое описание**"
                 required: true
             responses:
                 "201":
@@ -1807,6 +1810,8 @@ components:
                 title:
                     type: string
                 description:
+                    type: string
+                content:
                     type: string
                 leader_id:
                     type: string

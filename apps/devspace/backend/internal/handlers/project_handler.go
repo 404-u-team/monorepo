@@ -118,7 +118,7 @@ func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 		return
 	}
 
-	if payload.Title == nil && payload.Description == nil && payload.Status == nil {
+	if payload.Title == nil && payload.Description == nil && payload.Status == nil && payload.Content == nil {
 		log.Println("Все поля пустые, нечего изменять")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Все поля пустые, нечего изменять"})
 		return
