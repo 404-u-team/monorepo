@@ -960,6 +960,8 @@ paths:
                                     type: string
                                 description:
                                     type: string
+                                content:
+                                    type: string
                                 status:
                                     type: string
                                     enum:
@@ -969,7 +971,10 @@ paths:
             responses:
                 "200":
                     description: Проект обновлен
-                    headers: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Project"
                 "400":
                     description: Ошибка валидации или пустой payload
                     headers: {}
@@ -1813,6 +1818,7 @@ components:
                     type: string
                 content:
                     type: string
+                    nullable: true
                 leader_id:
                     type: string
                     format: uuid
