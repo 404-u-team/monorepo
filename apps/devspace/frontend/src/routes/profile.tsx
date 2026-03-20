@@ -28,7 +28,6 @@ function UsersMe(): JSX.Element | undefined {
           setUserId(data.id);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Error loading current user profile:", error);
       }
     };
