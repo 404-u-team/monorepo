@@ -1,7 +1,10 @@
 import { type JSX } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch, Link } from "@tanstack/react-router";
+import { observer } from "mobx-react-lite";
+import { Plus } from "lucide-react";
 import { ProjectCard, type IProject } from "@/entities/project";
-import { Dropdown, DataListLayout } from "@/shared/ui";
+import { Dropdown, DataListLayout, Button } from "@/shared/ui";
+import { useStore } from "@/shared/lib/store";
 
 interface SearchParameters {
   page?: number | undefined;
@@ -20,10 +23,11 @@ const statusOptions = [
   { label: "Закрытые", value: "closed" },
 ];
 
-export function ProjectList({
+export const ProjectList = observer(function ProjectList({
   projects,
   totalPages,
 }: ProjectListProps): JSX.Element {
+  const { userStore } = useStore();
   const searchParameters: SearchParameters = useSearch({
     strict: false,
   });
@@ -64,13 +68,29 @@ export function ProjectList({
     />
   );
 
+  const createButton = userStore.isAuthenticated ? (
+    <Link to="/project/new">
+      <Button>
+        <Plus size={18} />
+        Создать проект
+      </Button>
+    </Link>
+  ) : undefined;
+
+  const controlsNode = (
+    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      {StatusFilter}
+      {createButton}
+    </div>
+  );
+
   return (
     <DataListLayout
       title="Проекты"
       subtitle="Найдите интересный проект и присоединяйтесь к командной работе"
       searchValue={(searchParameters as Record<string, string>).search ?? ""}
       onSearchChange={handleSearch}
-      controlsNode={StatusFilter}
+      controlsNode={controlsNode}
       isEmpty={projects.length === 0}
       emptyMessage="Проекты не найдены"
       currentPage={
@@ -83,9 +103,9 @@ export function ProjectList({
         <ProjectCard
           key={project.id}
           projectId={project.id}
-          to={`/projects/${project.id}`}
+          to={`/project/${project.id}`}
         />
       ))}
     </DataListLayout>
   );
-}
+});
