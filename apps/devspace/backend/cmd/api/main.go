@@ -16,6 +16,8 @@ func main() {
 
 	db.Migrate(dbConn)
 
+	db.CreateAdmin(dbConn, config)
+
 	router := routes.SetupRoutes(dbConn, &config)
 
 	log.Printf("Server starting on :%s", config.APIPort)
