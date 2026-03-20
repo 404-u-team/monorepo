@@ -6,6 +6,7 @@ import { fetchUserById } from '@/entities/user';
 import type { IProject } from '../../model/IProject';
 import type { IProjectSlotSkill } from '../../model/IProjectSlot';
 import { fetchProjectById, type IProjectDetailResponse } from '../../api/projectApi';
+import { Link } from '@tanstack/react-router';
 import { ProjectCardSkeleton } from '../ProjectCardSkeleton/ProjectCardSkeleton';
 import styles from './ProjectCard.module.scss';
 
@@ -76,8 +77,8 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
         }
     }
 
-    const Wrapper = to !== undefined ? 'a' : 'article';
-    const wrapperProps = to !== undefined ? { href: to } : {};
+    const Wrapper = to !== undefined ? Link : 'article';
+    const wrapperProps = to !== undefined ? { to } : {};
 
     return (
         <Wrapper
