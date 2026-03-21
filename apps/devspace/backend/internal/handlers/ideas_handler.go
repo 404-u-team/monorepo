@@ -137,7 +137,6 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, idea)
 }
-
 func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
 	rawID := ctx.Param("id")
 	ideaID, parseErr := uuid.Parse(rawID)
