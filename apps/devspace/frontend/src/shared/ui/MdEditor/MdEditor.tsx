@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import MDEditor, { commands } from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
+import { useTheme } from '@/shared/lib/hooks/useTheme';
 import styles from './MdEditor.module.scss';
 
 const titleGroupCommand = commands.group(
@@ -69,8 +70,9 @@ export function MdEditor({
     disabled = false,
     className,
 }: MdEditorProps): JSX.Element {
+    const { theme } = useTheme();
     return (
-        <div className={clsx(styles.wrapper, className)} data-color-mode="light">
+        <div className={clsx(styles.wrapper, className)} data-color-mode={theme}>
             <MDEditor
                 value={value}
                 onChange={(v) => { if (!disabled) { onChange(v ?? ''); } }}

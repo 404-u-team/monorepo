@@ -1,243 +1,275 @@
 import type { JSX } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Camera, Check, Plus, User, X } from "lucide-react";
 import { apiClient } from "@/shared/api/client";
+import { clsx } from "clsx";
+import { Button, Input, Skeleton, SkillSearch } from "@/shared/ui";
+import type { SkillSearchOption } from "@/shared/ui";
+import { fetchSkills } from "@/entities/skill";
+import { fetchProjects, ProjectCard } from "@/entities/project";
 import styles from "./ProfileForm.module.scss";
-import { useEffect, useRef, useState } from "react";
-import UserCard from "@/entities/user/ui/UserCard/UserCard";
-import { Input, Button, Badge, Dropdown, Skeleton } from "@/shared/ui";
-import { Camera, Save, X } from "lucide-react";
-import { ProjectCard } from "@/entities/project";
-import { statusOptions, roleOptions } from "@/shared/enums/ProfileEnums";
 
 export type ProfileFormProps = Record<string, never>;
 
-interface UserData {
+interface IProfileData {
   id: string;
-  nickname: string;
-  avatar_uri: string;
-  main_role: string;
-  bio: string;
-  skills: string[];
   email: string;
-  status?: string;
+  nickname: string;
+  avatar_uri: string | undefined;
+  bio: string | undefined;
+  main_role: string | undefined;
+  skills: IProfileSkill[];
 }
 
-interface UpdateUserData {
-  nickname?: string;
-  bio?: string;
-}
-
-interface Skill {
-  label: string;
-  value: string;
-  color: string;
-}
-
-interface Project {
+interface IProfileSkill {
   id: string;
-  title: string;
-  description: string;
-  leader_id: string;
-  status: string;
-  idea_id: string | null;
-  created_at: string;
-  updated_at: string;
-  slots: {
-    id: string;
-    project_id: string;
-    skill_category_id: string;
-    title: string;
-    description: string;
-    status: string;
-    user_id: string | null;
-    created_at: string;
-  }[];
+  name: string;
 }
 
-//Временные моки, пока API не готово
-const mockSkills = [
-  { label: "React", value: "react", color: "3B82F6" },
-  { label: "TypeScript", value: "ts", color: "34D399" },
-  { label: "Node.js", value: "node", color: "F59E0B" },
-  { label: "UI/UX", value: "uiux", color: "8B5CF6" },
-];
+interface IProjectItem {
+  id: string;
+}
 
 export function ProfileForm(_props: ProfileFormProps): JSX.Element {
-  const [userData, setUserData] = useState<UserData>();
-  const [userProjects, setUserProjects] = useState<Project[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [userData, setUserData] = useState<IProfileData | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | undefined>(undefined);
+
   const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("searching");
-  const [role, setRole] = useState("frontend");
   const [bio, setBio] = useState("");
-  const [searchSkill, setSearchSkill] = useState("");
+  const [mainRole, setMainRole] = useState<SkillSearchOption | undefined>(undefined);
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
+  const [initialMainRole, setInitialMainRole] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | undefined>(undefined);
 
-  const defaultAvatar =
-    "https://img.freepik.com/premium-photo/vector-cat-with-character-wearing-jacket_575980-16303.jpg?semt=ais_hybrid";
-  const avatar_uri = userData?.avatar_uri ?? defaultAvatar;
+  const [skills, setSkills] = useState<IProfileSkill[]>([]);
+  const [skillSearchValue, setSkillSearchValue] = useState<SkillSearchOption | undefined>(undefined);
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [removingSkillId, setRemovingSkillId] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    const fetchUserData = async (): Promise<void> => {
-      try {
-        setLoading(true);
-        setError(undefined);
-        const endpoint = `/users/me`;
-        const response = await apiClient.get<UserData>(endpoint);
-        const data = response.data;
-        setUserData(data);
-        setNickname(data.nickname || "");
-        setEmail(data.email || "");
-        setBio(data.bio || "");
-        setRole(data.main_role || "frontend");
-        //setStatus(data.status || "searching");
+  const [projects, setProjects] = useState<IProjectItem[]>([]);
+  const [isProjectsLoading, setIsProjectsLoading] = useState(false);
 
-        setInitialNickname(data.nickname || "");
-        setInitialBio(data.bio || "");
-
-        await fetchUserProjects(data.id);
-      } catch (error_) {
-        setError("Ошибка загрузки данных пользователя");
-        console.error("Error fetching user data:", error_);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchUserData();
-  }, []);
-
-  const fetchUserProjects = async (userId: string): Promise<void> => {
-    try {
-      setProjectsLoading(true);
-      const response = await apiClient.get<Project[]>(
-        `/users/${userId}/projects`,
-      );
-      setUserProjects(response.data);
-    } catch (error_) {
-      console.error("Error fetching user projects:", error_);
-    } finally {
-      setProjectsLoading(false);
-    }
-  };
-
-  const saveSuccessTimeoutReference = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const successTimerReference = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return (): void => {
-      if (saveSuccessTimeoutReference.current !== null) {
-        clearTimeout(saveSuccessTimeoutReference.current);
+      if (successTimerReference.current !== null) {
+        clearTimeout(successTimerReference.current);
       }
     };
   }, []);
 
-  const handleSaveProfile = async (): Promise<void> => {
-    const hasNicknameChanged = nickname !== initialNickname;
-    const hasBioChanged = bio !== initialBio;
+  useEffect(() => {
+    let cancelled = false;
 
-    if (!hasNicknameChanged && !hasBioChanged) {
-      return;
+    async function load(): Promise<void> {
+      try {
+        setIsLoading(true);
+        setLoadError(undefined);
+
+        const response = await apiClient.get<IProfileData>("/users/me");
+        const data = response.data;
+
+        if (!cancelled) {
+          setUserData(data);
+          setNickname(data.nickname);
+          setInitialNickname(data.nickname);
+          setBio(data.bio ?? "");
+          setInitialBio(data.bio ?? "");
+          setSkills(data.skills);
+          const roleName = data.main_role ?? "";
+          if (roleName !== "") {
+            setMainRole({ id: roleName, name: roleName });
+          }
+          setInitialMainRole(roleName);
+
+          void loadProjects(data.id);
+        }
+      } catch {
+        if (!cancelled) setLoadError("Не удалось загрузить данные профиля");
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
     }
+
+    void load();
+    return (): void => { cancelled = true; };
+  }, []);
+
+  const loadProjects = async (userId: string): Promise<void> => {
+    try {
+      setIsProjectsLoading(true);
+      const result = await fetchProjects({ leader_id: userId, limit: 20 });
+      setProjects(result.items.map((project) => ({ id: project.id })));
+    } catch {
+      // no-op — projects section will be empty
+    } finally {
+      setIsProjectsLoading(false);
+    }
+  };
+
+  const handleSave = async (): Promise<void> => {
+    const hasNicknameChanged = nickname.trim() !== initialNickname;
+    const hasBioChanged = bio !== initialBio;
+    const currentMainRole = mainRole?.name ?? "";
+    const hasMainRoleChanged = currentMainRole !== initialMainRole;
+    if (!hasNicknameChanged && !hasBioChanged && !hasMainRoleChanged) return;
 
     try {
       setIsSaving(true);
-      setError(undefined);
+      setSaveError(undefined);
       setSaveSuccess(false);
 
-      const updateData: UpdateUserData = {};
+      const payload: { nickname?: string; bio?: string; main_role?: string } = {};
+      if (hasNicknameChanged) payload.nickname = nickname.trim();
+      if (hasBioChanged) payload.bio = bio;
+      if (hasMainRoleChanged) payload.main_role = currentMainRole !== "" ? currentMainRole : undefined;
 
-      if (hasNicknameChanged) {
-        updateData.nickname = nickname;
-      }
-      if (hasBioChanged) {
-        updateData.bio = bio;
-      }
-      await apiClient.put("/users/me", updateData);
-      setInitialNickname(nickname);
+      await apiClient.put("/users/me", payload);
+      const saved = nickname.trim();
+      setInitialNickname(saved);
+      setNickname(saved);
       setInitialBio(bio);
+      setInitialMainRole(currentMainRole);
       setSaveSuccess(true);
 
-      if (saveSuccessTimeoutReference.current !== null) {
-        clearTimeout(saveSuccessTimeoutReference.current);
-      }
-
-      saveSuccessTimeoutReference.current = setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
-    } catch (error_) {
-      setError("Ошибка при сохранении изменений");
-      console.error("Error saving user data:", error_);
+      if (successTimerReference.current !== null) clearTimeout(successTimerReference.current);
+      successTimerReference.current = setTimeout(() => { setSaveSuccess(false); }, 3000);
+    } catch {
+      setSaveError("Не удалось сохранить изменения");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleCancelChanges = (): void => {
+  const handleCancel = (): void => {
     setNickname(initialNickname);
     setBio(initialBio);
+    setMainRole(initialMainRole !== "" ? { id: initialMainRole, name: initialMainRole } : undefined);
+    setSaveError(undefined);
   };
 
-  const hasChanges = nickname !== initialNickname || bio !== initialBio;
+  const loadMainRoleOptions = useCallback(async (query: string): Promise<SkillSearchOption[]> => {
+    const results = await fetchSkills({ search: query !== "" ? query : undefined, limit: 20 });
+    return results
+      .filter((skill) => skill.parent_id === null)
+      .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
+  }, []);
 
-  const renderProjectsContent = (): JSX.Element => {
-    if (projectsLoading) {
+  const loadSkillOptions = useCallback(async (query: string): Promise<SkillSearchOption[]> => {
+    const results = await fetchSkills({ search: query !== "" ? query : undefined, limit: 30 });
+    const existingIds = new Set(skills.map((skill) => skill.id));
+    return results
+      .filter((skill) => !existingIds.has(skill.id))
+      .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
+  }, [skills]);
+
+  const handleAddSkill = async (selected: SkillSearchOption | undefined): Promise<void> => {
+    if (selected === undefined) return;
+    if (skills.some((skill) => skill.id === selected.id)) return;
+
+    try {
+      setIsAddingSkill(true);
+      await apiClient.post("/users/me/skills", { skill_id: selected.id });
+      setSkills((previous) => [...previous, { id: selected.id, name: selected.name }]);
+      setSkillSearchValue(undefined);
+    } catch {
+      // skill might already exist or invalid
+    } finally {
+      setIsAddingSkill(false);
+    }
+  };
+
+  const handleRemoveSkill = async (skillId: string): Promise<void> => {
+    try {
+      setRemovingSkillId(skillId);
+      await apiClient.delete(`/users/me/skills/${skillId}`);
+      setSkills((previous) => previous.filter((skill) => skill.id !== skillId));
+    } catch {
+      // no-op
+    } finally {
+      setRemovingSkillId(undefined);
+    }
+  };
+
+  const hasChanges =
+    nickname.trim() !== initialNickname ||
+    bio !== initialBio ||
+    (mainRole?.name ?? "") !== initialMainRole;
+
+  function renderProjects(): JSX.Element {
+    if (isProjectsLoading) {
       return (
-        <div className={styles.projectsLoading}>
-          <Skeleton height={100} borderRadius={8} />
-          <Skeleton height={100} borderRadius={8} />
-          <Skeleton height={100} borderRadius={8} />
+        <div className={styles.projectsGrid}>
+          <Skeleton height={180} borderRadius={12} />
+          <Skeleton height={180} borderRadius={12} />
         </div>
       );
     }
-
-    if (userProjects.length > 0) {
+    if (projects.length > 0) {
       return (
-        <div className={styles.projectsList}>
-          {userProjects.map((project) => (
-            <ProjectCard key={project.id} projectId={project.id} />
+        <div className={styles.projectsGrid}>
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              projectId={project.id}
+              to={`/project/${project.id}`}
+            />
           ))}
         </div>
       );
     }
-
     return (
-      <p className={styles.noProjects}>У вас пока нет активных проектов</p>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className={styles.profileGrid}>
-        <div className={styles.column1}>
-          <Skeleton height={200} borderRadius={16} />
-          <Skeleton height={120} borderRadius={16} />
-        </div>
-        <div className={styles.column2}>
-          <Skeleton height={40} width="60%" />
-          <Skeleton height={30} width="40%" />
-          <Skeleton height={200} borderRadius={16} />
-        </div>
+      <div className={styles.emptyProjects}>
+        <p className={styles.emptyHint}>У вас пока нет проектов</p>
+        <Link to="/project/new">
+          <Button variant="outline">Создать первый проект</Button>
+        </Link>
       </div>
     );
   }
 
-  if (error !== undefined && !userData) {
+  if (isLoading) {
     return (
-      <div className={styles.errorContainer}>
-        <p className={styles.error}>{error}</p>
-        <Button
-          variant="primary"
-          onClick={() => {
-            window.location.reload();
-          }}
-        >
+      <div className={styles.layout}>
+        <aside className={styles.sidebar}>
+          <div className={styles.avatarCard}>
+            <Skeleton width={96} height={96} borderRadius={48} />
+            <Skeleton width={140} height={20} />
+            <Skeleton width={100} height={16} />
+          </div>
+          <div className={styles.sideNav}>
+            <Skeleton width="100%" height={40} borderRadius={8} />
+            <Skeleton width="100%" height={40} borderRadius={8} />
+          </div>
+        </aside>
+        <main className={styles.main}>
+          <div className={styles.section}>
+            <Skeleton width={220} height={24} />
+            <div className={styles.formRow}>
+              <Skeleton width="100%" height={44} borderRadius={8} />
+              <Skeleton width="100%" height={44} borderRadius={8} />
+            </div>
+          </div>
+          <div className={styles.section}>
+            <Skeleton width={120} height={24} />
+            <Skeleton width="100%" height={120} borderRadius={8} />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (loadError !== undefined) {
+    return (
+      <div className={styles.errorPage}>
+        <p className={styles.errorText}>{loadError}</p>
+        <Button onClick={() => { window.location.reload(); }}>
           Попробовать снова
         </Button>
       </div>
@@ -245,154 +277,183 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   }
 
   return (
-    <div className={styles.profileGrid}>
-      <div className={styles.column1}>
-        <h1>Мой Профиль</h1>
-        <div className={styles.miniProfile}>
-          {userData && <UserCard id={userData.id} />}
+    <div className={styles.layout}>
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.avatarCard}>
+          <div className={styles.avatarContainer}>
+            {userData?.avatar_uri !== undefined && userData.avatar_uri !== '' ? (
+              <img
+                src={userData.avatar_uri}
+                alt={userData.nickname}
+                className={styles.avatarImage}
+                onError={(event) => {
+                  (event.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className={styles.avatarPlaceholder}>
+                <User size={36} />
+              </div>
+            )}
+            <button className={styles.avatarEditButton} aria-label="Сменить фото">
+              <Camera size={14} />
+            </button>
+          </div>
+          <div className={styles.userSummary}>
+            <span className={styles.summaryNickname}>{userData?.nickname}</span>
+            {mainRole !== undefined && (
+              <span className={styles.summaryRole}>{mainRole.name}</span>
+            )}
+            <span className={styles.summaryEmail}>{userData?.email}</span>
+          </div>
         </div>
-        <div className={styles.pov}>
-          <Button variant="primary" className={styles.profileButton}>
+
+        <nav className={styles.sideNav}>
+          <button className={clsx(styles.navItem, styles.navItemActive)}>
             Профиль
-          </Button>
-          <Button variant="outline" className={styles.notificationButton}>
+          </button>
+          <button className={styles.navItem} disabled>
             Уведомления
-          </Button>
-        </div>
-      </div>
+          </button>
+        </nav>
+      </aside>
 
-      <div className={styles.column2}>
-        <h2>Настройки профиля</h2>
-
-        {saveSuccess && (
-          <div className={styles.successMessage}>
-            Изменения успешно сохранены!
+      {/* Main content */}
+      <main className={styles.main}>
+        {/* Basic Info */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Основная информация</h2>
+          <div className={styles.formRow}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-nickname">Никнейм</label>
+              <Input
+                id="profile-nickname"
+                placeholder="Например: john_doe"
+                value={nickname}
+                onChange={(event) => { setNickname(event.target.value); }}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="profile-email">E-mail</label>
+              <Input
+                id="profile-email"
+                type="email"
+                value={userData?.email ?? ""}
+                disabled
+              />
+            </div>
           </div>
-        )}
-
-        {error !== undefined && (
-          <div className={styles.errorMessage}>{error}</div>
-        )}
-
-        <div className={styles.avatarChange}>
-          <div className={styles.avatar}>
-            <img src={avatar_uri} alt="Avatar" />
-          </div>
-          <h3>Редактировать изображение профиля</h3>
-          <Button variant="outline" className={styles.changeAvaButton}>
-            <Camera size={16} />
-            Сменить фото
-          </Button>
-        </div>
-
-        <div className={styles.mySkills}>
-          <h2>Мои навыки</h2>
-          <Input
-            placeholder="Поиск навыков..."
-            value={searchSkill}
-            onChange={(event_) => {
-              setSearchSkill(event_.target.value);
-            }}
-            className={styles.searchBox}
-          />
-
-          <div className={styles.skillShowcase}>
-            {mockSkills.map((skill: Skill) => (
-              <Badge key={skill.value} color={skill.color}>
-                {skill.label}
-                <X size={16} />
-              </Badge>
-            ))}
-          </div>
-
-          <div className={styles.saveButtons}>
-            <Button
-              variant="primary"
-              onClick={() => void handleSaveProfile()}
-              disabled={isSaving || !hasChanges}
-            >
-              <Save size={25} />
-              {isSaving ? "Сохранение..." : "Сохранить изменения"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleCancelChanges}
-              disabled={isSaving || !hasChanges}
-            >
-              <X size={16} />
-              Отмена
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.column3}>
-        <div className={styles.settingsGrid}>
-          <div className={styles.settingBox}>
-            <h3>Никнейм</h3>
-            <Input
-              placeholder="Например: @maxik"
-              value={nickname}
-              onChange={(event_) => {
-                setNickname(event_.target.value);
-              }}
-              className={styles.settingInput}
+          <div className={styles.field}>
+            <label className={styles.label}>Основная роль</label>
+            <SkillSearch
+              value={mainRole}
+              onChange={setMainRole}
+              loadOptions={loadMainRoleOptions}
+              placeholder="Выберите основную роль..."
             />
           </div>
+        </section>
 
-          <div className={styles.settingBox}>
-            <h3>Статус</h3>
-            <Dropdown
-              options={statusOptions}
-              value={status}
-              onChange={setStatus}
-              placeholder="Выберите статус"
-            />
-          </div>
-
-          <div className={styles.settingBox}>
-            <h3>E-mail</h3>
-            <Input
-              type="email"
-              placeholder="Например: auth@gmail.com"
-              value={email}
-              onChange={(event_) => {
-                setEmail(event_.target.value);
-              }}
-              className={styles.settingInput}
-              disabled
-            />
-          </div>
-
-          <div className={styles.settingBox}>
-            <h3>Основная роль</h3>
-            <Dropdown
-              options={roleOptions}
-              value={role}
-              onChange={setRole}
-              placeholder="Выберите роль"
-            />
-          </div>
-        </div>
-
-        <div className={styles.bio}>
-          <h3>Описание</h3>
+        {/* Bio */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>О себе</h2>
           <textarea
-            className={styles.bioInput}
+            className={styles.bioTextarea}
             value={bio}
-            onChange={(event_) => {
-              setBio(event_.target.value);
-            }}
-            placeholder="Расскажите о себе..."
+            onChange={(event) => { setBio(event.target.value); }}
+            placeholder="Расскажите о себе, своём опыте и интересах..."
             rows={4}
           />
-        </div>
+        </section>
 
-        <div className={styles.feed}>
-          <h3>Лента активности</h3>
-          {renderProjectsContent()}
-        </div>
-      </div>
+        {/* Save bar */}
+        {(hasChanges || saveSuccess || saveError !== undefined) && (
+          <div className={styles.saveBar}>
+            {saveSuccess && (
+              <span className={styles.successText}>
+                <Check size={16} />
+                Изменения сохранены
+              </span>
+            )}
+            {saveError !== undefined && (
+              <span className={styles.errorText}>{saveError}</span>
+            )}
+            <div className={styles.saveButtons}>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSaving || !hasChanges}
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={() => { void handleSave(); }}
+                disabled={isSaving || !hasChanges}
+              >
+                {isSaving ? "Сохранение..." : "Сохранить"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Skills */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Навыки</h2>
+
+          {skills.length > 0 ? (
+            <div className={styles.skillsList}>
+              {skills.map((skill) => (
+                <span key={skill.id} className={styles.skillTag}>
+                  {skill.name}
+                  <button
+                    className={styles.skillRemove}
+                    onClick={() => { void handleRemoveSkill(skill.id); }}
+                    disabled={removingSkillId === skill.id}
+                    aria-label={`Удалить навык ${skill.name}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyHint}>Навыки не добавлены</p>
+          )}
+
+          <div className={styles.skillAdd}>
+            <SkillSearch
+              value={skillSearchValue}
+              onChange={(selected) => { void handleAddSkill(selected); }}
+              loadOptions={loadSkillOptions}
+              placeholder="Найти и добавить навык..."
+              disabled={isAddingSkill}
+            />
+            {skillSearchValue !== undefined && (
+              <Button
+                onClick={() => { void handleAddSkill(skillSearchValue); }}
+                disabled={isAddingSkill}
+              >
+                <Plus size={16} />
+                Добавить
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {/* My Projects */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Мои проекты</h2>
+            <Link to="/project/new" className={styles.createLink}>
+              <Plus size={14} />
+              Создать проект
+            </Link>
+          </div>
+
+          {renderProjects()}
+        </section>
+      </main>
     </div>
   );
 }

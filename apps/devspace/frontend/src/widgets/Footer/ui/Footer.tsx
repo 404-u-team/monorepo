@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 import { Link } from '@tanstack/react-router';
 import styles from './Footer.module.scss';
+import { Logo } from '@/shared/ui';
 
 export function Footer(): JSX.Element {
     return (
@@ -9,11 +10,7 @@ export function Footer(): JSX.Element {
                 <div className={styles.top}>
                     <div className={styles.brand}>
                         <Link to="/" className={styles.logo}>
-                            <img
-                                src="/DevSpaceLogo-removebg.png"
-                                alt="DevSpace"
-                                className={styles.logoImage}
-                            />
+                            <Logo className={styles.logoImage} />
                         </Link>
                         <p className={styles.description}>
                             Платформа для совместной разработки ИТ-продуктов и создания сильных команд.
@@ -25,8 +22,8 @@ export function Footer(): JSX.Element {
                             <h4 className={styles.columnTitle}>Продукт</h4>
                             <ul className={styles.list}>
                                 <li><Link to="/projects" className={styles.link}>Проекты</Link></li>
-                                <li><Link to="/" className={styles.link}>Идеи</Link></li>
-                                <li><Link to="/" className={styles.link}>Люди</Link></li>
+                                <li><Link to="/ideas" className={styles.link}>Идеи</Link></li>
+                                <li><Link to="/community" className={styles.link}>Люди</Link></li>
                             </ul>
                         </div>
                         <div className={styles.column}>

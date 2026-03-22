@@ -12,3 +12,4 @@ export { MdRenderer, type MdRendererProps } from "./MdRenderer/MdRenderer";
 export { ConfirmModal, type ConfirmModalProps, type ConfirmModalSeverity } from "./ConfirmModal/ConfirmModal";
 export { SkillSearch, type SkillSearchProps, type SkillSearchOption } from "./SkillSearch/SkillSearch";
 export { SkillMultiSelect, type SkillMultiSelectProps, type SkillMultiSelectOption } from "./SkillMultiSelect/SkillMultiSelect";
+export { Logo, type LogoProps } from "./Logo/Logo";

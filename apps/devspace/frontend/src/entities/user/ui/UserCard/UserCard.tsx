@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type JSX } from "react";
 import { clsx } from "clsx";
-import { Button } from "@/shared/ui";
+import { User } from "lucide-react";
 import { fetchUserById } from "../../api/userApi";
 import type { IUserResponse } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
@@ -39,7 +39,7 @@ export function UserCard({
         if (cancelled) return;
         setUser(data);
       } catch {
-        // handled by future error state
+        // handled by empty state
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -55,21 +55,16 @@ export function UserCard({
     const checkOverflow = (): void => {
       const box = skillBoxReference.current;
       const inner = scrollReference.current;
-      if (!box || !inner) return;
+      if (box === null || inner === null) return;
       const contentWidth = inner.scrollWidth / (needsScroll ? 2 : 1);
-      const containerWidth = box.offsetWidth;
-
-      setNeedsScroll(contentWidth > containerWidth);
+      setNeedsScroll(contentWidth > box.offsetWidth);
     };
 
     checkOverflow();
 
-    const ro = new ResizeObserver(checkOverflow);
-    if (skillBoxReference.current) ro.observe(skillBoxReference.current);
-
-    return (): void => {
-      ro.disconnect();
-    };
+    const observer = new ResizeObserver(checkOverflow);
+    if (skillBoxReference.current !== null) observer.observe(skillBoxReference.current);
+    return (): void => { observer.disconnect(); };
   }, [user?.skills, needsScroll]);
 
   if (isLoading || user === undefined) {
@@ -79,6 +74,8 @@ export function UserCard({
   const Wrapper = to !== undefined ? "a" : "article";
   const wrapperProps = to !== undefined ? { href: to } : {};
 
+  const skills = user.skills;
+
   return (
     <Wrapper
       {...wrapperProps}
@@ -86,60 +83,68 @@ export function UserCard({
     >
       <div className={styles.header}>
         <div className={styles.avatarWrapper}>
-          <img
-            className={styles.avatar}
-            src={user.avatar_uri}
-            alt={user.nickname}
-            onError={(event) => {
-              (event.target as HTMLImageElement).style.display = "none";
-            }}
-          />
+          {user.avatar_uri ? (
+            <img
+              className={styles.avatar}
+              src={user.avatar_uri}
+              alt={user.nickname}
+              onError={(event) => {
+                (event.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className={styles.avatarPlaceholder}>
+              <User size={22} />
+            </div>
+          )}
         </div>
 
         <div className={styles.textInfo}>
-          <div className={styles.nickname}>{user.nickname}</div>
-          <span className={styles.mainRole}>{user.main_role}</span>
-        </div>
-      </div>
-
-      <div className={styles.bio}>{user.bio}</div>
-
-      <div
-        ref={skillBoxReference}
-        className={clsx(
-          styles.skillBox,
-          needsScroll && styles.skillBoxWithMask,
-        )}
-      >
-        <div
-          ref={scrollReference}
-          className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
-        >
-          {(needsScroll ? [...user.skills, ...user.skills] : user.skills).map(
-            (skill, index) => {
-              const skillName = typeof skill === "string" ? skill : skill.name;
-              const uniqueKey = `${typeof skill === "string" ? skill : JSON.stringify(skill)}-${String(index)}`;
-
-              return (
-                <div key={uniqueKey} className={styles.skillName}>
-                  {skillName}
-                </div>
-              );
-            },
+          <span className={styles.nickname}>{user.nickname}</span>
+          {user.main_role !== '' && (
+            <span className={styles.mainRole}>{user.main_role}</span>
           )}
         </div>
       </div>
 
+      {user.bio !== '' && (
+        <p className={styles.bio}>{user.bio}</p>
+      )}
+
+      {skills.length > 0 && (
+        <div
+          ref={skillBoxReference}
+          className={clsx(styles.skillBox, needsScroll && styles.skillBoxWithMask)}
+        >
+          <div
+            ref={scrollReference}
+            className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
+          >
+            {(needsScroll ? [...skills, ...skills] : skills).map((skill, index) => {
+              const skillName = typeof skill === "string" ? skill : skill.name;
+              const uniqueKey = `${typeof skill === "string" ? skill : skill.id}-${String(index)}`;
+              return (
+                <span key={uniqueKey} className={styles.skillName}>
+                  {skillName}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className={styles.profileButtonsBox}>
-        <Button variant="outline" className={styles.profileButton}>
-          Профиль
-        </Button>
+        {to === undefined && (
+          <a href={`/users/${id}`} className={styles.profileButton}>
+            Профиль
+          </a>
+        )}
         {project_id !== undefined && slot_id !== undefined && (
           <InviteButton
             project_id={project_id}
             slot_id={slot_id}
             user_id={id}
-            {...(onInvite ? { onInvite } : {})}
+            {...(onInvite !== undefined ? { onInvite } : {})}
           />
         )}
       </div>

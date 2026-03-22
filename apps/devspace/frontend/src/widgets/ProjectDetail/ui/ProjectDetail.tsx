@@ -155,6 +155,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                 title: newSlotTitle,
                 description: newSlotDescription,
                 skill_category_id: newSlotPrimarySkill.id,
+                status: 'open',
             };
             if (newSlotSecondarySkills.length > 0) {
                 payload.secondary_skills_ids = newSlotSecondarySkills.map((skill) => skill.id);
