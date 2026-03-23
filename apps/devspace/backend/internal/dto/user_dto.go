@@ -20,7 +20,7 @@ type PrivateUserProfile struct {
 type PublicUserProfile struct {
 	ID        uuid.UUID               `json:"id"`
 	Nickname  string                  `json:"nickname"`
-	MainRole  string                  `json:"main_role"`
+	MainRole  uuid.UUID               `json:"main_role"`
 	AvatarUri string                  `json:"avatar_uri"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`
