@@ -12,7 +12,7 @@ type User struct {
 	PasswordHash string    `gorm:"column:password_hash; not null"`
 	Nickname     string    `gorm:"column:nickname;unique; not null"`
 	AvatarUrl    string    `gorm:"column:avatar_url; null"`
-	MainRole     string    `gorm:"column:main_role; null"`
+	MainRole     uuid.UUID `gorm:"column:main_role; null"`
 	Bio          string    `gorm:"column:bio; null"`
 	CreatedAt    time.Time `gorm:"column:created_at; not null"`
 	IsAdmin      bool      `gorm:"column:is_admin; not null"`
