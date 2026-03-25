@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -12,6 +13,12 @@ type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error)
 	GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error)
+	GetUsersByParams(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		skills *dto.UUIDSlice,
+	) ([]models.User, error)
 }
 
 type userService struct {
@@ -102,4 +109,13 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 	}
 
 	return &getMeResponse, nil
+}
+
+func (s *userService) GetUsersByParams(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	skills *dto.UUIDSlice,
+) ([]models.User, error) {
+	return s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
 }

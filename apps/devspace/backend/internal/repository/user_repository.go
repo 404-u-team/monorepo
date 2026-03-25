@@ -21,6 +21,12 @@ type UserRepository interface {
 	CheckUserIsAdmin(id uuid.UUID) (bool, error)
 	UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
 	GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error)
+	GetUsersByParams(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		requiredSkills *dto.UUIDSlice,
+	) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -238,4 +244,50 @@ func buildNode(skill models.SkillCategory, childrenMap map[uuid.UUID][]models.Sk
 	}
 
 	return node
+}
+
+func (r *userRepository) GetUsersByParams(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	requiredSkills *dto.UUIDSlice,
+) ([]models.User, error) {
+
+	var users []models.User
+
+	// Базовый запрос
+	query := r.conn.Model(&models.User{})
+
+	// Фильтр по username
+	if username != nil && *username != "" {
+		query = query.Where("nickname LIKE ?", *username+"%")
+	}
+
+	// Фильтр по mainRole
+	if mainRole != nil {
+		query = query.Where("main_role = ?", *mainRole)
+	}
+
+	// фильтр по навыкам
+	if requiredSkills != nil && len(*requiredSkills) > 0 {
+		query = query.
+			Joins("JOIN user_skills ON users.id = user_skills.user_id").
+			Where("user_skills.skill_id IN ?", []uuid.UUID(*requiredSkills)).
+			Group("users.id").
+			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
+	}
+
+	// Пагинация
+	if startAt != nil {
+		query = query.Offset(int(*startAt))
+	}
+	if limit != nil {
+		query = query.Limit(int(*limit))
+	}
+
+	if err := query.Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
