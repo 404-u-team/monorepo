@@ -221,6 +221,8 @@ paths:
                 - BearerAuth: []
     /users:
         get:
+            security:
+                - BearerAuth: []
             summary: Получить пользователей по списку критериев
             tags:
                 - Пользователи
