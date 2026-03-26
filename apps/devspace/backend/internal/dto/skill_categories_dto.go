@@ -2,11 +2,11 @@ package dto
 
 import "github.com/google/uuid"
 
-type SkillCategoriesListRequest struct {
+type SkillCategoriesListQuery struct {
 	ParentId *uuid.UUID `form:"parent_id"`
 	Search   *string    `form:"search"`
-	Page     *uint      `form:"page"`
-	Limit    *uint      `form:"limit"`
+	StartAt  *int       `form:"start_at"`
+	Limit    *int       `form:"limit"`
 }
 
 type SkillCategoryAddRequest struct {
@@ -16,8 +16,10 @@ type SkillCategoryAddRequest struct {
 
 type SkillCategoryResponse struct {
 	ID       uuid.UUID               `json:"id"`
-	Name     string                  `json:"name"`
 	ParentID *uuid.UUID              `json:"parent_id"`
+	Name     string                  `json:"name"`
+	Icon     string                  `json:"icon"`
+	Color    string                  `json:"color"`
 	Children []SkillCategoryResponse `json:"children"`
 }
 

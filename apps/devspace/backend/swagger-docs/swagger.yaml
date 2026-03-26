@@ -1768,12 +1768,16 @@ components:
                 id:
                     type: string
                     format: uuid
-                name:
-                    type: string
                 parent_id:
                     type: string
                     format: uuid
                     nullable: true
+                name:
+                    type: string
+                icon:
+                    type: string
+                color:
+                    type: string
                 children:
                     type: array
                     items:
