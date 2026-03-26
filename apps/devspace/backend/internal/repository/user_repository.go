@@ -255,20 +255,21 @@ func (r *userRepository) GetUsersByParams(
 
 	var users []models.User
 
-	// Базовый запрос
-	query := r.conn.Model(&models.User{})
+	// подгружаем навки
+	query := r.conn.Session(&gorm.Session{}).
+		Model(&models.User{}).
+		Preload("Skills")
 
-	// Фильтр по username
+	// Фильтры
 	if username != nil && *username != "" {
 		query = query.Where("nickname LIKE ?", *username+"%")
 	}
 
-	// Фильтр по mainRole
 	if mainRole != nil {
 		query = query.Where("main_role = ?", *mainRole)
 	}
 
-	// фильтр по навыкам
+	// Фильтр по навыкам
 	if requiredSkills != nil && len(*requiredSkills) > 0 {
 		query = query.
 			Joins("JOIN user_skills ON users.id = user_skills.user_id").
@@ -285,8 +286,13 @@ func (r *userRepository) GetUsersByParams(
 		query = query.Limit(int(*limit))
 	}
 
+	// Выполняем
 	if err := query.Find(&users).Error; err != nil {
 		return nil, err
+	}
+	// ОТЛАДКА: выводим количество навыков у каждого пользователя
+	for _, user := range users {
+		log.Printf("User %s (%s) has %d skills", user.ID, user.Nickname, len(user.Skills))
 	}
 
 	return users, nil

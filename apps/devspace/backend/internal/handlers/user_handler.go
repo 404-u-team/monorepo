@@ -129,8 +129,9 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		return
 	}
 
+	// Парсим main_role (если передан)
 	var mainRoleUUID *uuid.UUID
-	if req.MainRole != nil {
+	if req.MainRole != nil && *req.MainRole != "" {
 		id, err := uuid.Parse(*req.MainRole)
 		if err != nil {
 			log.Printf("Invalid main_role format: %v", err)
@@ -146,7 +147,8 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 	log.Printf("Request: start_at=%v, limit=%v, username=%v, main_role=%v, skills=%v",
 		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
 
-	users, err := h.userService.GetUsersByParams(
+	// Получаем публичные профили с деревом навыков
+	profiles, err := h.userService.GetUsersPublicProfiles(
 		req.StartAt,
 		req.Limit,
 		req.Username,
@@ -162,7 +164,7 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, profiles)
 }
 
 // TODO: Прописать журналирование для остальных 500 в этом хэндлере. Мы же потом будем с недоумением смотреть на код.
