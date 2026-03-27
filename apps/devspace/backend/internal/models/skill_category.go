@@ -9,6 +9,8 @@ type SkillCategory struct {
 	Icon     string         `gorm:"column:icon;type:text" json:"icon"`
 	Color    string         `gorm:"column:color;type:text" json:"color"`
 	Parent   *SkillCategory `gorm:"foreignKey:ParentID" json:"parent"`
+
+	Users []User `gorm:"many2many:user_skills;foreignKey:ID;joinForeignKey:skill_id;References:ID;joinReferences:user_id"`
 }
 
 func (skillCategory *SkillCategory) TableName() string { return "Skill_Category" }
