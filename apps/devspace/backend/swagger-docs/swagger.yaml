@@ -1085,25 +1085,28 @@ paths:
                         schema:
                             type: object
                             required:
-                                - skill_category_id
                                 - title
+                                - primary_skills_id
+                                - secondary_skills_id
                             properties:
-                                skill_category_id:
-                                    type: string
-                                    format: uuid
-                                    description: ID требуемого навыка
                                 title:
                                     type: string
                                     example: Backend Developer
                                 description:
                                     type: string
                                     example: Ищем опытного Python разработчика
-                                status:
-                                    type: string
-                                    enum:
-                                        - open
-                                        - closed
-                                    default: open
+                                primary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков первого уровня
+                                secondary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
                 required: true
             responses:
                 "201":
@@ -1111,7 +1114,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ProjectSlotCreateResponse"
+                                $ref: "#/components/schemas/ProjectSlot"
                     headers: {}
                 "400":
                     description: Ошибка валидации
@@ -1162,23 +1165,46 @@ paths:
                     application/json:
                         schema:
                             type: object
+                            required:
+                                - primary_skills_id
+                                - secondary_skills_id
                             properties:
-                                skill_category_id:
-                                    type: string
-                                    format: uuid
+                                primary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков первого уровня
+                                    example:
+                                        ["550e8400-e29b-41d4-a716-446655440000"]
+                                secondary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
+                                    example:
+                                        ["660e8400-e29b-41d4-a716-446655440000"]
                                 title:
                                     type: string
+                                    example: Senior Backend Developer
                                 description:
                                     type: string
+                                    example: Ищем опытного Python разработчика с 5+ годами опыта
                                 status:
                                     type: string
                                     enum:
                                         - open
                                         - closed
+                                    example: open
                 required: true
             responses:
                 "200":
                     description: Слот обновлен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProjectSlot"
                     headers: {}
                 "400":
                     description: Ошибка валидации или пустой payload
@@ -1635,35 +1661,6 @@ components:
             required:
                 - user_id
                 - skill_id
-        ProjectSlotCreateResponse:
-            type: object
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                project_id:
-                    type: string
-                    format: uuid
-                skill_category_id:
-                    type: string
-                    format: uuid
-                title:
-                    type: string
-                description:
-                    type: string
-                    nullable: true
-                status:
-                    type: string
-                user_id:
-                    type: string
-                    format: uuid
-                    nullable: true
-            required:
-                - id
-                - project_id
-                - skill_category_id
-                - title
-                - status
         AccessTokenResponse:
             type: object
             properties:
@@ -1847,16 +1844,21 @@ components:
                 id:
                     type: string
                     format: uuid
-                project_id:
-                    type: string
-                    format: uuid
-                skill_category_id:
-                    type: string
-                    format: uuid
+                primary_skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+                    description: Список навыков первого уровня
+                secondary_skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+                    description: Список навыков второго уровня
                 title:
                     type: string
                 description:
                     type: string
+                    nullable: true
                 status:
                     type: string
                     enum:
