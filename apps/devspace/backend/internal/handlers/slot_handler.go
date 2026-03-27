@@ -59,6 +59,10 @@ func (h *slotHandler) CreateSlot(c *gin.Context) {
 
 	slot, err := h.slotService.CreateSlot(projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrInvalidSlotSkills) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		if errors.Is(err, services.ErrUserNotLeader) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
@@ -110,6 +114,10 @@ func (h *slotHandler) UpdateSlotByID(c *gin.Context) {
 
 	slot, err := h.slotService.UpdateSlotByID(slotID, projectID, userID, &payload)
 	if err != nil {
+		if errors.Is(err, services.ErrInvalidSlotSkills) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		if errors.Is(err, services.ErrEmptyPayload) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

@@ -1101,12 +1101,19 @@ paths:
                                         type: string
                                         format: uuid
                                     description: Список uuid навыков первого уровня
+                                    example:
+                                        ["550e8400-e29b-41d4-a716-446655440000"]
                                 secondary_skills_id:
                                     type: array
                                     items:
                                         type: string
                                         format: uuid
                                     description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
+                                    example:
+                                        [
+                                            "550e8400-e29b-41d4-a716-446655440000",
+                                            "550e8400-e29b-41d4-a716-446655440001",
+                                        ]
                 required: true
             responses:
                 "201":
@@ -1165,16 +1172,13 @@ paths:
                     application/json:
                         schema:
                             type: object
-                            required:
-                                - primary_skills_id
-                                - secondary_skills_id
                             properties:
                                 primary_skills_id:
                                     type: array
                                     items:
                                         type: string
                                         format: uuid
-                                    description: Список uuid навыков первого уровня
+                                    description: Список uuid навыков первого уровня (основные навыки без родителя)
                                     example:
                                         ["550e8400-e29b-41d4-a716-446655440000"]
                                 secondary_skills_id:
@@ -1187,9 +1191,13 @@ paths:
                                         ["660e8400-e29b-41d4-a716-446655440000"]
                                 title:
                                     type: string
+                                    minLength: 3
+                                    maxLength: 255
                                     example: Senior Backend Developer
                                 description:
                                     type: string
+                                    minLength: 3
+                                    maxLength: 255
                                     example: Ищем опытного Python разработчика с 5+ годами опыта
                                 status:
                                     type: string
@@ -1197,7 +1205,7 @@ paths:
                                         - open
                                         - closed
                                     example: open
-                required: true
+                required: false
             responses:
                 "200":
                     description: Слот обновлен

@@ -362,23 +362,29 @@ func (s *testDataService) generate(ctx context.Context) {
 
 		case i < 600:
 			for j := 0; j < rng.Intn(2)+2; j++ {
+				primarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
+				secondarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "open",
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   []uuid.UUID{primarySkillID},
+					SecondarySkillsID: []uuid.UUID{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "open",
 				})
 			}
 
 		case i < 800:
 			for j := 0; j < rng.Intn(2)+1; j++ {
+				primarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
+				secondarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "open",
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   []uuid.UUID{primarySkillID},
+					SecondarySkillsID: []uuid.UUID{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "open",
 				})
 			}
 			for j := 0; j < rng.Intn(2)+1; j++ {
@@ -386,14 +392,17 @@ func (s *testDataService) generate(ctx context.Context) {
 				if userID == uuid.Nil {
 					break
 				}
+				primarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
+				secondarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
 				projectUsedUsers[projectID][userID] = true
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "closed",
-					UserID:          &userID,
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   []uuid.UUID{primarySkillID},
+					SecondarySkillsID: []uuid.UUID{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "closed",
+					UserID:            &userID,
 				})
 			}
 
@@ -403,14 +412,17 @@ func (s *testDataService) generate(ctx context.Context) {
 				if userID == uuid.Nil {
 					break
 				}
+				primarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
+				secondarySkillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
 				projectUsedUsers[projectID][userID] = true
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "closed",
-					UserID:          &userID,
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   []uuid.UUID{primarySkillID},
+					SecondarySkillsID: []uuid.UUID{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "closed",
+					UserID:            &userID,
 				})
 			}
 		}
