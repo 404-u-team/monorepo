@@ -85,8 +85,10 @@ func (h *authHandler) Refresh(c *gin.Context) {
 
 func setTokenIntoCookie(c *gin.Context, token string, expirationTime int, allowAnyOrigin bool) {
 	sameSite := http.SameSiteLaxMode
+	secure := false
 	if allowAnyOrigin {
 		sameSite = http.SameSiteNoneMode
+		secure = true
 	}
 	c.SetSameSite(sameSite)
 	c.SetCookie(
@@ -95,7 +97,7 @@ func setTokenIntoCookie(c *gin.Context, token string, expirationTime int, allowA
 		expirationTime, // время жизни внутри куки
 		"/",
 		"",
-		false, // когда будем использовать https поставить на true
+		secure, // когда будем использовать https поставить на true
 		true,
 	)
 }

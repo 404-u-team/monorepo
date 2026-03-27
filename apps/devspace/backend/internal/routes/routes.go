@@ -17,19 +17,23 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	router := gin.Default()
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders: []string{"Content-Length", "Set-Cookie"},
+		MaxAge:        12 * time.Hour,
+		AllowOrigins: []string{
+			"http://localhost:8080",
+			"http://localhost:5173",
+			"http://localhost:8081",
+		},
 		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
 	}
+
 	if config.AllowAnyOrigin {
+		// Dynamic origin echo: позволяет credentials для любого origin.
 		corsConfig.AllowOriginFunc = func(origin string) bool {
 			return true
 		}
-	} else {
-		corsConfig.AllowOrigins = []string{"http://localhost:3000"}
 	}
 
 	router.Use(cors.New(corsConfig))
