@@ -130,7 +130,7 @@ func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 
 // обновить nickname и bio пользователя по ID. Возвращает ошибку
 func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
-	updates := map[string]string{}
+	updates := map[string]interface{}{}
 
 	if updateRequest.Nickname != nil {
 		updates["nickname"] = *updateRequest.Nickname
