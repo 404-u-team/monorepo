@@ -34,3 +34,6 @@ var ErrProjectRequestNotFound = errors.New("заявка не найдена")
 var ErrCantInviteYourself = errors.New("нельзя пригласить самого себя")
 var ErrProjectRequestNotPending = errors.New("заявка на проект не в статусе ожидания")
 var ErrProjectRequestDontBelongToUser = errors.New("заявка не принадлежит пользователю")
+
+var ErrSkillNotFound = errors.New("навык не найден")
+var ErrSkillIsNotRoot = errors.New("данный навык не первого уровня")

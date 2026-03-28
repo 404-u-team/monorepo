@@ -61,7 +61,7 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 
 	meResponse, err := h.userService.UpdateMe(userID, &payload)
 	if err != nil {
-		if errors.Is(err, services.ErrEmptyPayload) {
+		if errors.Is(err, services.ErrEmptyPayload) || errors.Is(err, services.ErrSkillNotFound) || errors.Is(err, services.ErrSkillIsNotRoot) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

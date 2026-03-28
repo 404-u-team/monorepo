@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
@@ -23,15 +24,16 @@ type UserService interface {
 }
 
 type userService struct {
-	repo repository.UserRepository
+	userRepo  repository.UserRepository
+	skillRepo repository.SkillRepository
 }
 
-func NewUserService(repo repository.UserRepository) *userService {
-	return &userService{repo: repo}
+func NewUserService(userRepo repository.UserRepository) *userService {
+	return &userService{userRepo: userRepo}
 }
 
 func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
@@ -39,7 +41,12 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		return nil, ErrInternal
 	}
 
-	userSkills, err := s.repo.GetUserSkills(userID)
+	mainRole, err := s.skillRepo.GetSkillByID(user.MainRole)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	userSkills, err := s.userRepo.GetUserSkills(userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -48,7 +55,8 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		ID:        userID,
 		Email:     user.Email,
 		Nickname:  user.Nickname,
-		AvatarUri: "",
+		MainRole:  *mainRole,
+		AvatarUrl: "",
 		Bio:       user.Bio,
 		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
@@ -57,11 +65,11 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 }
 
 func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error) {
-	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil{
+	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil && updateRequest.MainRole == nil {
 		return nil, ErrEmptyPayload
 	}
 
-	exists, err := s.repo.IsUserExistByID(userID)
+	exists, err := s.userRepo.IsUserExistByID(userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -69,7 +77,18 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 		return nil, ErrUserNotFound
 	}
 
-	err = s.repo.UpdateUserByID(userID, updateRequest)
+	mainRoleSkill, err := s.skillRepo.GetSkillByID(*updateRequest.MainRole)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrSkillNotFound
+		}
+		return nil, ErrInternal
+	}
+	if mainRoleSkill.ParentID != nil {
+		return nil, ErrSkillIsNotRoot
+	}
+
+	err = s.userRepo.UpdateUserByID(userID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrUserConflict
@@ -87,7 +106,7 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 }
 
 func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error) {
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
@@ -95,7 +114,7 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 		return nil, ErrInternal
 	}
 
-	userSkills, err := s.repo.GetUserSkills(user.ID)
+	userSkills, err := s.userRepo.GetUserSkills(user.ID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -104,7 +123,7 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 		ID:        user.ID,
 		Nickname:  user.Nickname,
 		MainRole:  user.MainRole,
-		AvatarUri: user.AvatarUrl,
+		AvatarUrl: user.AvatarUrl,
 		Bio:       user.Bio,
 		Skills:    userSkills,
 	}
@@ -118,7 +137,7 @@ func (s *userService) GetUsersByParams(
 	mainRole *uuid.UUID,
 	skills *dto.UUIDSlice,
 ) ([]models.User, error) {
-	return s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+	return s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
 }
 
 func (s *userService) GetUsersPublicProfiles(
@@ -129,7 +148,7 @@ func (s *userService) GetUsersPublicProfiles(
 ) ([]dto.PublicUserProfile, error) {
 
 	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
-	users, err := s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+	users, err := s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +161,7 @@ func (s *userService) GetUsersPublicProfiles(
 	profiles := make([]dto.PublicUserProfile, len(users))
 	for i, user := range users {
 		// Строим дерево навыков для пользователя
-		skillTree, dbError := s.repo.GetUserSkills(user.ID)
+		skillTree, dbError := s.userRepo.GetUserSkills(user.ID)
 
 		if dbError != nil {
 			return nil, dbError
@@ -152,7 +171,7 @@ func (s *userService) GetUsersPublicProfiles(
 			ID:        user.ID,
 			Nickname:  user.Nickname,
 			MainRole:  user.MainRole,
-			AvatarUri: user.AvatarUrl,
+			AvatarUrl: user.AvatarUrl,
 			Bio:       user.Bio,
 			Skills:    skillTree,
 		}
