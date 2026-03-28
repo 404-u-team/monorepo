@@ -65,7 +65,7 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 }
 
 func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error) {
-	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil && updateRequest.MainRole == nil {
+	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil && !updateRequest.MainRole.IsSet {
 		return nil, ErrEmptyPayload
 	}
 
@@ -77,19 +77,14 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 		return nil, ErrUserNotFound
 	}
 
-	mainRoleSkill, err := s.skillRepo.GetSkillByID(*updateRequest.MainRole)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrSkillNotFound
-		}
-		return nil, ErrInternal
-	}
-	if mainRoleSkill.ParentID != nil {
-		return nil, ErrSkillIsNotRoot
-	}
-
 	err = s.userRepo.UpdateUserByID(userID, updateRequest)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrMainRoleNotFound
+		}
+		if errors.Is(err, gorm.ErrInvalidValue) {
+			return nil, ErrMainRoleIsNotRoot
+		}
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrUserConflict
 		}

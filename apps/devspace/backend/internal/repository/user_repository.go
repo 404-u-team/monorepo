@@ -128,7 +128,6 @@ func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 	return user.IsAdmin, nil
 }
 
-// обновить nickname и bio пользователя по ID. Возвращает ошибку
 func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
 	updates := map[string]interface{}{}
 
@@ -142,6 +141,24 @@ func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.Upd
 
 	if updateRequest.AvatarUrl != nil {
 		updates["avatar_url"] = *updateRequest.AvatarUrl
+	}
+
+	if updateRequest.MainRole.IsSet {
+		if updateRequest.MainRole.Value == nil {
+			updates["main_role"] = nil
+		} else {
+			var skill models.SkillCategory
+			result := r.conn.Select("id", "parent_id").First(&skill, "id = ?", *updateRequest.MainRole.Value)
+			if result.Error != nil {
+				return result.Error
+			}
+
+			if skill.ParentID != nil {
+				return gorm.ErrInvalidValue
+			}
+
+			updates["main_role"] = *updateRequest.MainRole.Value
+		}
 	}
 
 	result := r.conn.Model(&models.User{}).Where("id = ?", userID).Updates(updates)

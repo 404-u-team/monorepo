@@ -13,7 +13,7 @@ type PrivateUserProfile struct {
 	Email     string                  `json:"email"`
 	Nickname  string                  `json:"nickname"`
 	MainRole  *models.SkillCategory   `json:"main_role"`
-	AvatarUrl string                  `json:"avatar_uri"`
+	AvatarUrl string                  `json:"avatar_url"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`
 	CreatedAt time.Time               `json:"created_at"`
@@ -23,16 +23,44 @@ type PublicUserProfile struct {
 	ID        uuid.UUID               `json:"id"`
 	Nickname  string                  `json:"nickname"`
 	MainRole  *models.SkillCategory   `json:"main_role"`
-	AvatarUrl string                  `json:"avatar_uri"`
+	AvatarUrl string                  `json:"avatar_url"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`
 }
 
 type UpdateUserRequest struct {
-	Nickname  *string    `json:"nickname" binding:"omitempty,min=3,max=50"`
-	MainRole  *uuid.UUID `json:"main_role"`
-	AvatarUrl *string    `json:"avatar_url"`
-	Bio       *string    `json:"bio" binding:"omitempty,min=3,max=255"`
+	Nickname  *string      `json:"nickname" binding:"omitempty,min=3,max=50"`
+	MainRole  OptionalUUID `json:"main_role"`
+	AvatarUrl *string      `json:"avatar_url"`
+	Bio       *string      `json:"bio" binding:"omitempty,min=3,max=255"`
+}
+
+// OptionalUUID distinguishes between omitted field and explicit null in JSON.
+type OptionalUUID struct {
+	IsSet bool
+	Value *uuid.UUID
+}
+
+func (o *OptionalUUID) UnmarshalJSON(data []byte) error {
+	o.IsSet = true
+
+	if string(data) == "null" {
+		o.Value = nil
+		return nil
+	}
+
+	var raw string
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	parsed, err := uuid.Parse(raw)
+	if err != nil {
+		return err
+	}
+
+	o.Value = &parsed
+	return nil
 }
 
 type UUIDSlice []uuid.UUID

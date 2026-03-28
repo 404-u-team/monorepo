@@ -1856,7 +1856,7 @@ components:
                     type: string
                 main_role:
                     $ref: "#/components/schemas/SkillWithoutChildren"
-                avatar_uri:
+                avatar_url:
                     type: string
                     format: uri
                 bio:
