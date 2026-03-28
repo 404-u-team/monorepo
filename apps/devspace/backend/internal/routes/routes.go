@@ -17,7 +17,6 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	router := gin.Default()
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -29,7 +28,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			return true
 		}
 	} else {
-		corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+		corsConfig.AllowOrigins = []string{"http://localhost:3000", "https://fe.dev-main.stand.devspace.404.ms0ur.dev"}
 	}
 
 	router.Use(cors.New(corsConfig))
