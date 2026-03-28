@@ -28,8 +28,9 @@ type PublicUserProfile struct {
 }
 
 type UpdateUserRequest struct {
-	Nickname *string `json:"nickname" binding:"min=3,max=50"`
-	Bio      *string `json:"bio" binding:"min=3,max=255"`
+	Nickname  *string `json:"nickname" binding:"omitempty,min=3,max=50"`
+	AvatarUrl *string `json:"avatar_url"`
+	Bio       *string `json:"bio" binding:"omitempty,min=3,max=255"`
 }
 
 type SafeUser struct {

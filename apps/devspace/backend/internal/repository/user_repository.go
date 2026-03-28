@@ -140,6 +140,10 @@ func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.Upd
 		updates["bio"] = *updateRequest.Bio
 	}
 
+	if updateRequest.AvatarUrl != nil {
+		updates["avatar_url"] = *updateRequest.AvatarUrl
+	}
+
 	result := r.conn.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
 	if result.Error != nil {
 		log.Println("Ошибка при обновлении юзера по id: ", result.Error)
