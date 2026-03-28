@@ -123,7 +123,7 @@ func (r *projectRepository) GetProjectByTitle(title string) (*models.Project, er
 
 // обновить данные проекта, возвращает кол-во измененных строк и ошибку
 func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error) {
-	updates := map[string]string{}
+	updates := map[string]interface{}{}
 
 	if updateRequest.Title != nil {
 		updates["title"] = *updateRequest.Title
@@ -143,6 +143,7 @@ func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest
 
 	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Updates(updates)
 	if result.Error != nil {
+		log.Println("Ошибка при обновлении проекта: ", result.Error)
 		return 0, result.Error
 	}
 
@@ -177,6 +178,7 @@ func (r *projectRepository) IsUserProjectLeader(projectID, userID uuid.UUID) (bo
 	var count int64
 	result := r.conn.Model(&models.Project{}).Where("id = ?", projectID).Where("leader_id = ?", userID).Count(&count)
 	if result.Error != nil {
+		log.Println("Ошибка при проверке является ли пользователь лидером проекта: ", result.Error)
 		return false, result.Error
 	}
 	return count == 1, nil

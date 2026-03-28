@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/google/uuid"
@@ -23,7 +25,7 @@ func NewIdeaRepository(conn *gorm.DB) IdeaRepository {
 
 // обновить данные идеи, возвращает кол-во измененных строк и ошибку
 func (r *ideaRepository) UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error) {
-	updates := map[string]string{}
+	updates := map[string]interface{}{}
 
 	if updateRequest.Title != nil {
 		updates["title"] = *updateRequest.Title
@@ -35,6 +37,7 @@ func (r *ideaRepository) UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.Upd
 
 	result := r.conn.Model(&models.Idea{}).Where("id = ?", ideaID).Updates(updates)
 	if result.Error != nil {
+		log.Println("Ошибка при обновлении идеи по ID: ", result.Error)
 		return 0, result.Error
 	}
 
@@ -49,6 +52,7 @@ func (r *ideaRepository) IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error
 	var count int64
 	result := r.conn.Model(&models.Idea{}).Where("id = ?", ideaID).Where("author_id = ?", userID).Count(&count)
 	if result.Error != nil {
+		log.Println("Ошибка при проверке является ли пользователь владельцем идеи: ", result.Error)
 		return false, result.Error
 	}
 	return count == 1, nil
@@ -60,6 +64,7 @@ func (r *ideaRepository) GetIdeaByID(id uuid.UUID) (*models.Idea, error) {
 	res := r.conn.Model(&models.Idea{}).Where("id = ?", id).First(&idea)
 
 	if res.Error != nil {
+		log.Println("Ошибка при получении идеи по ID: ", res.Error)
 		return nil, res.Error
 	}
 	return &idea, nil
