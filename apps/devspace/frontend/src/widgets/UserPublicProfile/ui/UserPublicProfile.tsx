@@ -1,7 +1,8 @@
-import { type JSX } from 'react';
-import { User } from 'lucide-react';
-import { Badge, Skeleton } from '@/shared/ui';
+import { useEffect, useState, type JSX } from 'react';
+import { Badge, Skeleton, UserAvatar } from '@/shared/ui';
 import type { IUserResponse } from '@/entities/user';
+import { fetchSkillById } from '@/entities/skill';
+import { isValidMainRole } from '@/entities/user/model/IUserResponse';
 import styles from './UserPublicProfile.module.scss';
 
 export interface UserPublicProfileProps {
@@ -9,51 +10,58 @@ export interface UserPublicProfileProps {
 }
 
 export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element {
+    const [mainRoleName, setMainRoleName] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (!isValidMainRole(user.main_role)) return;
+        let cancelled = false;
+        fetchSkillById(user.main_role)
+            .then((skill) => { if (!cancelled) setMainRoleName(skill.name); })
+            .catch(() => { /* skill not found */ });
+        return (): void => { cancelled = true; };
+    }, [user.main_role]);
+
     return (
         <div className={styles.wrapper}>
             <div className={styles.header}>
-                <div className={styles.avatarWrapper}>
-                    {user.avatar_uri ? (
-                        <img
-                            src={user.avatar_uri}
-                            alt={user.nickname}
-                            className={styles.avatar}
-                            onError={(event) => {
-                                (event.target as HTMLImageElement).style.display = 'none'
-                            }}
-                        />
-                    ) : (
-                        <div className={styles.avatarPlaceholder}>
-                            <User size={48} />
-                        </div>
-                    )}
-                </div>
+                <UserAvatar
+                    avatarUrl={user.avatar_uri}
+                    nickname={user.nickname}
+                    size={120}
+                    className={styles.avatarWrapper}
+                />
 
                 <div className={styles.info}>
                     <h1 className={styles.nickname}>{user.nickname}</h1>
-                    {user.main_role && (
-                        <p className={styles.mainRole}>{user.main_role}</p>
+                    {mainRoleName !== undefined ? (
+                        <p className={styles.mainRole}>{mainRoleName}</p>
+                    ) : (
+                        <p className={styles.emptyHint}>Основная роль не указана</p>
                     )}
                 </div>
             </div>
 
-            {user.bio && (
-                <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>О себе</h2>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>О себе</h2>
+                {user.bio !== '' ? (
                     <p className={styles.bio}>{user.bio}</p>
-                </section>
-            )}
+                ) : (
+                    <p className={styles.emptyHint}>Это поле пока не заполнено</p>
+                )}
+            </section>
 
-            {user.skills.length > 0 && (
-                <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>Навыки</h2>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Навыки</h2>
+                {user.skills.length > 0 ? (
                     <div className={styles.skills}>
                         {user.skills.map((skill) => (
                             <Badge key={skill.id}>{skill.name}</Badge>
                         ))}
                     </div>
-                </section>
-            )}
+                ) : (
+                    <p className={styles.emptyHint}>Навыки пока не добавлены</p>
+                )}
+            </section>
         </div>
     );
 }

@@ -68,12 +68,13 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
 
     const openSlots = (project.slots ?? []).filter((s) => s.status === 'open');
 
-    // Collect unique primary (1st level) skills only — secondary skills are shown on detail page
-    // TODO: When user primary skill is implemented, show slot skills relevant to the user's primary skill
+    // Collect unique primary (1st level) skills across all slots
     const uniqueSkills: IProjectSlotSkill[] = [];
     for (const slot of (project.slots ?? [])) {
-        if (slot.skill !== undefined && !uniqueSkills.some((s) => s.id === slot.skill?.id)) {
-            uniqueSkills.push(slot.skill);
+        for (const skill of slot.primary_skills) {
+            if (!uniqueSkills.some((s) => s.id === skill.id)) {
+                uniqueSkills.push(skill);
+            }
         }
     }
 
@@ -117,8 +118,8 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
                         <span className={styles.openSlotsLabel}>Свободные слоты:</span>
                         <div className={styles.openSlotsList}>
                             {openSlots.map((slot) => (
-                                <Badge key={slot.id} color={slot.skill?.color}>
-                                    {slot.skill?.name ?? slot.title}
+                                <Badge key={slot.id} color={slot.primary_skills[0]?.color}>
+                                    {slot.primary_skills[0]?.name ?? slot.title}
                                 </Badge>
                             ))}
                         </div>

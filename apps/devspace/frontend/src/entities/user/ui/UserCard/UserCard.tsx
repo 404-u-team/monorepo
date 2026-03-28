@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type JSX } from "react";
 import { clsx } from "clsx";
-import { User } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { fetchUserById } from "../../api/userApi";
+import { fetchSkillById } from "@/entities/skill";
 import type { IUserResponse } from "../../model/IUserResponse";
+import { isValidMainRole } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
+import { UserAvatar } from "@/shared/ui";
 import InviteButton from "./InviteButton";
 import styles from "./UserCard.module.scss";
 
@@ -25,6 +28,7 @@ export function UserCard({
   onInvite,
 }: UserCardProps): JSX.Element {
   const [user, setUser] = useState<IUserResponse | undefined>(undefined);
+  const [mainRoleName, setMainRoleName] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const skillBoxReference = useRef<HTMLDivElement>(null);
   const scrollReference = useRef<HTMLDivElement>(null);
@@ -38,6 +42,15 @@ export function UserCard({
         const data = await fetchUserById(id);
         if (cancelled) return;
         setUser(data);
+
+        if (isValidMainRole(data.main_role)) {
+          try {
+            const skill = await fetchSkillById(data.main_role);
+            setMainRoleName(skill.name);
+          } catch {
+            // skill not found — don't show main_role
+          }
+        }
       } catch {
         // handled by empty state
       } finally {
@@ -71,8 +84,8 @@ export function UserCard({
     return <UserCardSkeleton className={className} />;
   }
 
-  const Wrapper = to !== undefined ? "a" : "article";
-  const wrapperProps = to !== undefined ? { href: to } : {};
+  const Wrapper = to !== undefined ? Link : "article";
+  const wrapperProps = to !== undefined ? { to } : {};
 
   const skills = user.skills;
 
@@ -82,27 +95,17 @@ export function UserCard({
       className={clsx(styles.card, to !== undefined && styles.link, className)}
     >
       <div className={styles.header}>
-        <div className={styles.avatarWrapper}>
-          {user.avatar_uri ? (
-            <img
-              className={styles.avatar}
-              src={user.avatar_uri}
-              alt={user.nickname}
-              onError={(event) => {
-                (event.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <div className={styles.avatarPlaceholder}>
-              <User size={22} />
-            </div>
-          )}
-        </div>
+        <UserAvatar
+          avatarUrl={user.avatar_uri}
+          nickname={user.nickname}
+          size={44}
+          className={styles.avatarWrapper}
+        />
 
         <div className={styles.textInfo}>
           <span className={styles.nickname}>{user.nickname}</span>
-          {user.main_role !== '' && (
-            <span className={styles.mainRole}>{user.main_role}</span>
+          {mainRoleName !== undefined && (
+            <span className={styles.mainRole}>{mainRoleName}</span>
           )}
         </div>
       </div>
@@ -135,9 +138,9 @@ export function UserCard({
 
       <div className={styles.profileButtonsBox}>
         {to === undefined && (
-          <a href={`/users/${id}`} className={styles.profileButton}>
+          <Link to="/users/$userId" params={{ userId: id }} className={styles.profileButton}>
             Профиль
-          </a>
+          </Link>
         )}
         {project_id !== undefined && slot_id !== undefined && (
           <InviteButton

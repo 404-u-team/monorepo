@@ -1,10 +1,14 @@
 import type { JSX } from 'react';
 import { clsx } from 'clsx';
-import MDEditor, { commands } from '@uiw/react-md-editor';
+import MDEditor, { commands, type ICommand } from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
 import { useTheme } from '@/shared/lib/hooks/useTheme';
 import styles from './MdEditor.module.scss';
+
+function withTitle(command: ICommand, title: string): ICommand {
+    return { ...command, buttonProps: { ...(command.buttonProps ?? {}), title } };
+}
 
 const titleGroupCommand = commands.group(
     [
@@ -18,35 +22,35 @@ const titleGroupCommand = commands.group(
     {
         name: 'title',
         groupName: 'title',
-        buttonProps: { 'aria-label': 'Заголовки' },
+        buttonProps: { 'aria-label': 'Заголовки', title: 'Заголовки' },
     },
 );
 
 const editorCommands = [
-    commands.bold,
-    commands.italic,
-    commands.strikethrough,
+    withTitle(commands.bold, 'Жирный (Ctrl+B)'),
+    withTitle(commands.italic, 'Курсив (Ctrl+I)'),
+    withTitle(commands.strikethrough, 'Зачёркнутый'),
     commands.divider,
     titleGroupCommand,
     commands.divider,
-    commands.quote,
-    commands.code,
-    commands.codeBlock,
+    withTitle(commands.quote, 'Цитата'),
+    withTitle(commands.code, 'Код'),
+    withTitle(commands.codeBlock, 'Блок кода'),
     commands.divider,
-    commands.unorderedListCommand,
-    commands.orderedListCommand,
-    commands.checkedListCommand,
+    withTitle(commands.unorderedListCommand, 'Ненумерованный список'),
+    withTitle(commands.orderedListCommand, 'Нумерованный список'),
+    withTitle(commands.checkedListCommand, 'Список задач'),
     commands.divider,
-    commands.link,
-    commands.image,
+    withTitle(commands.link, 'Ссылка'),
+    withTitle(commands.image, 'Изображение'),
 ];
 
 const extraEditorCommands = [
-    commands.codeEdit,
-    commands.codeLive,
-    commands.codePreview,
+    withTitle(commands.codeEdit, 'Редактор'),
+    withTitle(commands.codeLive, 'Просмотр вживую'),
+    withTitle(commands.codePreview, 'Предпросмотр'),
     commands.divider,
-    commands.fullscreen,
+    withTitle(commands.fullscreen, 'Полноэкранный режим'),
 ];
 
 export interface MdEditorProps {

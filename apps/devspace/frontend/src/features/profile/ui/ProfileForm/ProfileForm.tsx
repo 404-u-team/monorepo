@@ -6,8 +6,9 @@ import { apiClient } from "@/shared/api/client";
 import { clsx } from "clsx";
 import { Button, Input, Skeleton, SkillSearch } from "@/shared/ui";
 import type { SkillSearchOption } from "@/shared/ui";
-import { fetchSkills } from "@/entities/skill";
+import { fetchSkills, fetchSkillById } from "@/entities/skill";
 import { fetchProjects, ProjectCard } from "@/entities/project";
+import { isValidMainRole } from "@/entities/user/model/IUserResponse";
 import styles from "./ProfileForm.module.scss";
 
 export type ProfileFormProps = Record<string, never>;
@@ -82,11 +83,17 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           setBio(data.bio ?? "");
           setInitialBio(data.bio ?? "");
           setSkills(data.skills);
-          const roleName = data.main_role ?? "";
-          if (roleName !== "") {
-            setMainRole({ id: roleName, name: roleName });
+
+          const roleId = data.main_role ?? "";
+          setInitialMainRole(roleId);
+          if (isValidMainRole(roleId)) {
+            try {
+              const skill = await fetchSkillById(roleId);
+              setMainRole({ id: skill.id, name: skill.name, color: skill.color });
+            } catch {
+              // skill not found — leave mainRole undefined
+            }
           }
-          setInitialMainRole(roleName);
 
           void loadProjects(data.id);
         }
@@ -114,28 +121,25 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   };
 
   const handleSave = async (): Promise<void> => {
-    const hasNicknameChanged = nickname.trim() !== initialNickname;
-    const hasBioChanged = bio !== initialBio;
-    const currentMainRole = mainRole?.name ?? "";
-    const hasMainRoleChanged = currentMainRole !== initialMainRole;
-    if (!hasNicknameChanged && !hasBioChanged && !hasMainRoleChanged) return;
+    if (!hasChanges) return;
 
     try {
       setIsSaving(true);
       setSaveError(undefined);
       setSaveSuccess(false);
 
-      const payload: { nickname?: string; bio?: string; main_role?: string } = {};
-      if (hasNicknameChanged) payload.nickname = nickname.trim();
-      if (hasBioChanged) payload.bio = bio;
-      if (hasMainRoleChanged) payload.main_role = currentMainRole !== "" ? currentMainRole : undefined;
+      const currentMainRoleId = mainRole?.id;
+      await apiClient.put("/users/me", {
+        nickname: nickname.trim(),
+        bio,
+        main_role: currentMainRoleId,
+      });
 
-      await apiClient.put("/users/me", payload);
       const saved = nickname.trim();
       setInitialNickname(saved);
       setNickname(saved);
       setInitialBio(bio);
-      setInitialMainRole(currentMainRole);
+      setInitialMainRole(currentMainRoleId ?? "");
       setSaveSuccess(true);
 
       if (successTimerReference.current !== null) clearTimeout(successTimerReference.current);
@@ -150,7 +154,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const handleCancel = (): void => {
     setNickname(initialNickname);
     setBio(initialBio);
-    setMainRole(initialMainRole !== "" ? { id: initialMainRole, name: initialMainRole } : undefined);
+    // Re-fetch the initial role from cache if possible; reset via id comparison
     setSaveError(undefined);
   };
 
@@ -200,7 +204,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const hasChanges =
     nickname.trim() !== initialNickname ||
     bio !== initialBio ||
-    (mainRole?.name ?? "") !== initialMainRole;
+    (mainRole?.id ?? "") !== initialMainRole;
 
   function renderProjects(): JSX.Element {
     if (isProjectsLoading) {

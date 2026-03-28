@@ -5,6 +5,7 @@ import { configure } from 'mobx';
 import '@/app/styles/index.scss'
 import { StoreContext } from '@/shared/lib/store';
 import { rootStore } from '@/app/providers/store';
+import { ThemeProvider } from '@/app/providers/ThemeProvider';
 
 import { verifyInterceptors } from '@/app/providers/apiInterceptors';
 
@@ -40,9 +41,11 @@ if (rootElement !== null && !rootElement.innerHTML) {
     const root = createRoot(rootElement)
     root.render(
         <StrictMode>
-            <StoreContext.Provider value={rootStore}>
-                <RouterProvider router={router} />
-            </StoreContext.Provider>
+            <ThemeProvider>
+                <StoreContext.Provider value={rootStore}>
+                    <RouterProvider router={router} />
+                </StoreContext.Provider>
+            </ThemeProvider>
         </StrictMode>,
     )
 }

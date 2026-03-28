@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, type JSX } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Bell, ChevronDown, Menu, User, X } from 'lucide-react'
+import { Bell, ChevronDown, Menu, X } from 'lucide-react'
 import { observer } from 'mobx-react-lite'
 import { useUserStore } from '@/entities/user'
-import { Button, Logo } from '@/shared/ui'
+import { Button, Logo, UserAvatar } from '@/shared/ui'
 import { ThemeToggle } from '@/features/theme'
 import { clsx } from 'clsx'
 import styles from './Navbar.module.scss'
@@ -83,20 +83,12 @@ export const Navbar = observer(function Navbar(): JSX.Element {
                                     aria-label="Меню пользователя"
                                     aria-expanded={isDropdownOpen}
                                 >
-                                    {currentUser?.avatarUrl !== undefined ? (
-                                        <img
-                                            src={currentUser.avatarUrl}
-                                            alt={currentUser.nickname}
-                                            className={styles.avatar}
-                                            onError={(event) => {
-                                                (event.target as HTMLImageElement).style.display = 'none'
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className={styles.avatarPlaceholder}>
-                                            <User size={20} />
-                                        </div>
-                                    )}
+                                    <UserAvatar
+                                        avatarUrl={currentUser?.avatarUrl}
+                                        nickname={currentUser?.nickname}
+                                        size={32}
+                                        className={styles.avatar}
+                                    />
                                     <ChevronDown
                                         size={16}
                                         className={clsx(styles.chevron, isDropdownOpen && styles.chevronOpen)}

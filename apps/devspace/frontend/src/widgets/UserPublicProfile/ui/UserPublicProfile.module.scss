@@ -91,3 +91,10 @@
     flex-wrap: wrap;
     gap: 8px;
 }
+
+.emptyHint {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text--disabled);
+    font-style: italic;
+}

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { observer } from 'mobx-react-lite';
 import { ArrowLeft, Pencil, Trash2, Plus, X, Check, UserCheck } from 'lucide-react';
 import { useStore } from '@/shared/lib/store';
-import { Button, Badge, Skeleton, ConfirmModal, SkillSearch, SkillMultiSelect, type SkillSearchOption, type SkillMultiSelectOption } from '@/shared/ui';
+import { Button, Badge, Skeleton, ConfirmModal, SkillSearch, SkillMultiSelect, UserAvatar, MdRenderer, type SkillSearchOption, type SkillMultiSelectOption } from '@/shared/ui';
 import { fetchUserById, type IUserResponse, type UserStore } from '@/entities/user';
 import {
     fetchProjectById,
@@ -44,7 +44,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     const [isCreatingSlot, setIsCreatingSlot] = useState(false);
     const [newSlotTitle, setNewSlotTitle] = useState('');
     const [newSlotDescription, setNewSlotDescription] = useState('');
-    const [newSlotPrimarySkill, setNewSlotPrimarySkill] = useState<SkillSearchOption | undefined>(undefined);
+    const [newSlotPrimarySkills, setNewSlotPrimarySkills] = useState<SkillMultiSelectOption[]>([]);
     const [newSlotSecondarySkills, setNewSlotSecondarySkills] = useState<SkillMultiSelectOption[]>([]);
     const [slotCreateError, setSlotCreateError] = useState<string | undefined>(undefined);
     const [isSubmittingSlot, setIsSubmittingSlot] = useState(false);
@@ -133,19 +133,20 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     const loadSecondarySkills = useCallback(async (query: string): Promise<SkillMultiSelectOption[]> => {
         const skills = await fetchSkills({ search: query || undefined, limit: 30 });
         // Secondary skills = children (parent_id !== null)
-        // Prioritize those linked to the selected primary skill
+        // Prioritize those linked to selected primary skills
         const secondary = skills.filter((skill) => skill.parent_id !== null);
-        if (newSlotPrimarySkill !== undefined) {
-            const linked = secondary.filter((skill) => skill.parent_id === newSlotPrimarySkill.id);
-            const other = secondary.filter((skill) => skill.parent_id !== newSlotPrimarySkill.id);
+        if (newSlotPrimarySkills.length > 0) {
+            const primaryIds = new Set(newSlotPrimarySkills.map((s) => s.id));
+            const linked = secondary.filter((skill) => skill.parent_id !== null && primaryIds.has(skill.parent_id));
+            const other = secondary.filter((skill) => skill.parent_id === null || !primaryIds.has(skill.parent_id));
             return [...linked, ...other].map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
         }
         return secondary.map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
-    }, [newSlotPrimarySkill]);
+    }, [newSlotPrimarySkills]);
 
     const handleCreateSlot = async (): Promise<void> => {
-        if (!newSlotTitle || newSlotPrimarySkill === undefined) {
-            setSlotCreateError('Заполните название и выберите основной навык');
+        if (!newSlotTitle || newSlotPrimarySkills.length === 0) {
+            setSlotCreateError('Заполните название и выберите хотя бы один основной навык');
             return;
         }
         setIsSubmittingSlot(true);
@@ -154,11 +155,11 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
             const payload: Parameters<typeof createProjectSlot>[1] = {
                 title: newSlotTitle,
                 description: newSlotDescription,
-                skill_category_id: newSlotPrimarySkill.id,
+                primary_skills_id: newSlotPrimarySkills.map((skill) => skill.id),
                 status: 'open',
             };
             if (newSlotSecondarySkills.length > 0) {
-                payload.secondary_skills_ids = newSlotSecondarySkills.map((skill) => skill.id);
+                payload.secondary_skills_id = newSlotSecondarySkills.map((skill) => skill.id);
             }
             const slot = await createProjectSlot(projectId, payload);
             setProject((previous) => {
@@ -168,7 +169,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
             setIsCreatingSlot(false);
             setNewSlotTitle('');
             setNewSlotDescription('');
-            setNewSlotPrimarySkill(undefined);
+            setNewSlotPrimarySkills([]);
             setNewSlotSecondarySkills([]);
         } catch {
             setSlotCreateError('Ошибка при создании слота');
@@ -320,6 +321,13 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                         </div>
                     )}
 
+                    {project.content !== null && project.content !== '' && (
+                        <div className={styles.descriptionSection}>
+                            <h2 className={styles.sectionTitle}>Содержание</h2>
+                            <MdRenderer source={project.content} />
+                        </div>
+                    )}
+
                     <div className={styles.slotsSection}>
                         <div className={styles.slotsSectionHeader}>
                             <h2 className={styles.sectionTitle}>Команда / Слоты</h2>
@@ -349,13 +357,13 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                     />
                                 </div>
                                 <div className={styles.slotField}>
-                                    <SkillSearch
-                                        value={newSlotPrimarySkill}
-                                        onChange={setNewSlotPrimarySkill}
+                                    <SkillMultiSelect
+                                        value={newSlotPrimarySkills}
+                                        onChange={setNewSlotPrimarySkills}
                                         loadOptions={loadPrimarySkills}
-                                        placeholder="Выберите основной навык..."
+                                        placeholder="Выберите основные навыки..."
                                         disabled={isSubmittingSlot}
-                                        label="Основной навык (1-й уровень)"
+                                        label="Основные навыки 1-го уровня"
                                     />
                                 </div>
                                 <div className={styles.slotField}>
@@ -393,7 +401,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                     </Button>
                                     <Button
                                         onClick={() => { void handleCreateSlot(); }}
-                                        disabled={isSubmittingSlot || !newSlotTitle || newSlotPrimarySkill === undefined}
+                                        disabled={isSubmittingSlot || !newSlotTitle || newSlotPrimarySkills.length === 0}
                                     >
                                         Создать слот
                                     </Button>
@@ -420,7 +428,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                 {(project.slots
                                     .filter((slot: IProjectSlot) =>
                                         selectedSkillFilter === undefined
-                                        || slot.skill_category_id === selectedSkillFilter.id
+                                        || slot.primary_skills.some((s) => s.id === selectedSkillFilter.id)
                                     )
                                 ).map((slot: IProjectSlot) => {
                                     const slotRequests = pendingRequestsBySlot(slot.id);
@@ -431,11 +439,11 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                             <div className={styles.slotHeader}>
                                                 <div className={styles.slotInfo}>
                                                     <span className={styles.slotTitle}>{slot.title}</span>
-                                                    {slot.skill !== undefined && (
-                                                        <Badge color={slot.skill.color}>
-                                                            {slot.skill.name}
+                                                    {slot.primary_skills.map((skill) => (
+                                                        <Badge key={skill.id} color={skill.color}>
+                                                            {skill.name}
                                                         </Badge>
-                                                    )}
+                                                    ))}
                                                     <Badge color={!isOccupied && slot.status === 'open' ? '039855' : undefined}>
                                                         {slotStatusLabel(isOccupied, slot.status)}
                                                     </Badge>
@@ -523,15 +531,10 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                         <h3 className={styles.sidebarTitle}>Лидер проекта</h3>
                         {leader !== undefined && (
                             <div className={styles.leaderInfo}>
-                                <img
-                                    className={styles.avatar}
-                                    src={leader.avatar_uri}
-                                    alt={leader.nickname}
-                                    onError={(event) => {
-                                        const target = event.currentTarget;
-                                        target.onerror = undefined as unknown as typeof target.onerror;
-                                        target.style.display = 'none';
-                                    }}
+                                <UserAvatar
+                                    avatarUrl={leader.avatar_uri}
+                                    nickname={leader.nickname}
+                                    size={40}
                                 />
                                 <span className={styles.nickname}>{leader.nickname}</span>
                             </div>

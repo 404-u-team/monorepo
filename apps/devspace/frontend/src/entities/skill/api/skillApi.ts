@@ -12,3 +12,8 @@ export async function fetchSkills(parameters?: FetchSkillsParameters): Promise<I
     const response = await apiClient.get<ISkill[]>('/skills', { params: parameters });
     return response.data;
 }
+
+export async function fetchSkillById(skillId: string): Promise<ISkill> {
+    const response = await apiClient.get<ISkill>(`/skills/${skillId}`);
+    return response.data;
+}

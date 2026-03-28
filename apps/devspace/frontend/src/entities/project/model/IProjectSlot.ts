@@ -8,11 +8,9 @@ export interface IProjectSlotSkill {
 export interface IProjectSlot {
     id: string;
     project_id: string;
-    skill_category_id: string;
-    skill?: IProjectSlotSkill | undefined;
-    /** Secondary (second-level) skill IDs */
-    secondary_skills_ids?: string[] | undefined;
-    /** Resolved secondary skill objects (may be populated by server) */
+    /** Primary (first-level) skills — can be multiple */
+    primary_skills: IProjectSlotSkill[];
+    /** Secondary (second-level) skill objects */
     secondary_skills?: IProjectSlotSkill[] | undefined;
     title: string;
     description: string;

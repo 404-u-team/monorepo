@@ -13,3 +13,4 @@ export { ConfirmModal, type ConfirmModalProps, type ConfirmModalSeverity } from 
 export { SkillSearch, type SkillSearchProps, type SkillSearchOption } from "./SkillSearch/SkillSearch";
 export { SkillMultiSelect, type SkillMultiSelectProps, type SkillMultiSelectOption } from "./SkillMultiSelect/SkillMultiSelect";
 export { Logo, type LogoProps } from "./Logo/Logo";
+export { UserAvatar, type UserAvatarProps } from "./UserAvatar/UserAvatar";
