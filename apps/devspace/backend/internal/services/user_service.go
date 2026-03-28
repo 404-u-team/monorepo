@@ -53,7 +53,7 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		Email:     user.Email,
 		Nickname:  user.Nickname,
 		MainRole:  nil,
-		AvatarUrl: "",
+		AvatarUrl: user.AvatarUrl,
 		Bio:       user.Bio,
 		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
