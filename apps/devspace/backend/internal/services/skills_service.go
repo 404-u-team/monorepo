@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: пиздец. Не работает поиск по любым родителям (только корень или только ребенок определенного скила)
 func GetSkills(query dto.SkillCategoriesListQuery, db *gorm.DB) ([]dto.SkillCategoryResponse, error) {
 	result := db.Model(&models.SkillCategory{})
 	if query.ParentId == nil {
@@ -24,8 +25,12 @@ func GetSkills(query dto.SkillCategoriesListQuery, db *gorm.DB) ([]dto.SkillCate
 		result = result.Where("name ILIKE ?", *query.Search+"%")
 	}
 
+	if query.StartAt != nil {
+		result = result.Offset(*query.StartAt)
+	}
+
 	if query.Limit != nil {
-		result = result.Limit(int(*query.Limit))
+		result = result.Limit(*query.Limit)
 	}
 
 	var skills []models.SkillCategory
@@ -37,6 +42,7 @@ func GetSkills(query dto.SkillCategoriesListQuery, db *gorm.DB) ([]dto.SkillCate
 	}
 
 	skillCategoryResponse := repository.BuildSkillTree(skills)
+
 	return skillCategoryResponse, nil
 }
 

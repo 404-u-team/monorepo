@@ -57,6 +57,8 @@ func buildNode(skill models.SkillCategory, childrenMap map[uuid.UUID][]models.Sk
 		ID:       skill.ID,
 		Name:     skill.Name,
 		ParentID: skill.ParentID,
+		Icon:     skill.Icon,
+		Color:    skill.Color,
 		Children: []dto.SkillCategoryResponse{},
 	}
 

@@ -1087,7 +1087,6 @@ paths:
                             required:
                                 - title
                                 - primary_skills_id
-                                - secondary_skills_id
                             properties:
                                 title:
                                     type: string
@@ -1178,6 +1177,7 @@ paths:
                                     items:
                                         type: string
                                         format: uuid
+                                    nullable: true
                                     description: Список uuid навыков первого уровня (основные навыки без родителя)
                                     example:
                                         ["550e8400-e29b-41d4-a716-446655440000"]
@@ -1186,6 +1186,7 @@ paths:
                                     items:
                                         type: string
                                         format: uuid
+                                    nullable: true
                                     description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
                                     example:
                                         ["660e8400-e29b-41d4-a716-446655440000"]
@@ -1193,17 +1194,20 @@ paths:
                                     type: string
                                     minLength: 3
                                     maxLength: 255
+                                    nullable: true
                                     example: Senior Backend Developer
                                 description:
                                     type: string
                                     minLength: 3
                                     maxLength: 255
+                                    nullable: true
                                     example: Ищем опытного Python разработчика с 5+ годами опыта
                                 status:
                                     type: string
                                     enum:
                                         - open
                                         - closed
+                                    nullable: true
                                     example: open
                 required: false
             responses:

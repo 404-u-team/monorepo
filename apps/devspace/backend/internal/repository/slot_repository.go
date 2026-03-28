@@ -94,12 +94,12 @@ func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlo
 func (r *slotRepository) UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error) {
 	updates := map[string]interface{}{}
 
-	if len(updateRequest.PrimarySkillsID) > 0 {
-		updates["primary_skills_id"] = models.UUIDArray(updateRequest.PrimarySkillsID)
+	if updateRequest.PrimarySkillsID != nil {
+		updates["primary_skills_id"] = models.UUIDArray(*updateRequest.PrimarySkillsID)
 	}
 
-	if len(updateRequest.SecondarySkillsID) > 0 {
-		updates["secondary_skills_id"] = models.UUIDArray(updateRequest.SecondarySkillsID)
+	if updateRequest.SecondarySkillsID != nil {
+		updates["secondary_skills_id"] = models.UUIDArray(*updateRequest.SecondarySkillsID)
 	}
 
 	if updateRequest.Title != nil {

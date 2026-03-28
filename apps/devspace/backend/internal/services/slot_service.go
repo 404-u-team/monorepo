@@ -12,9 +12,9 @@ import (
 )
 
 type SlotService interface {
-	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
-	CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*models.ProjectSlot, error)
-	UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*models.ProjectSlot, error)
+	GetSlots(projectID uuid.UUID) ([]dto.GetSlotResponse, error)
+	CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*dto.GetSlotResponse, error)
+	UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*dto.GetSlotResponse, error)
 	DeleteSlotByID(slotID, projectID, userID uuid.UUID) error
 }
 
@@ -27,15 +27,21 @@ func NewSlotService(slotRepo repository.SlotRepository, projectRepo repository.P
 	return &slotService{slotRepo: slotRepo, projectRepo: projectRepo}
 }
 
-func (s *slotService) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error) {
+func (s *slotService) GetSlots(projectID uuid.UUID) ([]dto.GetSlotResponse, error) {
 	projectSlots, err := s.slotRepo.GetSlots(projectID)
 	if err != nil {
 		return nil, ErrInternal
 	}
-	return projectSlots, nil
+
+	responses, err := s.mapSlotsToResponse(projectSlots)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return responses, nil
 }
 
-func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*models.ProjectSlot, error) {
+func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.CreateSlotRequest) (*dto.GetSlotResponse, error) {
 	isValidPayload, err := s.validateCreateSlotRequest(payload)
 	if err != nil {
 		return nil, ErrInternal
@@ -64,11 +70,13 @@ func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.Creat
 
 	// создание слота
 	slot := &models.ProjectSlot{
-		ProjectID:         projectID,
-		PrimarySkillsID:   payload.PrimarySkillsID,
-		SecondarySkillsID: payload.SecondarySkillsID,
-		Title:             payload.Title,
-		Status:            "open",
+		ProjectID:       projectID,
+		PrimarySkillsID: models.UUIDArray(payload.PrimarySkillsID),
+		Title:           payload.Title,
+		Status:          "open",
+	}
+	if payload.SecondarySkillsID != nil {
+		slot.SecondarySkillsID = models.UUIDArray(*payload.SecondarySkillsID)
 	}
 	if payload.Description != nil {
 		slot.Description = payload.Description
@@ -84,7 +92,13 @@ func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.Creat
 		}
 		return nil, ErrInternal
 	}
-	return slot, nil
+
+	response, err := s.mapSlotToResponse(slot)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return response, nil
 }
 
 func (s *slotService) validateCreateSlotRequest(payload *dto.CreateSlotRequest) (bool, error) {
@@ -105,8 +119,13 @@ func (s *slotService) validateCreateSlotRequest(payload *dto.CreateSlotRequest) 
 		primarySkillsMap[primarySkillID] = struct{}{}
 	}
 
-	secondarySkillsMap := make(map[uuid.UUID]struct{}, len(payload.SecondarySkillsID))
-	for _, secondarySkillID := range payload.SecondarySkillsID {
+	secondarySkills := make([]uuid.UUID, 0)
+	if payload.SecondarySkillsID != nil {
+		secondarySkills = *payload.SecondarySkillsID
+	}
+
+	secondarySkillsMap := make(map[uuid.UUID]struct{}, len(secondarySkills))
+	for _, secondarySkillID := range secondarySkills {
 		if _, exists := secondarySkillsMap[secondarySkillID]; exists {
 			return false, nil
 		}
@@ -140,8 +159,8 @@ func (s *slotService) validateCreateSlotRequest(payload *dto.CreateSlotRequest) 
 		}
 	}
 
-	// Валидация secondary skills только если они указаны
-	if len(payload.SecondarySkillsID) > 0 {
+	// валидация secondary skills только если они указаны
+	if len(secondarySkills) > 0 {
 		secondarySkills, err := s.slotRepo.GetSkillCategoriesByIDs(secondaryIDs)
 		if err != nil {
 			return false, err
@@ -163,24 +182,10 @@ func (s *slotService) validateCreateSlotRequest(payload *dto.CreateSlotRequest) 
 	return true, nil
 }
 
-func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*models.ProjectSlot, error) {
+func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (*dto.GetSlotResponse, error) {
 	// проверка на пустой payload
-	if len(updateRequest.PrimarySkillsID) == 0 && len(updateRequest.SecondarySkillsID) == 0 && updateRequest.Title == nil && updateRequest.Description == nil && updateRequest.Status == nil {
+	if updateRequest.PrimarySkillsID == nil && updateRequest.SecondarySkillsID == nil && updateRequest.Title == nil && updateRequest.Description == nil && updateRequest.Status == nil {
 		return nil, ErrEmptyPayload
-	}
-
-	// валидация skills только если обновляются primary skills
-	if len(updateRequest.PrimarySkillsID) > 0 {
-		isValidSkills, err := s.validateCreateSlotRequest(&dto.CreateSlotRequest{
-			PrimarySkillsID:   updateRequest.PrimarySkillsID,
-			SecondarySkillsID: updateRequest.SecondarySkillsID,
-		})
-		if err != nil {
-			return nil, ErrInternal
-		}
-		if !isValidSkills {
-			return nil, ErrInvalidSlotSkills
-		}
 	}
 
 	// является ли пользователь владельцем данного проекта
@@ -201,6 +206,45 @@ func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, update
 		return nil, ErrSlotNotFound
 	}
 
+	currentSlot, err := s.slotRepo.GetSlotByID(slotID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrSlotNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	// копируем скиллы из слота
+	mergedPrimarySkills := make([]uuid.UUID, len(currentSlot.PrimarySkillsID))
+	copy(mergedPrimarySkills, currentSlot.PrimarySkillsID)
+
+	mergedSecondarySkills := make([]uuid.UUID, len(currentSlot.SecondarySkillsID))
+	copy(mergedSecondarySkills, currentSlot.SecondarySkillsID)
+
+	// если переданы какие-то скилы, то добавляем их
+	isSkillsUpdated := false
+	if updateRequest.PrimarySkillsID != nil {
+		mergedPrimarySkills = *updateRequest.PrimarySkillsID
+		isSkillsUpdated = true
+	}
+	if updateRequest.SecondarySkillsID != nil {
+		mergedSecondarySkills = *updateRequest.SecondarySkillsID
+		isSkillsUpdated = true
+	}
+
+	if isSkillsUpdated {
+		isValidSkills, err := s.validateCreateSlotRequest(&dto.CreateSlotRequest{
+			PrimarySkillsID:   mergedPrimarySkills,
+			SecondarySkillsID: &mergedSecondarySkills,
+		})
+		if err != nil {
+			return nil, ErrInternal
+		}
+		if !isValidSkills {
+			return nil, ErrInvalidSlotSkills
+		}
+	}
+
 	// обновление слота по ID
 	rowsAffected, err := s.slotRepo.UpdateSlotByID(slotID, projectID, updateRequest)
 	if err != nil {
@@ -219,7 +263,95 @@ func (s *slotService) UpdateSlotByID(slotID, projectID, userID uuid.UUID, update
 		return nil, ErrInternal
 	}
 
-	return slot, nil
+	response, err := s.mapSlotToResponse(slot)
+	if err != nil {
+		return nil, ErrInternal
+	}
+
+	return response, nil
+}
+
+func (s *slotService) mapSlotToResponse(slot *models.ProjectSlot) (*dto.GetSlotResponse, error) {
+	responses, err := s.mapSlotsToResponse([]models.ProjectSlot{*slot})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(responses) == 0 {
+		return nil, nil
+	}
+
+	return &responses[0], nil
+}
+
+func (s *slotService) mapSlotsToResponse(slots []models.ProjectSlot) ([]dto.GetSlotResponse, error) {
+	if len(slots) == 0 {
+		return []dto.GetSlotResponse{}, nil
+	}
+
+	allSkillIDsSet := make(map[uuid.UUID]struct{})
+	for _, slot := range slots {
+		for _, id := range slot.PrimarySkillsID {
+			allSkillIDsSet[id] = struct{}{}
+		}
+		for _, id := range slot.SecondarySkillsID {
+			allSkillIDsSet[id] = struct{}{}
+		}
+	}
+
+	allSkillIDs := make([]uuid.UUID, 0, len(allSkillIDsSet))
+	for id := range allSkillIDsSet {
+		allSkillIDs = append(allSkillIDs, id)
+	}
+
+	skillByID := make(map[uuid.UUID]dto.SkillCategoryResponse)
+	if len(allSkillIDs) > 0 {
+		skills, err := s.slotRepo.GetSkillCategoriesByIDs(allSkillIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, skill := range skills {
+			skillByID[skill.ID] = dto.SkillCategoryResponse{
+				ID:       skill.ID,
+				ParentID: skill.ParentID,
+				Name:     skill.Name,
+				Icon:     skill.Icon,
+				Color:    skill.Color,
+				Children: []dto.SkillCategoryResponse{},
+			}
+		}
+	}
+
+	result := make([]dto.GetSlotResponse, 0, len(slots))
+	for _, slot := range slots {
+		primarySkills := make([]dto.SkillCategoryResponse, 0, len(slot.PrimarySkillsID))
+		for _, id := range slot.PrimarySkillsID {
+			if skill, ok := skillByID[id]; ok {
+				primarySkills = append(primarySkills, skill)
+			}
+		}
+
+		secondarySkills := make([]dto.SkillCategoryResponse, 0, len(slot.SecondarySkillsID))
+		for _, id := range slot.SecondarySkillsID {
+			if skill, ok := skillByID[id]; ok {
+				secondarySkills = append(secondarySkills, skill)
+			}
+		}
+
+		result = append(result, dto.GetSlotResponse{
+			ID:              slot.ID,
+			PrimarySkills:   primarySkills,
+			SecondarySkills: secondarySkills,
+			Title:           slot.Title,
+			Description:     slot.Description,
+			Status:          slot.Status,
+			UserID:          slot.UserID,
+			CreatedAt:       slot.CreatedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (s *slotService) DeleteSlotByID(slotID, projectID, userID uuid.UUID) error {
