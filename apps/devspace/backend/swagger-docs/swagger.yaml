@@ -163,7 +163,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/GetMeResponse"
+                                $ref: "#/components/schemas/PrivateUserProfile"
                     headers: {}
                 "401":
                     description: Не авторизован
@@ -189,6 +189,11 @@ paths:
                                 nickname:
                                     type: string
                                     example: john_doe
+                                main_role:
+                                    type: string
+                                    format: uuid
+                                    example: 123e4567-e89b-12d3-a456-426614174000
+                                    description: Навык первого уровня
                                 avatar_url:
                                     type: string
                                     format: uri
@@ -276,7 +281,7 @@ paths:
                             schema:
                                 type: array
                                 items:
-                                    $ref: "#/components/schemas/User"
+                                    $ref: "#/components/schemas/PublicUserProfile"
                 "400":
                     description: Ошибка в параметрах запроса
                 "500":
@@ -1816,28 +1821,6 @@ components:
                 error:
                     type: string
                     description: Сообщение об ошибке (если произошла ошибка)
-        GetMeResponse:
-            type: object
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                email:
-                    type: string
-                    format: email
-                nickname:
-                    type: string
-                avatar_url:
-                    type: string
-                bio:
-                    type: string
-                created_at:
-                    type: string
-                    format: date-time
-                skills:
-                    type: array
-                    items:
-                        $ref: "#/components/schemas/Skill"
         PrivateUserProfile:
             type: object
             properties:
@@ -1850,8 +1833,8 @@ components:
                 nickname:
                     type: string
                 main_role:
-                    type: string
-                avatar_uri:
+                    $ref: "#/components/schemas/SkillWithoutChildren"
+                avatar_url:
                     type: string
                     format: uri
                 bio:
@@ -1872,8 +1855,8 @@ components:
                 nickname:
                     type: string
                 main_role:
-                    type: string
-                avatar_uri:
+                    $ref: "#/components/schemas/SkillWithoutChildren"
+                avatar_url:
                     type: string
                     format: uri
                 bio:
@@ -1882,6 +1865,22 @@ components:
                     type: array
                     items:
                         $ref: "#/components/schemas/Skill"
+        SkillWithoutChildren:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                parent_id:
+                    type: string
+                    format: uuid
+                    nullable: true
+                name:
+                    type: string
+                icon:
+                    type: string
+                color:
+                    type: string
         Skill:
             type: object
             properties:

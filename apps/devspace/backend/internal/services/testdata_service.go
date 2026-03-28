@@ -191,24 +191,20 @@ func (s *testDataService) generate(ctx context.Context) {
 		"Архитектор программных систем",
 		"Мобильная разработка iOS/Android",
 	}
-	roles := []string{
-		"Backend Developer", "Frontend Developer", "Fullstack Developer",
-		"DevOps Engineer", "Data Scientist", "Mobile Developer",
-		"ML Engineer", "Product Manager", "QA Engineer", "UI/UX Designer", "Rust Evangelist",
-	}
 
 	userIDs := make([]uuid.UUID, tdTotalUsers)
 	userModels := make([]models.User, tdTotalUsers)
 	for i := 0; i < tdTotalUsers; i++ {
 		id := uuid.New()
 		userIDs[i] = id
+		mainRoleID := rootIDs[rng.Intn(len(rootIDs))]
 		userModels[i] = models.User{
 			ID:           id,
 			Email:        fmt.Sprintf("testuser_%04d@devspace.test", i+1),
 			Nickname:     fmt.Sprintf("testuser_%04d", i+1),
 			PasswordHash: hashedPassword,
 			Bio:          bios[i%len(bios)],
-			MainRole:     rootIDs[i%len(roles)],
+			MainRole:     &mainRoleID,
 		}
 	}
 	if err := s.db.WithContext(ctx).CreateInBatches(userModels, 100).Error; err != nil {

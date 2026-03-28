@@ -25,7 +25,7 @@ type UserRepository interface {
 		username *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
-	) ([]models.User, error)
+	) ([]dto.PublicUserProfile, error)
 }
 
 type userRepository struct {
@@ -128,7 +128,6 @@ func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 	return user.IsAdmin, nil
 }
 
-// обновить nickname и bio пользователя по ID. Возвращает ошибку
 func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
 	updates := map[string]interface{}{}
 
@@ -142,6 +141,24 @@ func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.Upd
 
 	if updateRequest.AvatarUrl != nil {
 		updates["avatar_url"] = *updateRequest.AvatarUrl
+	}
+
+	if updateRequest.MainRole.IsSet {
+		if updateRequest.MainRole.Value == nil {
+			updates["main_role"] = nil
+		} else {
+			var skill models.SkillCategory
+			result := r.conn.Select("id", "parent_id").First(&skill, "id = ?", *updateRequest.MainRole.Value)
+			if result.Error != nil {
+				return result.Error
+			}
+
+			if skill.ParentID != nil {
+				return gorm.ErrInvalidValue
+			}
+
+			updates["main_role"] = *updateRequest.MainRole.Value
+		}
 	}
 
 	result := r.conn.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
@@ -193,14 +210,15 @@ func (r *userRepository) GetUsersByParams(
 	username *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
-) ([]models.User, error) {
+) ([]dto.PublicUserProfile, error) {
 
 	var users []models.User
 
-	// подгружаем навки
+	// подгружаем навки и main_role через Preload
 	query := r.conn.Session(&gorm.Session{}).
 		Model(&models.User{}).
-		Preload("Skills")
+		Preload("Skills").
+		Preload("MainRoleSkill")
 
 	// Фильтры
 	if username != nil && *username != "" {
@@ -232,10 +250,19 @@ func (r *userRepository) GetUsersByParams(
 	if err := query.Find(&users).Error; err != nil {
 		return nil, err
 	}
-	// ОТЛАДКА: выводим количество навыков у каждого пользователя
-	for _, user := range users {
-		log.Printf("User %s (%s) has %d skills", user.ID, user.Nickname, len(user.Skills))
+
+	// Преобразуем в PublicUserProfile
+	profiles := make([]dto.PublicUserProfile, len(users))
+	for i, user := range users {
+		profiles[i] = dto.PublicUserProfile{
+			ID:        user.ID,
+			Nickname:  user.Nickname,
+			MainRole:  user.MainRoleSkill,
+			AvatarUrl: user.AvatarUrl,
+			Bio:       user.Bio,
+			Skills:    BuildSkillTree(user.Skills),
+		}
 	}
 
-	return users, nil
+	return profiles, nil
 }

@@ -61,7 +61,7 @@ func (h *userHandler) UpdateMe(c *gin.Context) {
 
 	meResponse, err := h.userService.UpdateMe(userID, &payload)
 	if err != nil {
-		if errors.Is(err, services.ErrEmptyPayload) {
+		if errors.Is(err, services.ErrEmptyPayload) || errors.Is(err, services.ErrMainRoleNotFound) || errors.Is(err, services.ErrMainRoleIsNotRoot) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -147,8 +147,8 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 	log.Printf("Request: start_at=%v, limit=%v, username=%v, main_role=%v, skills=%v",
 		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
 
-	// Получаем публичные профили с деревом навыков
-	profiles, err := h.userService.GetUsersPublicProfiles(
+	// Получаем публичные профили с деревом навыков и main_role
+	profiles, err := h.userService.GetUsersByParams(
 		req.StartAt,
 		req.Limit,
 		req.Username,
