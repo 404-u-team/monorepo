@@ -20,6 +20,12 @@ type UserRepository interface {
 	CheckUserIsAdmin(id uuid.UUID) (bool, error)
 	UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
 	GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error)
+	GetUsersByParams(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		requiredSkills *dto.UUIDSlice,
+	) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -176,4 +182,56 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 
 	// преобразовываем список скиллов в дерево (на основе полей ID и parentID)
 	return BuildSkillTree(allSkills), nil
+}
+
+func (r *userRepository) GetUsersByParams(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	requiredSkills *dto.UUIDSlice,
+) ([]models.User, error) {
+
+	var users []models.User
+
+	// подгружаем навки
+	query := r.conn.Session(&gorm.Session{}).
+		Model(&models.User{}).
+		Preload("Skills")
+
+	// Фильтры
+	if username != nil && *username != "" {
+		query = query.Where("nickname LIKE ?", *username+"%")
+	}
+
+	if mainRole != nil {
+		query = query.Where("main_role = ?", *mainRole)
+	}
+
+	// Фильтр по навыкам
+	if requiredSkills != nil && len(*requiredSkills) > 0 {
+		query = query.
+			Joins("JOIN user_skills ON users.id = user_skills.user_id").
+			Where("user_skills.skill_id IN ?", []uuid.UUID(*requiredSkills)).
+			Group("users.id").
+			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
+	}
+
+	// Пагинация
+	if startAt != nil {
+		query = query.Offset(int(*startAt))
+	}
+	if limit != nil {
+		query = query.Limit(int(*limit))
+	}
+
+	// Выполняем
+	if err := query.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	// ОТЛАДКА: выводим количество навыков у каждого пользователя
+	for _, user := range users {
+		log.Printf("User %s (%s) has %d skills", user.ID, user.Nickname, len(user.Skills))
+	}
+
+	return users, nil
 }

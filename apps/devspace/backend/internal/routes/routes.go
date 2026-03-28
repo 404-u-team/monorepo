@@ -67,6 +67,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.POST("/auth/refresh", authHandler.Refresh)
 
 		api.GET("/users/:userID", userHandler.GetUserByID)
+		api.GET("/users", userHandler.GetUsersByParams)
 
 		api.GET("/skills", skillHandler.GetSkills)
 		api.GET("/skills/:id", skillHandler.GetSkillByID)

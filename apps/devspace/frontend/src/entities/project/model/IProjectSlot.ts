@@ -10,6 +10,10 @@ export interface IProjectSlot {
     project_id: string;
     skill_category_id: string;
     skill?: IProjectSlotSkill | undefined;
+    /** Secondary (second-level) skill IDs */
+    secondary_skills_ids?: string[] | undefined;
+    /** Resolved secondary skill objects (may be populated by server) */
+    secondary_skills?: IProjectSlotSkill[] | undefined;
     title: string;
     description: string;
     status: 'open' | 'closed';
