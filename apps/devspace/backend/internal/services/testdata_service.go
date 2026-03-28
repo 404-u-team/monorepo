@@ -166,6 +166,16 @@ func (s *testDataService) generate(ctx context.Context) {
 		allSkillIDs = append(allSkillIDs, sc.ID)
 	}
 
+	childrenByRoot := make(map[uuid.UUID][]uuid.UUID, len(rootIDs))
+	for _, rootID := range rootIDs {
+		childrenByRoot[rootID] = []uuid.UUID{}
+	}
+	for _, sc := range childModels {
+		if sc.ParentID != nil {
+			childrenByRoot[*sc.ParentID] = append(childrenByRoot[*sc.ParentID], sc.ID)
+		}
+	}
+
 	// ── 2. Users ─────────────────────────────────────────────────────────────
 	s.setStage("Генерация пользователей")
 
@@ -362,23 +372,27 @@ func (s *testDataService) generate(ctx context.Context) {
 
 		case i < 600:
 			for j := 0; j < rng.Intn(2)+2; j++ {
+				primarySkillID, secondarySkillID := pickValidPrimarySecondarySkillPair(rng, rootIDs, childrenByRoot)
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "open",
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   models.UUIDArray{primarySkillID},
+					SecondarySkillsID: models.UUIDArray{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "open",
 				})
 			}
 
 		case i < 800:
 			for j := 0; j < rng.Intn(2)+1; j++ {
+				primarySkillID, secondarySkillID := pickValidPrimarySecondarySkillPair(rng, rootIDs, childrenByRoot)
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "open",
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   models.UUIDArray{primarySkillID},
+					SecondarySkillsID: models.UUIDArray{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "open",
 				})
 			}
 			for j := 0; j < rng.Intn(2)+1; j++ {
@@ -386,14 +400,16 @@ func (s *testDataService) generate(ctx context.Context) {
 				if userID == uuid.Nil {
 					break
 				}
+				primarySkillID, secondarySkillID := pickValidPrimarySecondarySkillPair(rng, rootIDs, childrenByRoot)
 				projectUsedUsers[projectID][userID] = true
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "closed",
-					UserID:          &userID,
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   models.UUIDArray{primarySkillID},
+					SecondarySkillsID: models.UUIDArray{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "closed",
+					UserID:            &userID,
 				})
 			}
 
@@ -403,14 +419,16 @@ func (s *testDataService) generate(ctx context.Context) {
 				if userID == uuid.Nil {
 					break
 				}
+				primarySkillID, secondarySkillID := pickValidPrimarySecondarySkillPair(rng, rootIDs, childrenByRoot)
 				projectUsedUsers[projectID][userID] = true
 				slotModels = append(slotModels, models.ProjectSlot{
-					ID:              uuid.New(),
-					ProjectID:       projectID,
-					SkillCategoryID: allSkillIDs[rng.Intn(len(allSkillIDs))],
-					Title:           slotTitles[rng.Intn(len(slotTitles))],
-					Status:          "closed",
-					UserID:          &userID,
+					ID:                uuid.New(),
+					ProjectID:         projectID,
+					PrimarySkillsID:   models.UUIDArray{primarySkillID},
+					SecondarySkillsID: models.UUIDArray{secondarySkillID},
+					Title:             slotTitles[rng.Intn(len(slotTitles))],
+					Status:            "closed",
+					UserID:            &userID,
 				})
 			}
 		}
@@ -445,6 +463,26 @@ func pickUniqueUser(rng *rand.Rand, userIDs []uuid.UUID, used map[uuid.UUID]bool
 		}
 	}
 	return uuid.Nil
+}
+
+func pickValidPrimarySecondarySkillPair(rng *rand.Rand, rootIDs []uuid.UUID, childrenByRoot map[uuid.UUID][]uuid.UUID) (uuid.UUID, uuid.UUID) {
+	for range 20 {
+		primary := rootIDs[rng.Intn(len(rootIDs))]
+		children := childrenByRoot[primary]
+		if len(children) == 0 {
+			continue
+		}
+		secondary := children[rng.Intn(len(children))]
+		return primary, secondary
+	}
+
+	// deterministic fallback; with generated data this branch should be unreachable.
+	primary := rootIDs[0]
+	children := childrenByRoot[primary]
+	if len(children) == 0 {
+		return primary, primary
+	}
+	return primary, children[0]
 }
 
 // tdRootSkillNames returns 80 unique root skill category names.

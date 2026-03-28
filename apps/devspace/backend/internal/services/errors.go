@@ -24,6 +24,7 @@ var ErrIdeaConflict = errors.New("идея с таким названием уж
 var ErrSlotConflict = errors.New("слот с такими значениями уже существует")
 var ErrSlotNotFound = errors.New("слот с таким ID не найден")
 var ErrSlotIsClosed = errors.New("нельзя создать запрос для закрытого слота")
+var ErrInvalidSlotSkills = errors.New("некорректная связка primary и secondary навыков")
 
 var ErrRowAlreadyExists = errors.New("такая запись уже существует")
 var ErrRowNotExists = errors.New("такой записи не существует")

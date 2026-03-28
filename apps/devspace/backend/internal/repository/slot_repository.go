@@ -12,6 +12,7 @@ import (
 type SlotRepository interface {
 	GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error)
 	GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, error)
+	GetSkillCategoriesByIDs(skillIDs []uuid.UUID) ([]models.SkillCategory, error)
 	CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error
 	UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error)
 	DeleteSlotByID(slotID, projectID uuid.UUID) (int, error)
@@ -51,6 +52,23 @@ func (r *slotRepository) GetSlotByID(slotID uuid.UUID) (*models.ProjectSlot, err
 	return &slot, nil
 }
 
+func (r *slotRepository) GetSkillCategoriesByIDs(skillIDs []uuid.UUID) ([]models.SkillCategory, error) {
+	if len(skillIDs) == 0 {
+		return []models.SkillCategory{}, nil
+	}
+
+	var skills []models.SkillCategory
+	result := r.conn.Model(&models.SkillCategory{}).
+		Select("id", "parent_id", "name", "icon", "color").
+		Where("id IN ?", skillIDs).
+		Find(&skills)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return skills, nil
+}
+
 func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlot) error {
 	var count int64
 	if err := r.conn.Model(&models.Project{}).
@@ -74,10 +92,14 @@ func (r *slotRepository) CreateSlot(projectID uuid.UUID, slot *models.ProjectSlo
 
 // обновить слот для определенного проекта. Возвращает количество измененных строк и ошибку
 func (r *slotRepository) UpdateSlotByID(slotID, projectID uuid.UUID, updateRequest *dto.UpdateSlotRequest) (int, error) {
-	updates := map[string]string{}
+	updates := map[string]interface{}{}
 
-	if updateRequest.SkillCategoryID != nil {
-		updates["skill_category_id"] = (*updateRequest.SkillCategoryID).String()
+	if updateRequest.PrimarySkillsID != nil {
+		updates["primary_skills_id"] = models.UUIDArray(*updateRequest.PrimarySkillsID)
+	}
+
+	if updateRequest.SecondarySkillsID != nil {
+		updates["secondary_skills_id"] = models.UUIDArray(*updateRequest.SecondarySkillsID)
 	}
 
 	if updateRequest.Title != nil {
