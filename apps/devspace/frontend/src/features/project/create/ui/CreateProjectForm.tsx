@@ -2,24 +2,27 @@ import { useState, type JSX } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { observer } from 'mobx-react-lite';
 import { Plus } from 'lucide-react';
-import { Button, Input } from '@/shared/ui';
+import { Button, Input, MdEditor } from '@/shared/ui';
 import { createProject } from '@/entities/project';
 import styles from './CreateProjectForm.module.scss';
 
 interface CreateProjectFormProps {
     initialTitle?: string | undefined;
     initialDescription?: string | undefined;
+    initialContent?: string | undefined;
     initialIdeaId?: string | undefined;
 }
 
 export const CreateProjectForm = observer(function CreateProjectForm({
     initialTitle = '',
     initialDescription = '',
+    initialContent = '',
     initialIdeaId,
 }: CreateProjectFormProps): JSX.Element {
     const navigate = useNavigate();
     const [title, setTitle] = useState(initialTitle);
     const [description, setDescription] = useState(initialDescription);
+    const [content, setContent] = useState(initialContent);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
 
@@ -30,7 +33,18 @@ export const CreateProjectForm = observer(function CreateProjectForm({
         setIsSubmitting(true);
         setError(undefined);
         try {
-            const newProject = await createProject({ title, description, idea_id: initialIdeaId });
+            const payload: { title: string; description?: string; content?: string; idea_id?: string } = { title };
+            if (description.trim() !== '') {
+                payload.description = description;
+            }
+            if (content.trim() !== '') {
+                payload.content = content;
+            }
+            if (initialIdeaId !== undefined && initialIdeaId !== '') {
+                payload.idea_id = initialIdeaId;
+            }
+            
+            const newProject = await createProject(payload);
             void navigate({ to: `/project/$projectId`, params: { projectId: newProject.id } });
         } catch {
             setError('Произошла ошибка при создании проекта. Попробуйте снова.');
@@ -59,7 +73,7 @@ export const CreateProjectForm = observer(function CreateProjectForm({
                         />
                     </div>
                     <div className={styles.field}>
-                        <label className={styles.label} htmlFor="project-description">Описание</label>
+                        <label className={styles.label} htmlFor="project-description">Краткое описание</label>
                         <textarea
                             id="project-description"
                             className={styles.textarea}
@@ -67,6 +81,16 @@ export const CreateProjectForm = observer(function CreateProjectForm({
                             value={description}
                             onChange={(event_) => { setDescription(event_.target.value); }}
                             disabled={isSubmitting}
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Подробное содержание</label>
+                        <MdEditor
+                            value={content}
+                            onChange={setContent}
+                            placeholder="Подробно опишите проект в формате Markdown..."
+                            disabled={isSubmitting}
+                            height={300}
                         />
                     </div>
 

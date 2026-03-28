@@ -23,12 +23,18 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}
+	restrictedOrigins := []string{
+		"http://localhost:3000",
+		"http://localhost:8081",
+		"https://fe.dev-main.stand.devspace.404.ms0ur.dev",
+		"https://be.dev-main.stand.devspace.404.ms0ur.dev",
+	}
 	if config.AllowAnyOrigin {
 		corsConfig.AllowOriginFunc = func(origin string) bool {
 			return true
 		}
 	} else {
-		corsConfig.AllowOrigins = []string{"http://localhost:3000", "https://fe.dev-main.stand.devspace.404.ms0ur.dev"}
+		corsConfig.AllowOrigins = restrictedOrigins
 	}
 
 	router.Use(cors.New(corsConfig))

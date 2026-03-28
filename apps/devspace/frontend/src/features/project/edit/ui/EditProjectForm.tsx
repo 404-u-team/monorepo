@@ -1,6 +1,6 @@
 import { useState, type JSX } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Input, Dropdown } from '@/shared/ui';
+import { Button, Input, Dropdown, MdEditor } from '@/shared/ui';
 import { updateProject, type IProject } from '@/entities/project';
 import styles from './EditProjectForm.module.scss';
 
@@ -22,6 +22,7 @@ export const EditProjectForm = observer(function EditProjectForm({
 }: EditProjectFormProps): JSX.Element {
     const [title, setTitle] = useState(project.title);
     const [description, setDescription] = useState(project.description);
+    const [content, setContent] = useState(project.content ?? '');
     const [status, setStatus] = useState<'open' | 'closed'>(project.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
@@ -33,7 +34,12 @@ export const EditProjectForm = observer(function EditProjectForm({
         setIsSubmitting(true);
         setError(undefined);
         try {
-            const updated = await updateProject(project.id, { title, description, status });
+            const updated = await updateProject(project.id, {
+                title,
+                description,
+                content: content !== '' ? content : undefined,
+                status,
+            });
             onSuccess(updated);
         } catch {
             setError('Произошла ошибка при сохранении. Попробуйте снова.');
@@ -59,7 +65,7 @@ export const EditProjectForm = observer(function EditProjectForm({
                 />
             </div>
             <div className={styles.field}>
-                <label className={styles.label} htmlFor="project-description">Описание</label>
+                <label className={styles.label} htmlFor="project-description">Краткое описание</label>
                 <textarea
                     id="project-description"
                     className={styles.textarea}
@@ -67,6 +73,16 @@ export const EditProjectForm = observer(function EditProjectForm({
                     onChange={(event_) => { setDescription(event_.target.value); }}
                     placeholder="Опишите цели и задачи проекта..."
                     disabled={isSubmitting}
+                />
+            </div>
+            <div className={styles.field}>
+                <label className={styles.label}>Подробное содержание</label>
+                <MdEditor
+                    value={content}
+                    onChange={setContent}
+                    placeholder="Подробно опишите проект в формате Markdown..."
+                    disabled={isSubmitting}
+                    height={300}
                 />
             </div>
             <div className={styles.field}>

@@ -31,3 +31,37 @@
     --border--divider: #EAECF0;
     --border--active: #005CFF;
 }
+
+html.dark {
+    // --- Brand Colors ---
+    --brand: #3B82F6;
+    --brand--hover: #60A5FA;
+    --brand--active: #2563EB;
+    --brand--subtle: #1E2D3D;
+
+    // --- Text Colors ---
+    --text--primary: #F1F5F9;
+    --text--secondary: #94A3B8;
+    --text--disabled: #475569;
+    --text--onError: #FFFFFF;
+    --text--onSuccess: #FFFFFF;
+    --text--onPrimary: #FFFFFF;
+    --text--onWarning: #08101A;
+    --text--onSurface: #F1F5F9;
+
+    // --- Background Colors ---
+    --bg--surface: #1E293B;
+    --bg--main: #0F172A;
+    --bg--disabled: #1E2D3D;
+
+    // --- Status Colors ---
+    --status--error: #F87171;
+    --status--warning: #FBB046;
+    --status--success: #34D399;
+
+    // --- Border Colors ---
+    --border--main: #334155;
+    --border--hover: #475569;
+    --border--divider: #1E293B;
+    --border--active: #3B82F6;
+}

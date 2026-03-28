@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -85,9 +86,13 @@ func (h *authHandler) Refresh(c *gin.Context) {
 
 func setTokenIntoCookie(c *gin.Context, token string, expirationTime int, allowAnyOrigin bool) {
 	sameSite := http.SameSiteLaxMode
-	if allowAnyOrigin {
+	secure := false
+
+	if allowAnyOrigin && isHTTPSRequest(c) {
 		sameSite = http.SameSiteNoneMode
+		secure = true
 	}
+
 	c.SetSameSite(sameSite)
 	c.SetCookie(
 		"refresh_token",
@@ -95,7 +100,15 @@ func setTokenIntoCookie(c *gin.Context, token string, expirationTime int, allowA
 		expirationTime, // время жизни внутри куки
 		"/",
 		"",
-		false, // когда будем использовать https поставить на true
+		secure,
 		true,
 	)
+}
+
+func isHTTPSRequest(c *gin.Context) bool {
+	if c.Request.TLS != nil {
+		return true
+	}
+
+	return strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https")
 }

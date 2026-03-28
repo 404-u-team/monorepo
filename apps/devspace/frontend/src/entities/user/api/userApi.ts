@@ -1,6 +1,39 @@
 import { apiClient } from "@/shared/api/client";
 import type { IUserResponse } from "../model/IUserResponse";
 
+export interface FetchUsersParameters {
+  search?: string | undefined;
+  start_at?: number | undefined;
+  limit?: number | undefined;
+}
+
+export interface PaginatedUsers {
+  items: IUserResponse[];
+  total: number;
+  totalPages: number;
+}
+
+export async function fetchUsers(parameters?: FetchUsersParameters): Promise<PaginatedUsers> {
+  const response = await apiClient.get<IUserResponse[]>('/users', { params: parameters });
+  const items = response.data;
+  const totalCountHeader = response.headers['x-total-count'] as string | undefined;
+  const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
+
+  let total: number;
+  let totalPages: number;
+
+  if (Number.isFinite(parsedTotal)) {
+    const limit = parameters?.limit ?? (items.length > 0 ? items.length : 1);
+    total = parsedTotal;
+    totalPages = Math.ceil(total / limit);
+  } else {
+    total = items.length;
+    totalPages = 1;
+  }
+
+  return { items, total, totalPages };
+}
+
 export interface InviteToSlotParameters {
   project_id: string;
   slot_id: string;

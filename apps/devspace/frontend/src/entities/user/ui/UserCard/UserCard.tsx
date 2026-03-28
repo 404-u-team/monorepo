@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type JSX } from "react";
 import { clsx } from "clsx";
-import { Button } from "@/shared/ui";
+import { Link } from "@tanstack/react-router";
 import { fetchUserById } from "../../api/userApi";
+import { fetchSkillById } from "@/entities/skill";
 import type { IUserResponse } from "../../model/IUserResponse";
+import { isValidMainRole } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
+import { UserAvatar } from "@/shared/ui";
 import InviteButton from "./InviteButton";
 import styles from "./UserCard.module.scss";
 
@@ -25,6 +28,7 @@ export function UserCard({
   onInvite,
 }: UserCardProps): JSX.Element {
   const [user, setUser] = useState<IUserResponse | undefined>(undefined);
+  const [mainRoleName, setMainRoleName] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const skillBoxReference = useRef<HTMLDivElement>(null);
   const scrollReference = useRef<HTMLDivElement>(null);
@@ -38,8 +42,17 @@ export function UserCard({
         const data = await fetchUserById(id);
         if (cancelled) return;
         setUser(data);
+
+        if (isValidMainRole(data.main_role)) {
+          try {
+            const skill = await fetchSkillById(data.main_role);
+            setMainRoleName(skill.name);
+          } catch {
+            // skill not found — don't show main_role
+          }
+        }
       } catch {
-        // handled by future error state
+        // handled by empty state
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -55,29 +68,26 @@ export function UserCard({
     const checkOverflow = (): void => {
       const box = skillBoxReference.current;
       const inner = scrollReference.current;
-      if (!box || !inner) return;
+      if (box === null || inner === null) return;
       const contentWidth = inner.scrollWidth / (needsScroll ? 2 : 1);
-      const containerWidth = box.offsetWidth;
-
-      setNeedsScroll(contentWidth > containerWidth);
+      setNeedsScroll(contentWidth > box.offsetWidth);
     };
 
     checkOverflow();
 
-    const ro = new ResizeObserver(checkOverflow);
-    if (skillBoxReference.current) ro.observe(skillBoxReference.current);
-
-    return (): void => {
-      ro.disconnect();
-    };
+    const observer = new ResizeObserver(checkOverflow);
+    if (skillBoxReference.current !== null) observer.observe(skillBoxReference.current);
+    return (): void => { observer.disconnect(); };
   }, [user?.skills, needsScroll]);
 
   if (isLoading || user === undefined) {
     return <UserCardSkeleton className={className} />;
   }
 
-  const Wrapper = to !== undefined ? "a" : "article";
-  const wrapperProps = to !== undefined ? { href: to } : {};
+  const Wrapper = to !== undefined ? Link : "article";
+  const wrapperProps = to !== undefined ? { to } : {};
+
+  const skills = user.skills;
 
   return (
     <Wrapper
@@ -85,61 +95,59 @@ export function UserCard({
       className={clsx(styles.card, to !== undefined && styles.link, className)}
     >
       <div className={styles.header}>
-        <div className={styles.avatarWrapper}>
-          <img
-            className={styles.avatar}
-            src={user.avatar_uri}
-            alt={user.nickname}
-            onError={(event) => {
-              (event.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        </div>
+        <UserAvatar
+          avatarUrl={user.avatar_uri}
+          nickname={user.nickname}
+          size={44}
+          className={styles.avatarWrapper}
+        />
 
         <div className={styles.textInfo}>
-          <div className={styles.nickname}>{user.nickname}</div>
-          <span className={styles.mainRole}>{user.main_role}</span>
-        </div>
-      </div>
-
-      <div className={styles.bio}>{user.bio}</div>
-
-      <div
-        ref={skillBoxReference}
-        className={clsx(
-          styles.skillBox,
-          needsScroll && styles.skillBoxWithMask,
-        )}
-      >
-        <div
-          ref={scrollReference}
-          className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
-        >
-          {(needsScroll ? [...user.skills, ...user.skills] : user.skills).map(
-            (skill, index) => {
-              const skillName = typeof skill === "string" ? skill : skill.name;
-              const uniqueKey = `${typeof skill === "string" ? skill : JSON.stringify(skill)}-${String(index)}`;
-
-              return (
-                <div key={uniqueKey} className={styles.skillName}>
-                  {skillName}
-                </div>
-              );
-            },
+          <span className={styles.nickname}>{user.nickname}</span>
+          {mainRoleName !== undefined && (
+            <span className={styles.mainRole}>{mainRoleName}</span>
           )}
         </div>
       </div>
 
+      {user.bio !== '' && (
+        <p className={styles.bio}>{user.bio}</p>
+      )}
+
+      {skills.length > 0 && (
+        <div
+          ref={skillBoxReference}
+          className={clsx(styles.skillBox, needsScroll && styles.skillBoxWithMask)}
+        >
+          <div
+            ref={scrollReference}
+            className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
+          >
+            {(needsScroll ? [...skills, ...skills] : skills).map((skill, index) => {
+              const skillName = typeof skill === "string" ? skill : skill.name;
+              const uniqueKey = `${typeof skill === "string" ? skill : skill.id}-${String(index)}`;
+              return (
+                <span key={uniqueKey} className={styles.skillName}>
+                  {skillName}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className={styles.profileButtonsBox}>
-        <Button variant="outline" className={styles.profileButton}>
-          Профиль
-        </Button>
+        {to === undefined && (
+          <Link to="/users/$userId" params={{ userId: id }} className={styles.profileButton}>
+            Профиль
+          </Link>
+        )}
         {project_id !== undefined && slot_id !== undefined && (
           <InviteButton
             project_id={project_id}
             slot_id={slot_id}
             user_id={id}
-            {...(onInvite ? { onInvite } : {})}
+            {...(onInvite !== undefined ? { onInvite } : {})}
           />
         )}
       </div>

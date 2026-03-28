@@ -1,170 +1,236 @@
-.profileGrid {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  max-width: 1900px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.column1 {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.miniProfile {
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
-  padding: 20px;
-  border: 1px solid var(--border--divider);
-}
-
-.pov {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
-  border: 1px solid var(--border--divider);
-}
-
-.profileButton,
-.notificationButton {
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.column2 {
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
-  border: 1px solid var(--border--divider);
-  max-height: fit-content;
-}
-
-.avatarChange {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 32px;
-  padding: 24px;
-  background-color: var(--bg--surface);
-  border-radius: 16px;
-
-  h3 {
-    margin: 16px 0 12px;
-    font-size: 16px;
-    color: var(--text--disabled);
-  }
-}
-
-.avatar {
-  margin: 0 0 16px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.changeAvaButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mySkills {
-  h2 {
-    margin: 0 0 16px;
-    font-size: 20px;
-  }
-}
-
-.searchBox {
-  margin-bottom: 16px;
-}
-
-.skillShowcase {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0 24px;
-  min-height: 40px;
-}
-
-.saveButtons {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-
-  button {
-    flex: 1;
-  }
-}
-
-.column3 {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.settingsGrid {
+.layout {
   display: grid;
-  gap: 20px;
-  grid-template-columns: 1fr 1fr;
-}
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  align-items: start;
 
-.settingBox {
-  width: 300px;
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
-  border: 1px solid var(--border--divider);
-
-  h3 {
-    margin: 0 0 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text--secondary);
+  @media (width <= 900px) {
+    grid-template-columns: 1fr;
   }
 }
 
-.bio {
-  width: 100%;
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
-  border: 1px solid var(--border--divider);
+// ─── Sidebar ───────────────────────────────────────────────────────────────
 
-  h3 {
-    margin: 0 0 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text--secondary);
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 88px;
+
+  @media (width <= 900px) {
+    position: static;
   }
 }
 
-.bioInput {
-  width: 90%;
-  padding: 12px;
+.avatarCard {
+  background-color: var(--bg--main);
   border: 1px solid var(--border--divider);
+  border-radius: 16px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.avatarContainer {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border--main);
+}
+
+.avatarPlaceholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: var(--bg--surface);
+  border: 3px solid var(--border--main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text--disabled);
+}
+
+.avatarEditButton {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text--secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: var(--brand--subtle);
+    color: var(--brand);
+  }
+}
+
+.userSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.summaryNickname {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text--primary);
+}
+
+.summaryRole {
+  font-size: 13px;
+  color: var(--brand);
+  font-weight: 500;
+}
+
+.summaryEmail {
+  font-size: 12px;
+  color: var(--text--disabled);
+  word-break: break-all;
+}
+
+.sideNav {
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--divider);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text--secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg--surface);
+    color: var(--text--primary);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.navItemActive {
+  background-color: var(--brand--subtle);
+  color: var(--brand);
+  font-weight: 600;
+
+  &:hover {
+    background-color: var(--brand--subtle);
+    color: var(--brand);
+  }
+}
+
+// ─── Main Content ─────────────────────────────────────────────────────────
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section {
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--divider);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text--primary);
+  margin: 0;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (width <= 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text--secondary);
+}
+
+.bioTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--border--main);
+  border-radius: 10px;
   font-family: inherit;
   font-size: 14px;
+  line-height: 1.6;
+  color: var(--text--primary);
+  background-color: var(--bg--main);
   resize: vertical;
-  min-height: 100px;
+  min-height: 110px;
+  transition: border-color 0.2s ease;
+
+  &::placeholder {
+    color: var(--text--disabled);
+  }
 
   &:focus {
     outline: none;
@@ -172,36 +238,133 @@
   }
 }
 
-.miniNav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid var(--border--divider);
+// ─── Save Bar ─────────────────────────────────────────────────────────────
 
-  h3 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 600;
+.saveBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--divider);
+  border-radius: 12px;
+  padding: 14px 20px;
+  flex-wrap: wrap;
+}
+
+.saveButtons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.successText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--status--success);
+}
+
+.errorText {
+  font-size: 14px;
+  color: var(--status--error);
+}
+
+// ─── Skills ───────────────────────────────────────────────────────────────
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background-color: var(--bg--surface);
+  border: 1px solid var(--border--main);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text--primary);
+}
+
+.skillRemove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text--disabled);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    color: var(--status--error);
   }
 
-  button {
-    justify-content: flex-start;
-    padding: 8px 0;
+  &:disabled {
+    opacity: 0.4;
   }
 }
 
-.feed {
-  background-color: var(--bg--main);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid var(--border--divider);
+.skillAdd {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 
-  h3 {
-    margin: 0 0 12px;
-    font-size: 16px;
-    font-weight: 600;
+  > :first-child {
+    flex: 1;
   }
+}
+
+.emptyHint {
+  font-size: 14px;
+  color: var(--text--disabled);
+  margin: 0;
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.emptyProjects {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.createLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--brand);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// ─── Error / Loading pages ────────────────────────────────────────────────
+
+.errorPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  text-align: center;
 }
