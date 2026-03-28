@@ -2,8 +2,8 @@ package services
 
 import (
 	"errors"
-
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -13,6 +13,13 @@ type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error)
 	GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error)
+	GetUsersByParams(startAt *uint, limit *uint, username *string, mainRole *uuid.UUID, skills *dto.UUIDSlice) ([]models.User, error)
+	GetUsersPublicProfiles(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		skills *dto.UUIDSlice,
+	) ([]dto.PublicUserProfile, error)
 }
 
 type userService struct {
@@ -103,4 +110,53 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 	}
 
 	return &getMeResponse, nil
+}
+
+func (s *userService) GetUsersByParams(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	skills *dto.UUIDSlice,
+) ([]models.User, error) {
+	return s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+}
+
+func (s *userService) GetUsersPublicProfiles(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	skills *dto.UUIDSlice,
+) ([]dto.PublicUserProfile, error) {
+
+	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
+	users, err := s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return []dto.PublicUserProfile{}, nil
+	}
+
+	// Конвертируем в публичные профили с деревом навыков
+	profiles := make([]dto.PublicUserProfile, len(users))
+	for i, user := range users {
+		// Строим дерево навыков для пользователя
+		skillTree, dbError := s.repo.GetUserSkills(user.ID)
+
+		if dbError != nil {
+			return nil, dbError
+		}
+
+		profiles[i] = dto.PublicUserProfile{
+			ID:        user.ID,
+			Nickname:  user.Nickname,
+			MainRole:  user.MainRole,
+			AvatarUri: user.AvatarUrl,
+			Bio:       user.Bio,
+			Skills:    skillTree,
+		}
+	}
+
+	return profiles, nil
 }

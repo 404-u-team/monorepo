@@ -219,6 +219,72 @@ paths:
                     headers: {}
             security:
                 - BearerAuth: []
+    /users:
+        get:
+            security:
+                - BearerAuth: []
+            summary: Получить пользователей по списку критериев
+            tags:
+                - Пользователи
+            parameters:
+                - name: start_at
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                  description: "Смещение для пагинации"
+
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                  description: "Лимит записей"
+
+                - name: username
+                  in: query
+                  schema:
+                      type: string
+                  description: "Фильтр по имени пользователя (префикс)"
+
+                - name: main_role
+                  in: query
+                  schema:
+                      type: string
+                      format: uuid
+                  description: "Фильтр по основной роли"
+
+                - name: skills
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                          format: uuid
+                  style: form
+                  explode: true
+                  description: "Фильтр по навыкам (должны быть все)"
+
+            responses:
+                "200":
+                    description: Данные возвращены успешно
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/User"
+                "400":
+                    description: Ошибка в параметрах запроса
+                "500":
+                    description: Внутренняя ошибка сервера
+
+
+
+
     /users/me/skills:
         post:
             summary: Добавить навык в профиль
@@ -347,13 +413,13 @@ paths:
                   required: false
                   schema:
                       type: string
-                - name: page
+                - name: start_at
                   in: query
-                  description: Номер страницы
+                  description: Сдвиг возвращаемых значений
                   required: false
                   schema:
                       type: integer
-                      default: 1
+                      default: 0
                 - name: limit
                   in: query
                   description: Количество записей на странице
@@ -1085,25 +1151,34 @@ paths:
                         schema:
                             type: object
                             required:
-                                - skill_category_id
                                 - title
+                                - primary_skills_id
                             properties:
-                                skill_category_id:
-                                    type: string
-                                    format: uuid
-                                    description: ID требуемого навыка
                                 title:
                                     type: string
                                     example: Backend Developer
                                 description:
                                     type: string
                                     example: Ищем опытного Python разработчика
-                                status:
-                                    type: string
-                                    enum:
-                                        - open
-                                        - closed
-                                    default: open
+                                primary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков первого уровня
+                                    example:
+                                        ["550e8400-e29b-41d4-a716-446655440000"]
+                                secondary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
+                                    example:
+                                        [
+                                            "550e8400-e29b-41d4-a716-446655440000",
+                                            "550e8400-e29b-41d4-a716-446655440001",
+                                        ]
                 required: true
             responses:
                 "201":
@@ -1111,7 +1186,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ProjectSlotCreateResponse"
+                                $ref: "#/components/schemas/ProjectSlot"
                     headers: {}
                 "400":
                     description: Ошибка валидации
@@ -1163,22 +1238,46 @@ paths:
                         schema:
                             type: object
                             properties:
-                                skill_category_id:
-                                    type: string
-                                    format: uuid
+                                primary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков первого уровня (основные навыки без родителя)
+                                    example:
+                                        ["550e8400-e29b-41d4-a716-446655440000"]
+                                secondary_skills_id:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
+                                    example:
+                                        ["660e8400-e29b-41d4-a716-446655440000"]
                                 title:
                                     type: string
+                                    minLength: 3
+                                    maxLength: 255
+                                    example: Senior Backend Developer
                                 description:
                                     type: string
+                                    minLength: 3
+                                    maxLength: 255
+                                    example: Ищем опытного Python разработчика с 5+ годами опыта
                                 status:
                                     type: string
                                     enum:
                                         - open
                                         - closed
+                                    example: open
                 required: true
             responses:
                 "200":
                     description: Слот обновлен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProjectSlot"
                     headers: {}
                 "400":
                     description: Ошибка валидации или пустой payload
@@ -1623,6 +1722,59 @@ paths:
             security: []
 components:
     schemas:
+        User:
+            type: object
+            required:
+                - id
+                - email
+                - nickname
+                - created_at
+                - is_admin
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Уникальный идентификатор пользователя
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                email:
+                    type: string
+                    format: email
+                    description: Email пользователя
+                    example: "john.doe@example.com"
+                nickname:
+                    type: string
+                    description: Никнейм пользователя
+                    minLength: 3
+                    maxLength: 50
+                    example: "johndoe"
+                avatar_url:
+                    type: string
+                    format: uri
+                    description: URL аватара пользователя
+                    nullable: true
+                    example: "https://example.com/avatars/johndoe.jpg"
+                main_role:
+                    type: string
+                    format: uuid
+                    description: ID основной роли пользователя
+                    nullable: true
+                    example: "aea72095-0a1e-4b7c-8cea-78884c699931"
+                bio:
+                    type: string
+                    description: Биография пользователя
+                    nullable: true
+                    maxLength: 500
+                    example: "Full-stack developer passionate about Go and React"
+                created_at:
+                    type: string
+                    format: date-time
+                    description: Дата и время регистрации
+                    example: "2024-01-15T10:30:00Z"
+                is_admin:
+                    type: boolean
+                    description: Флаг администратора
+                    example: false
+
         UserSkillLink:
             type: object
             properties:
@@ -1635,35 +1787,6 @@ components:
             required:
                 - user_id
                 - skill_id
-        ProjectSlotCreateResponse:
-            type: object
-            properties:
-                id:
-                    type: string
-                    format: uuid
-                project_id:
-                    type: string
-                    format: uuid
-                skill_category_id:
-                    type: string
-                    format: uuid
-                title:
-                    type: string
-                description:
-                    type: string
-                    nullable: true
-                status:
-                    type: string
-                user_id:
-                    type: string
-                    format: uuid
-                    nullable: true
-            required:
-                - id
-                - project_id
-                - skill_category_id
-                - title
-                - status
         AccessTokenResponse:
             type: object
             properties:
@@ -1768,12 +1891,16 @@ components:
                 id:
                     type: string
                     format: uuid
-                name:
-                    type: string
                 parent_id:
                     type: string
                     format: uuid
                     nullable: true
+                name:
+                    type: string
+                icon:
+                    type: string
+                color:
+                    type: string
                 children:
                     type: array
                     items:
@@ -1843,16 +1970,21 @@ components:
                 id:
                     type: string
                     format: uuid
-                project_id:
-                    type: string
-                    format: uuid
-                skill_category_id:
-                    type: string
-                    format: uuid
+                primary_skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+                    description: Список навыков первого уровня
+                secondary_skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+                    description: Список навыков второго уровня
                 title:
                     type: string
                 description:
                     type: string
+                    nullable: true
                 status:
                     type: string
                     enum:

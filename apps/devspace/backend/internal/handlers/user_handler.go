@@ -116,3 +116,55 @@ func getUserId(c *gin.Context) (uuid.UUID, error) {
 
 	return userID, nil
 }
+
+func (h *userHandler) GetUsersByParams(c *gin.Context) {
+	var req dto.GetUsersRequest
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		log.Printf("Binding error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid parameters",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Парсим main_role (если передан)
+	var mainRoleUUID *uuid.UUID
+	if req.MainRole != nil && *req.MainRole != "" {
+		id, err := uuid.Parse(*req.MainRole)
+		if err != nil {
+			log.Printf("Invalid main_role format: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Invalid main_role format",
+				"details": "UUID expected",
+			})
+			return
+		}
+		mainRoleUUID = &id
+	}
+
+	log.Printf("Request: start_at=%v, limit=%v, username=%v, main_role=%v, skills=%v",
+		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
+
+	// Получаем публичные профили с деревом навыков
+	profiles, err := h.userService.GetUsersPublicProfiles(
+		req.StartAt,
+		req.Limit,
+		req.Username,
+		mainRoleUUID,
+		req.Skills,
+	)
+
+	if err != nil {
+		log.Printf("Error getting users: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Ошибка получения пользователей",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, profiles)
+}
+
+// TODO: Прописать журналирование для остальных 500 в этом хэндлере. Мы же потом будем с недоумением смотреть на код.

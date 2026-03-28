@@ -129,11 +129,16 @@ func CheckRightsOnIdea(ideaID uuid.UUID, userID uuid.UUID, db *gorm.DB) (bool, e
 		return true, nil
 	}
 
-	var authorID uuid.UUID
-	res = db.Model(&models.Idea{}).Where("id = ?", ideaID).Select("author_id").First(&authorID)
+	var authorIDStr string
+	res = db.Model(&models.Idea{}).Where("id = ?", ideaID).Select("author_id").First(&authorIDStr)
 
 	if res.Error != nil {
 		return false, res.Error
+	}
+
+	authorID, err := uuid.Parse(authorIDStr)
+	if err != nil {
+		return false, err
 	}
 
 	return authorID == userID, nil

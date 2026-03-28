@@ -8,7 +8,7 @@ type SkillCategory struct {
 	Name     string         `gorm:"column:name; not null" json:"name"`
 	Icon     string         `gorm:"column:icon;type:text" json:"icon"`
 	Color    string         `gorm:"column:color;type:text" json:"color"`
-	Parent   *SkillCategory `gorm:"foreignKey:ParentID" json:"parent"`
+	Parent   *SkillCategory `gorm:"foreignKey:ParentID" json:"-"`
 }
 
 func (skillCategory *SkillCategory) TableName() string { return "Skill_Category" }

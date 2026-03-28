@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"log"
-	"sort"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -21,6 +20,12 @@ type UserRepository interface {
 	CheckUserIsAdmin(id uuid.UUID) (bool, error)
 	UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error
 	GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error)
+	GetUsersByParams(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		requiredSkills *dto.UUIDSlice,
+	) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -176,66 +181,57 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 	}
 
 	// преобразовываем список скиллов в дерево (на основе полей ID и parentID)
-	return r.buildTreeRecursive(allSkills), nil
+	return BuildSkillTree(allSkills), nil
 }
 
-func (r *userRepository) buildTreeRecursive(skills []models.SkillCategory) []dto.SkillCategoryResponse {
-	if len(skills) == 0 {
-		return []dto.SkillCategoryResponse{}
+func (r *userRepository) GetUsersByParams(
+	startAt, limit *uint,
+	username *string,
+	mainRole *uuid.UUID,
+	requiredSkills *dto.UUIDSlice,
+) ([]models.User, error) {
+
+	var users []models.User
+
+	// подгружаем навки
+	query := r.conn.Session(&gorm.Session{}).
+		Model(&models.User{}).
+		Preload("Skills")
+
+	// Фильтры
+	if username != nil && *username != "" {
+		query = query.Where("nickname LIKE ?", *username+"%")
 	}
 
-	// создаем map детей для каждого родителя
-	childrenMap := make(map[uuid.UUID][]models.SkillCategory)
-	var roots []models.SkillCategory
-
-	for _, skill := range skills {
-		if skill.ParentID == nil {
-			// Это корневой навык
-			roots = append(roots, skill)
-		} else {
-			// Это дочерний навык
-			parentID := *skill.ParentID
-			childrenMap[parentID] = append(childrenMap[parentID], skill)
-		}
+	if mainRole != nil {
+		query = query.Where("main_role = ?", *mainRole)
 	}
 
-	// сортируем корни для консистентного порядка
-	sort.Slice(roots, func(i, j int) bool {
-		return roots[i].Name < roots[j].Name
-	})
-
-	// рекурсивно строим дерево
-	result := make([]dto.SkillCategoryResponse, 0, len(roots))
-
-	for _, root := range roots {
-		tree := buildNode(root, childrenMap)
-		result = append(result, tree)
+	// Фильтр по навыкам
+	if requiredSkills != nil && len(*requiredSkills) > 0 {
+		query = query.
+			Joins("JOIN user_skills ON users.id = user_skills.user_id").
+			Where("user_skills.skill_id IN ?", []uuid.UUID(*requiredSkills)).
+			Group("users.id").
+			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
 	}
 
-	return result
-}
-
-// buildNode рекурсивно строит узел дерева
-func buildNode(skill models.SkillCategory, childrenMap map[uuid.UUID][]models.SkillCategory) dto.SkillCategoryResponse {
-	node := dto.SkillCategoryResponse{
-		ID:       skill.ID,
-		Name:     skill.Name,
-		ParentID: skill.ParentID,
-		Children: []dto.SkillCategoryResponse{},
+	// Пагинация
+	if startAt != nil {
+		query = query.Offset(int(*startAt))
+	}
+	if limit != nil {
+		query = query.Limit(int(*limit))
 	}
 
-	// добавляем детей
-	if children, exists := childrenMap[skill.ID]; exists {
-		// сортируем детей по имени
-		sort.Slice(children, func(i, j int) bool {
-			return children[i].Name < children[j].Name
-		})
-
-		for _, child := range children {
-			childNode := buildNode(child, childrenMap)
-			node.Children = append(node.Children, childNode)
-		}
+	// Выполняем
+	if err := query.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	// ОТЛАДКА: выводим количество навыков у каждого пользователя
+	for _, user := range users {
+		log.Printf("User %s (%s) has %d skills", user.ID, user.Nickname, len(user.Skills))
 	}
 
-	return node
+	return users, nil
 }
