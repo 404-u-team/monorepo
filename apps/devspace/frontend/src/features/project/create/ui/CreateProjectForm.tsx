@@ -33,12 +33,18 @@ export const CreateProjectForm = observer(function CreateProjectForm({
         setIsSubmitting(true);
         setError(undefined);
         try {
-            const newProject = await createProject({
-                title,
-                description,
-                content: content !== '' ? content : undefined,
-                idea_id: initialIdeaId,
-            });
+            const payload: { title: string; description?: string; content?: string; idea_id?: string } = { title };
+            if (description.trim() !== '') {
+                payload.description = description;
+            }
+            if (content.trim() !== '') {
+                payload.content = content;
+            }
+            if (initialIdeaId !== undefined && initialIdeaId !== '') {
+                payload.idea_id = initialIdeaId;
+            }
+            
+            const newProject = await createProject(payload);
             void navigate({ to: `/project/$projectId`, params: { projectId: newProject.id } });
         } catch {
             setError('Произошла ошибка при создании проекта. Попробуйте снова.');
