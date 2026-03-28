@@ -347,13 +347,13 @@ paths:
                   required: false
                   schema:
                       type: string
-                - name: page
+                - name: start_at
                   in: query
-                  description: Номер страницы
+                  description: Сдвиг возвращаемых значений
                   required: false
                   schema:
                       type: integer
-                      default: 1
+                      default: 0
                 - name: limit
                   in: query
                   description: Количество записей на странице
@@ -1177,7 +1177,6 @@ paths:
                                     items:
                                         type: string
                                         format: uuid
-                                    nullable: true
                                     description: Список uuid навыков первого уровня (основные навыки без родителя)
                                     example:
                                         ["550e8400-e29b-41d4-a716-446655440000"]
@@ -1186,7 +1185,6 @@ paths:
                                     items:
                                         type: string
                                         format: uuid
-                                    nullable: true
                                     description: Список uuid навыков второго уровня. У каждого навыка должен быть родитель в primary_skills_id
                                     example:
                                         ["660e8400-e29b-41d4-a716-446655440000"]
@@ -1194,22 +1192,19 @@ paths:
                                     type: string
                                     minLength: 3
                                     maxLength: 255
-                                    nullable: true
                                     example: Senior Backend Developer
                                 description:
                                     type: string
                                     minLength: 3
                                     maxLength: 255
-                                    nullable: true
                                     example: Ищем опытного Python разработчика с 5+ годами опыта
                                 status:
                                     type: string
                                     enum:
                                         - open
                                         - closed
-                                    nullable: true
                                     example: open
-                required: false
+                required: true
             responses:
                 "200":
                     description: Слот обновлен

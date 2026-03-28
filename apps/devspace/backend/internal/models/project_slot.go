@@ -32,7 +32,10 @@ func (UUIDArray) GormDataType() string {
 }
 
 func (a UUIDArray) GormValue(_ context.Context, _ *gorm.DB) clause.Expr {
-	v, _ := a.Value()
+	v, err := a.Value()
+	if err != nil {
+		panic(fmt.Sprintf("UUIDArray.Value() failed in GormValue: %v", err))
+	}
 	return clause.Expr{SQL: "?::uuid[]", Vars: []interface{}{v}}
 }
 

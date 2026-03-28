@@ -59,7 +59,7 @@ func (r *slotRepository) GetSkillCategoriesByIDs(skillIDs []uuid.UUID) ([]models
 
 	var skills []models.SkillCategory
 	result := r.conn.Model(&models.SkillCategory{}).
-		Select("id", "parent_id").
+		Select("id", "parent_id", "name", "icon", "color").
 		Where("id IN ?", skillIDs).
 		Find(&skills)
 	if result.Error != nil {
