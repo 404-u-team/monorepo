@@ -34,6 +34,7 @@ export interface PaginatedProjects {
 export async function createProject(data: {
     title: string;
     description?: string;
+    content?: string;
     idea_id?: string;
 }): Promise<IProject> {
     const response = await apiClient.post<IProject>('/projects', data);
@@ -41,9 +42,10 @@ export async function createProject(data: {
 }
 
 export async function updateProject(projectId: string, data: {
-    title?: string;
-    description?: string;
-    status?: 'open' | 'closed';
+    title: string;
+    description: string;
+    content?: string | undefined;
+    status: 'open' | 'closed';
 }): Promise<IProject> {
     const response = await apiClient.put<IProject>(`/projects/${projectId}`, data);
     return response.data;
@@ -54,11 +56,11 @@ export async function deleteProject(projectId: string): Promise<void> {
 }
 
 export async function createProjectSlot(projectId: string, data: {
-    skill_category_id: string;
+    primary_skills_id: string[];
     title: string;
     description?: string;
     status?: 'open' | 'closed';
-    secondary_skills_ids?: string[];
+    secondary_skills_id?: string[];
 }): Promise<IProjectSlot> {
     const response = await apiClient.post<IProjectSlot>(`/projects/${projectId}/slots`, data);
     return response.data;

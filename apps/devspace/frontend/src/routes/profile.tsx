@@ -1,45 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { apiClient } from "@/shared/api/client";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ProfileForm } from "@/features/profile";
-
+import { useUserStore } from "@/entities/user";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/profile")({
-  component: UsersMe,
+  component: ProfilePage,
 });
 
-function UsersMe(): JSX.Element | undefined {
-  const [userId, setUserId] = useState<string>();
+function ProfilePage(): JSX.Element {
+  const userStore = useUserStore();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    let isMounted = true;
+    if (!userStore.isAuthLoading && !userStore.isAuthenticated) {
+      void navigate({ to: "/auth" });
+    }
+  }, [userStore.isAuthLoading, userStore.isAuthenticated, navigate]);
 
-    const loadUser = async (): Promise<void> => {
-      try {
-        const response = await apiClient.get("/users/me");
-
-        if (response.data !== undefined) {
-          throw new Error("No data received from server");
-        }
-
-        const data = response.data as { id?: string };
-
-        if (isMounted && typeof data.id === "string") {
-          setUserId(data.id);
-        }
-      } catch (error) {
-        console.error("Error loading current user profile:", error);
-      }
-    };
-
-    void loadUser();
-
-    return (): void => {
-      isMounted = false;
-    };
-  }, []);
-  if (userId !== undefined) {
-    return <ProfileForm />;
-  }
-  return undefined;
+  return <ProfileForm />;
 }

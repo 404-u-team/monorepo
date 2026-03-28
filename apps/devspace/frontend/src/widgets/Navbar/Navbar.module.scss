@@ -132,16 +132,32 @@
 }
 
 .avatarWrapper {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+}
+
+.avatarButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
     cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: var(--brand--subtle);
+    }
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
+    object-fit: cover;
     background-color: var(--text--disabled);
 
     @media (width <=576px) {
@@ -150,10 +166,96 @@
     }
 }
 
+.avatarPlaceholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg--surface);
+    border: 1px solid var(--border--main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text--secondary);
+
+    @media (width <=576px) {
+        width: 32px;
+        height: 32px;
+    }
+}
+
 .chevron {
+    color: var(--text--secondary);
+    transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background-color: var(--bg--main);
+    border: 1px solid var(--border--main);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    z-index: 1010;
+    overflow: hidden;
+}
+
+.dropdownHeader {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dropdownNickname {
+    font-size: 14px;
+    font-weight: 600;
     color: var(--text--primary);
-    width: 20px;
-    height: 20px;
+}
+
+.dropdownEmail {
+    font-size: 12px;
+    color: var(--text--secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdownDivider {
+    height: 1px;
+    background-color: var(--border--divider);
+    margin: 0;
+}
+
+.dropdownItem {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text--primary);
+    text-align: left;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--bg--surface);
+    }
+}
+
+.dropdownItemDanger {
+    color: var(--status--error);
+
+    &:hover {
+        background-color: var(--bg--surface);
+    }
 }
 
 .burgerWrapper {

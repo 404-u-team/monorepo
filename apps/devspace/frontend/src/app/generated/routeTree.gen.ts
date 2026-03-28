@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './../../routes/__root'
 import { Route as ProjectsRouteImport } from './../../routes/projects'
 import { Route as ProfileRouteImport } from './../../routes/profile'
 import { Route as IdeasRouteImport } from './../../routes/ideas'
+import { Route as CommunityRouteImport } from './../../routes/community'
 import { Route as AuthRouteImport } from './../../routes/auth'
 import { Route as IndexRouteImport } from './../../routes/index'
+import { Route as UsersUserIdRouteImport } from './../../routes/users.$userId'
 import { Route as ProjectNewRouteImport } from './../../routes/project.new'
 import { Route as ProjectProjectIdRouteImport } from './../../routes/project.$projectId'
 import { Route as IdeaNewRouteImport } from './../../routes/idea.new'
@@ -34,6 +36,11 @@ const IdeasRoute = IdeasRouteImport.update({
   path: '/ideas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -42,6 +49,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersUserIdRoute = UsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectNewRoute = ProjectNewRouteImport.update({
@@ -68,6 +80,7 @@ const IdeaIdeaIdRoute = IdeaIdeaIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/ideas': typeof IdeasRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
@@ -75,10 +88,12 @@ export interface FileRoutesByFullPath {
   '/idea/new': typeof IdeaNewRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/new': typeof ProjectNewRoute
+  '/users/$userId': typeof UsersUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/ideas': typeof IdeasRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
@@ -86,11 +101,13 @@ export interface FileRoutesByTo {
   '/idea/new': typeof IdeaNewRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/new': typeof ProjectNewRoute
+  '/users/$userId': typeof UsersUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/community': typeof CommunityRoute
   '/ideas': typeof IdeasRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
@@ -98,43 +115,54 @@ export interface FileRoutesById {
   '/idea/new': typeof IdeaNewRoute
   '/project/$projectId': typeof ProjectProjectIdRoute
   '/project/new': typeof ProjectNewRoute
+  '/users/$userId': typeof UsersUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/community'
     | '/ideas'
+    | '/profile'
     | '/projects'
     | '/idea/$ideaId'
     | '/idea/new'
     | '/project/$projectId'
     | '/project/new'
+    | '/users/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/community'
     | '/ideas'
+    | '/profile'
     | '/projects'
     | '/idea/$ideaId'
     | '/idea/new'
     | '/project/$projectId'
     | '/project/new'
+    | '/users/$userId'
   id:
     | '__root__'
     | '/'
     | '/auth'
+    | '/community'
     | '/ideas'
+    | '/profile'
     | '/projects'
     | '/idea/$ideaId'
     | '/idea/new'
     | '/project/$projectId'
     | '/project/new'
+    | '/users/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CommunityRoute: typeof CommunityRoute
   IdeasRoute: typeof IdeasRoute
   ProfileRoute: typeof ProfileRoute
   ProjectsRoute: typeof ProjectsRoute
@@ -142,6 +170,7 @@ export interface RootRouteChildren {
   IdeaNewRoute: typeof IdeaNewRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRoute
   ProjectNewRoute: typeof ProjectNewRoute
+  UsersUserIdRoute: typeof UsersUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdeasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -179,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/$userId': {
+      id: '/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof UsersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/project/new': {
@@ -215,6 +258,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CommunityRoute: CommunityRoute,
   IdeasRoute: IdeasRoute,
   ProfileRoute: ProfileRoute,
   ProjectsRoute: ProjectsRoute,
@@ -222,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   IdeaNewRoute: IdeaNewRoute,
   ProjectProjectIdRoute: ProjectProjectIdRoute,
   ProjectNewRoute: ProjectNewRoute,
+  UsersUserIdRoute: UsersUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

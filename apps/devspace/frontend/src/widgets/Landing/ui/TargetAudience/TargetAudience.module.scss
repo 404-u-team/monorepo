@@ -71,14 +71,26 @@
 
 .blue {
   background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+
+  :global(html.dark) & {
+    background: linear-gradient(135deg, #1a2f4a 0%, #152540 100%);
+  }
 }
 
 .orange {
   background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+
+  :global(html.dark) & {
+    background: linear-gradient(135deg, #3d2010 0%, #4a2910 100%);
+  }
 }
 
 .green {
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+
+  :global(html.dark) & {
+    background: linear-gradient(135deg, #0f2d1e 0%, #113324 100%);
+  }
 }
 
 .tag {

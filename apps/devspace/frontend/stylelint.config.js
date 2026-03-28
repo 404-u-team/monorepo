@@ -33,7 +33,7 @@ export default {
             }
         },
         {
-            "files": ["src/**/MdEditor.module.scss", "src/**/MdRenderer.module.scss"],
+            "files": ["src/**/MdEditor.module.scss", "src/**/MdRenderer.module.scss", "src/**/TargetAudience.module.scss"],
             "rules": {
                 "selector-pseudo-class-no-unknown": [
                     true,
