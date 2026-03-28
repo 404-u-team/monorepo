@@ -189,7 +189,7 @@ paths:
                                 nickname:
                                     type: string
                                     example: john_doe
-                                avatar_uri:
+                                avatar_url:
                                     type: string
                                     format: uri
                                     example: https://example.com/avatar.jpg
@@ -281,9 +281,6 @@ paths:
                     description: Ошибка в параметрах запроса
                 "500":
                     description: Внутренняя ошибка сервера
-
-
-
 
     /users/me/skills:
         post:
@@ -1830,7 +1827,7 @@ components:
                     format: email
                 nickname:
                     type: string
-                avatar_uri:
+                avatar_url:
                     type: string
                 bio:
                     type: string

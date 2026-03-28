@@ -57,7 +57,7 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 }
 
 func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error) {
-	if updateRequest.Nickname == nil && updateRequest.Bio == nil {
+	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil{
 		return nil, ErrEmptyPayload
 	}
 
