@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -22,8 +23,11 @@ func NewSkillRepository(conn *gorm.DB) SkillRepository {
 
 func (r *skillRepository) GetSkillByID(skillID uuid.UUID) (*models.SkillCategory, error) {
 	var skill models.SkillCategory
-	result := r.conn.First(&skill, "id = ?", skillID)
+	result := r.conn.Model(&models.SkillCategory{}).Where("id = ?", skillID).First(&skill)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		log.Println("Ошибка при получении скилла по ID: ", result.Error)
 		return nil, result.Error
 	}

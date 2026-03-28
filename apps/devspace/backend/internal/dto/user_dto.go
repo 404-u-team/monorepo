@@ -12,7 +12,7 @@ type PrivateUserProfile struct {
 	ID        uuid.UUID               `json:"id"`
 	Email     string                  `json:"email"`
 	Nickname  string                  `json:"nickname"`
-	MainRole  models.SkillCategory    `json:"main_role"`
+	MainRole  *models.SkillCategory   `json:"main_role"`
 	AvatarUrl string                  `json:"avatar_uri"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`
@@ -22,7 +22,7 @@ type PrivateUserProfile struct {
 type PublicUserProfile struct {
 	ID        uuid.UUID               `json:"id"`
 	Nickname  string                  `json:"nickname"`
-	MainRole  uuid.UUID               `json:"main_role"`
+	MainRole  *models.SkillCategory   `json:"main_role"`
 	AvatarUrl string                  `json:"avatar_uri"`
 	Bio       string                  `json:"bio"`
 	Skills    []SkillCategoryResponse `json:"skills"`
@@ -33,16 +33,6 @@ type UpdateUserRequest struct {
 	MainRole  *uuid.UUID `json:"main_role"`
 	AvatarUrl *string    `json:"avatar_url"`
 	Bio       *string    `json:"bio" binding:"omitempty,min=3,max=255"`
-}
-
-type SafeUser struct {
-	ID        uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()"`
-	Email     string    `gorm:"unique; column:email; not null"`
-	Nickname  string    `gorm:"column:nickname; not null"`
-	AvatarUrl string    `gorm:"column:avatar_url; null"`
-	MainRole  string    `gorm:"column:main_role; null"`
-	Bio       string    `gorm:"column:bio; null"`
-	IsAdmin   bool      `gorm:"column:is_admin; not null"`
 }
 
 type UUIDSlice []uuid.UUID

@@ -14,13 +14,7 @@ type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error)
 	GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error)
-	GetUsersByParams(startAt *uint, limit *uint, username *string, mainRole *uuid.UUID, skills *dto.UUIDSlice) ([]models.User, error)
-	GetUsersPublicProfiles(
-		startAt, limit *uint,
-		username *string,
-		mainRole *uuid.UUID,
-		skills *dto.UUIDSlice,
-	) ([]dto.PublicUserProfile, error)
+	GetUsersByParams(startAt *uint, limit *uint, username *string, mainRole *uuid.UUID, skills *dto.UUIDSlice) ([]dto.PublicUserProfile, error)
 }
 
 type userService struct {
@@ -28,8 +22,8 @@ type userService struct {
 	skillRepo repository.SkillRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) *userService {
-	return &userService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, skillRepo repository.SkillRepository) *userService {
+	return &userService{userRepo: userRepo, skillRepo: skillRepo}
 }
 
 func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
@@ -41,9 +35,12 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		return nil, ErrInternal
 	}
 
-	mainRole, err := s.skillRepo.GetSkillByID(user.MainRole)
-	if err != nil {
-		return nil, ErrInternal
+	var mainRole *models.SkillCategory
+	if user.MainRole != nil {
+		mainRole, err = s.skillRepo.GetSkillByID(*user.MainRole)
+		if err != nil {
+			return nil, ErrInternal
+		}
 	}
 
 	userSkills, err := s.userRepo.GetUserSkills(userID)
@@ -55,11 +52,14 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		ID:        userID,
 		Email:     user.Email,
 		Nickname:  user.Nickname,
-		MainRole:  *mainRole,
+		MainRole:  nil,
 		AvatarUrl: "",
 		Bio:       user.Bio,
 		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
+	}
+	if user.MainRole != nil {
+		privateUserProfile.MainRole = mainRole
 	}
 	return &privateUserProfile, nil
 }
@@ -114,21 +114,32 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 		return nil, ErrInternal
 	}
 
+	var mainRole *models.SkillCategory
+	if user.MainRole != nil {
+		mainRole, err = s.skillRepo.GetSkillByID(*user.MainRole)
+		if err != nil {
+			return nil, ErrInternal
+		}
+	}
+
 	userSkills, err := s.userRepo.GetUserSkills(user.ID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	getMeResponse := dto.PublicUserProfile{
+	publicUserProfile := dto.PublicUserProfile{
 		ID:        user.ID,
 		Nickname:  user.Nickname,
-		MainRole:  user.MainRole,
+		MainRole:  nil,
 		AvatarUrl: user.AvatarUrl,
 		Bio:       user.Bio,
 		Skills:    userSkills,
 	}
+	if user.MainRole != nil {
+		publicUserProfile.MainRole = mainRole
+	}
 
-	return &getMeResponse, nil
+	return &publicUserProfile, nil
 }
 
 func (s *userService) GetUsersByParams(
@@ -136,46 +147,6 @@ func (s *userService) GetUsersByParams(
 	username *string,
 	mainRole *uuid.UUID,
 	skills *dto.UUIDSlice,
-) ([]models.User, error) {
-	return s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
-}
-
-func (s *userService) GetUsersPublicProfiles(
-	startAt, limit *uint,
-	username *string,
-	mainRole *uuid.UUID,
-	skills *dto.UUIDSlice,
 ) ([]dto.PublicUserProfile, error) {
-
-	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
-	users, err := s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(users) == 0 {
-		return []dto.PublicUserProfile{}, nil
-	}
-
-	// Конвертируем в публичные профили с деревом навыков
-	profiles := make([]dto.PublicUserProfile, len(users))
-	for i, user := range users {
-		// Строим дерево навыков для пользователя
-		skillTree, dbError := s.userRepo.GetUserSkills(user.ID)
-
-		if dbError != nil {
-			return nil, dbError
-		}
-
-		profiles[i] = dto.PublicUserProfile{
-			ID:        user.ID,
-			Nickname:  user.Nickname,
-			MainRole:  user.MainRole,
-			AvatarUrl: user.AvatarUrl,
-			Bio:       user.Bio,
-			Skills:    skillTree,
-		}
-	}
-
-	return profiles, nil
+	return s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
 }

@@ -35,6 +35,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание репозиториев (круды для работы с entity)
 	userRepo := repository.NewUserRepository(dbConn)
+	skillRepo := repository.NewSkillRepository(dbConn)
 	projectRepo := repository.NewProjectRepository(dbConn)
 	slotRepo := repository.NewSlotRepository(dbConn)
 	projectRequestRepo := repository.NewProjectRequestRepository(dbConn)
@@ -42,7 +43,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, skillRepo)
 	projectService := services.NewProjectService(projectRepo)
 	slotService := services.NewSlotService(slotRepo, projectRepo)
 	projectRequestService := services.NewProjectRequestService(projectRequestRepo, slotRepo, projectRepo)
