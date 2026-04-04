@@ -358,6 +358,78 @@
   }
 }
 
+// ─── My Requests ──────────────────────────────────────────────────────────
+
+.requestsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.requestItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--surface);
+}
+
+.requestMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.requestType {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text--primary);
+}
+
+.requestStatusPending {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--status--warning, #d97706);
+  background-color: color-mix(in srgb, var(--status--warning, #d97706) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.requestStatusAccepted {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--status--success);
+  background-color: color-mix(in srgb, var(--status--success) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.requestStatusRejected {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--status--error);
+  background-color: color-mix(in srgb, var(--status--error) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.requestCoverLetter {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text--secondary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.requestActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 // ─── Error / Loading pages ────────────────────────────────────────────────
 
 .errorPage {

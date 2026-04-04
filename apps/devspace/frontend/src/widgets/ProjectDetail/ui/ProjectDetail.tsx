@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, type JSX } from 'react';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { observer } from 'mobx-react-lite';
+import axios from 'axios';
 import { ArrowLeft, Pencil, Trash2, Plus, X, Check, UserCheck } from 'lucide-react';
 import { useStore } from '@/shared/lib/store';
 import { Button, Badge, Skeleton, ConfirmModal, SkillSearch, SkillMultiSelect, UserAvatar, MdRenderer, type SkillSearchOption, type SkillMultiSelectOption } from '@/shared/ui';
@@ -11,8 +12,10 @@ import {
     deleteProject,
     createProjectSlot,
     deleteProjectSlot,
+    updateProjectSlot,
     applyToSlot,
     getProjectRequests,
+    getMyRequests,
     acceptRequest,
     rejectRequest,
     type IProjectDetailResponse,
@@ -29,6 +32,16 @@ function slotStatusLabel(isOccupied: boolean, status: 'open' | 'closed'): string
     return 'Закрыт';
 }
 
+function applyErrorMessage(error: unknown): string {
+    if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        if (status === 409) return 'Вы уже отправили заявку на этот слот';
+        if (status === 400) return 'Нельзя откликнуться на собственный проект';
+        if (status === 403) return 'Нет доступа';
+    }
+    return 'Произошла ошибка при отправке заявки';
+}
+
 export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     const { projectId } = useParams({ from: '/project/$projectId' });
     const { userStore } = useStore() as unknown as { userStore: UserStore };
@@ -37,6 +50,8 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     const [project, setProject] = useState<IProjectDetailResponse | undefined>(undefined);
     const [leader, setLeader] = useState<IUserResponse | undefined>(undefined);
     const [requests, setRequests] = useState<IRequest[]>([]);
+    // My own apply requests for this project, keyed by slot_id
+    const [mySlotRequests, setMySlotRequests] = useState<Record<string, IRequest>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -50,11 +65,27 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     const [slotCreateError, setSlotCreateError] = useState<string | undefined>(undefined);
     const [isSubmittingSlot, setIsSubmittingSlot] = useState(false);
 
+    // Slot editing state
+    const [editingSlotId, setEditingSlotId] = useState<string | undefined>(undefined);
+    const [editSlotTitle, setEditSlotTitle] = useState('');
+    const [editSlotDescription, setEditSlotDescription] = useState('');
+    const [editSlotStatus, setEditSlotStatus] = useState<'open' | 'closed'>('open');
+    const [editSlotPrimarySkills, setEditSlotPrimarySkills] = useState<SkillMultiSelectOption[]>([]);
+    const [editSlotSecondarySkills, setEditSlotSecondarySkills] = useState<SkillMultiSelectOption[]>([]);
+    const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+    const [slotEditError, setSlotEditError] = useState<string | undefined>(undefined);
+
     // Skill dropdown filter on detail page
     const [selectedSkillFilter, setSelectedSkillFilter] = useState<SkillSearchOption | undefined>(undefined);
 
     // Apply state per slot
     const [applyingSlotId, setApplyingSlotId] = useState<string | undefined>(undefined);
+    // Per-slot apply errors
+    const [applyErrors, setApplyErrors] = useState<Record<string, string>>({});
+
+    // Cover letter form state
+    const [coverLetterSlotId, setCoverLetterSlotId] = useState<string | undefined>(undefined);
+    const [coverLetterDraft, setCoverLetterDraft] = useState('');
 
     // Delete confirmation modals
     const [isProjectDeleteModalOpen, setIsProjectDeleteModalOpen] = useState(false);
@@ -96,14 +127,35 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
         }
     };
 
+    const loadMyApplies = async (): Promise<void> => {
+        if (!userStore.isAuthenticated) return;
+        try {
+            const all = await getMyRequests({ type: 'apply' });
+            if (isCancelled.current) return;
+            // Filter to this project, key by slot_id
+            const map: Record<string, IRequest> = {};
+            for (const req of all) {
+                if (req.project_id === projectId) {
+                    map[req.slot_id] = req;
+                }
+            }
+            setMySlotRequests(map);
+        } catch {
+            // ignore
+        }
+    };
+
     useEffect(() => {
         isCancelled.current = false;
         setIsLoading(true);
         setProject(undefined);
         setLeader(undefined);
         setRequests([]);
+        setMySlotRequests({});
+        setApplyErrors({});
 
         void loadProject();
+        void loadMyApplies();
         return (): void => { isCancelled.current = true; };
     }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -128,7 +180,6 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
     // Loaders for skill search components
     const loadPrimarySkills = useCallback(async (query: string): Promise<SkillSearchOption[]> => {
         const skills = await fetchSkills({ search: query || undefined, limit: 20 });
-        // Primary skills = root level (parent_id is null)
         return skills
             .filter((skill) => skill.parent_id === null)
             .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
@@ -136,8 +187,6 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
 
     const loadSecondarySkills = useCallback(async (query: string): Promise<SkillMultiSelectOption[]> => {
         const skills = await fetchSkills({ search: query || undefined, limit: 30 });
-        // Secondary skills = children (parent_id !== null)
-        // Prioritize those linked to selected primary skills
         const secondary = skills.filter((skill) => skill.parent_id !== null);
         if (newSlotPrimarySkills.length > 0) {
             const primaryIds = new Set(newSlotPrimarySkills.map((s) => s.id));
@@ -147,6 +196,18 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
         }
         return secondary.map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
     }, [newSlotPrimarySkills]);
+
+    const loadEditSecondarySkills = useCallback(async (query: string): Promise<SkillMultiSelectOption[]> => {
+        const skills = await fetchSkills({ search: query || undefined, limit: 30 });
+        const secondary = skills.filter((skill) => skill.parent_id !== null);
+        if (editSlotPrimarySkills.length > 0) {
+            const primaryIds = new Set(editSlotPrimarySkills.map((s) => s.id));
+            const linked = secondary.filter((skill) => skill.parent_id !== null && primaryIds.has(skill.parent_id));
+            const other = secondary.filter((skill) => skill.parent_id === null || !primaryIds.has(skill.parent_id));
+            return [...linked, ...other].map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
+        }
+        return secondary.map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
+    }, [editSlotPrimarySkills]);
 
     const handleCreateSlot = async (): Promise<void> => {
         if (!newSlotTitle || newSlotPrimarySkills.length === 0) {
@@ -182,6 +243,60 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
         }
     };
 
+    const startEditSlot = (slot: IProjectSlot): void => {
+        setEditingSlotId(slot.id);
+        setEditSlotTitle(slot.title);
+        setEditSlotDescription(slot.description ?? '');
+        setEditSlotStatus(slot.status);
+        setEditSlotPrimarySkills(
+            slot.primary_skills.map((s) => ({ id: s.id, name: s.name, color: s.color })),
+        );
+        setEditSlotSecondarySkills(
+            (slot.secondary_skills ?? []).map((s) => ({ id: s.id, name: s.name, color: s.color })),
+        );
+        setSlotEditError(undefined);
+    };
+
+    const cancelEditSlot = (): void => {
+        setEditingSlotId(undefined);
+        setSlotEditError(undefined);
+    };
+
+    const handleEditSlot = async (slotId: string): Promise<void> => {
+        if (!editSlotTitle || editSlotPrimarySkills.length === 0) {
+            setSlotEditError('Заполните название и выберите хотя бы один основной навык');
+            return;
+        }
+        setIsSubmittingEdit(true);
+        setSlotEditError(undefined);
+        try {
+            const editPayload: Parameters<typeof updateProjectSlot>[2] = {
+                title: editSlotTitle,
+                status: editSlotStatus,
+                primary_skills_id: editSlotPrimarySkills.map((s) => s.id),
+                secondary_skills_id: editSlotSecondarySkills.map((s) => s.id),
+            };
+            if (editSlotDescription) {
+                editPayload.description = editSlotDescription;
+            }
+            const updated = await updateProjectSlot(projectId, slotId, editPayload);
+            setProject((previous) => {
+                if (!previous) return previous;
+                return {
+                    ...previous,
+                    slots: (previous.slots ?? []).map((slot) =>
+                        slot.id === slotId ? updated : slot,
+                    ),
+                };
+            });
+            setEditingSlotId(undefined);
+        } catch {
+            setSlotEditError('Ошибка при сохранении слота');
+        } finally {
+            setIsSubmittingEdit(false);
+        }
+    };
+
     const handleDeleteSlot = async (slotId: string): Promise<void> => {
         try {
             await deleteProjectSlot(projectId, slotId);
@@ -197,13 +312,16 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
         }
     };
 
-    const handleApply = async (slotId: string): Promise<void> => {
+    const handleApply = async (slotId: string, coverLetter: string): Promise<void> => {
         setApplyingSlotId(slotId);
+        setApplyErrors((prev) => { const next = { ...prev }; delete next[slotId]; return next; });
         try {
-            await applyToSlot(projectId, slotId);
-            // Refresh requests if leader, or just show feedback
-        } catch {
-            // handle error
+            const request = await applyToSlot(projectId, slotId, coverLetter.trim() ? { cover_letter: coverLetter } : undefined);
+            setMySlotRequests((prev) => ({ ...prev, [slotId]: request }));
+            setCoverLetterSlotId(undefined);
+            setCoverLetterDraft('');
+        } catch (error) {
+            setApplyErrors((prev) => ({ ...prev, [slotId]: applyErrorMessage(error) }));
         } finally {
             setApplyingSlotId(undefined);
         }
@@ -215,7 +333,6 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
             setRequests((previous) =>
                 previous.map((request) => request.id === requestId ? updated : request),
             );
-            // Update slot to show it's occupied
             if (project) {
                 const relatedRequest = requests.find((r) => r.id === requestId);
                 if (relatedRequest) {
@@ -437,6 +554,9 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                 ).map((slot: IProjectSlot) => {
                                     const slotRequests = pendingRequestsBySlot(slot.id);
                                     const isOccupied = slot.user_id !== null;
+                                    const myRequest = mySlotRequests[slot.id];
+                                    const applyError = applyErrors[slot.id];
+                                    const isEditingThis = editingSlotId === slot.id;
 
                                     return (
                                         <div key={slot.id} className={styles.slotCard}>
@@ -453,14 +573,24 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                                     </Badge>
                                                 </div>
                                                 {isLeader && (
-                                                    <button
-                                                        type="button"
-                                                        className={styles.deleteSlotBtn}
-                                                        onClick={() => { setSlotIdToDelete(slot.id); }}
-                                                        title="Удалить слот"
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
+                                                    <div className={styles.slotActions}>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.editSlotBtn}
+                                                            onClick={() => { isEditingThis ? cancelEditSlot() : startEditSlot(slot); }}
+                                                            title={isEditingThis ? 'Отмена' : 'Редактировать слот'}
+                                                        >
+                                                            {isEditingThis ? <X size={15} /> : <Pencil size={15} />}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.deleteSlotBtn}
+                                                            onClick={() => { setSlotIdToDelete(slot.id); }}
+                                                            title="Удалить слот"
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
 
@@ -479,16 +609,156 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                                                 <p className={styles.slotDescription}>{slot.description}</p>
                                             )}
 
-                                            {/* Apply button for authenticated non-leaders */}
+                                            {/* Inline edit form for leader */}
+                                            {isLeader && isEditingThis && (
+                                                <div className={styles.editSlotForm}>
+                                                    <div className={styles.slotField}>
+                                                        <label className={styles.slotLabel} htmlFor={`edit-title-${slot.id}`}>Название</label>
+                                                        <input
+                                                            id={`edit-title-${slot.id}`}
+                                                            className={styles.slotInput}
+                                                            value={editSlotTitle}
+                                                            onChange={(e) => { setEditSlotTitle(e.target.value); }}
+                                                            disabled={isSubmittingEdit}
+                                                        />
+                                                    </div>
+                                                    <div className={styles.slotField}>
+                                                        <SkillMultiSelect
+                                                            value={editSlotPrimarySkills}
+                                                            onChange={setEditSlotPrimarySkills}
+                                                            loadOptions={loadPrimarySkills}
+                                                            placeholder="Основные навыки..."
+                                                            disabled={isSubmittingEdit}
+                                                            label="Основные навыки"
+                                                        />
+                                                    </div>
+                                                    <div className={styles.slotField}>
+                                                        <SkillMultiSelect
+                                                            value={editSlotSecondarySkills}
+                                                            onChange={setEditSlotSecondarySkills}
+                                                            loadOptions={loadEditSecondarySkills}
+                                                            placeholder="Доп. навыки..."
+                                                            disabled={isSubmittingEdit}
+                                                            max={10}
+                                                            label="Дополнительные навыки"
+                                                        />
+                                                    </div>
+                                                    <div className={styles.slotField}>
+                                                        <label className={styles.slotLabel} htmlFor={`edit-desc-${slot.id}`}>Описание</label>
+                                                        <textarea
+                                                            id={`edit-desc-${slot.id}`}
+                                                            className={styles.slotTextarea}
+                                                            value={editSlotDescription}
+                                                            onChange={(e) => { setEditSlotDescription(e.target.value); }}
+                                                            disabled={isSubmittingEdit}
+                                                        />
+                                                    </div>
+                                                    <div className={styles.slotField}>
+                                                        <label className={styles.slotLabel} htmlFor={`edit-status-${slot.id}`}>Статус</label>
+                                                        <select
+                                                            id={`edit-status-${slot.id}`}
+                                                            className={styles.slotInput}
+                                                            value={editSlotStatus}
+                                                            onChange={(e) => { setEditSlotStatus(e.target.value as 'open' | 'closed'); }}
+                                                            disabled={isSubmittingEdit}
+                                                        >
+                                                            <option value="open">Открыт</option>
+                                                            <option value="closed">Закрыт</option>
+                                                        </select>
+                                                    </div>
+                                                    {slotEditError !== undefined && (
+                                                        <p className={styles.slotError}>{slotEditError}</p>
+                                                    )}
+                                                    <div className={styles.slotFormActions}>
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={cancelEditSlot}
+                                                            disabled={isSubmittingEdit}
+                                                        >
+                                                            Отмена
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => { void handleEditSlot(slot.id); }}
+                                                            disabled={isSubmittingEdit || !editSlotTitle || editSlotPrimarySkills.length === 0}
+                                                        >
+                                                            <Check size={15} />
+                                                            Сохранить
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Apply section for authenticated non-leaders */}
                                             {userStore.isAuthenticated && !isLeader && !isOccupied && slot.status === 'open' && (
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => { void handleApply(slot.id); }}
-                                                    disabled={applyingSlotId === slot.id}
-                                                >
-                                                    <UserCheck size={16} />
-                                                    Откликнуться
-                                                </Button>
+                                                <>
+                                                    {/* Show existing request status */}
+                                                    {myRequest !== undefined ? (
+                                                        <div className={styles.applyStatus}>
+                                                            {myRequest.status === 'pending' && (
+                                                                <span className={styles.applyStatusPending}>
+                                                                    ⏳ Заявка отправлена — ожидает рассмотрения
+                                                                </span>
+                                                            )}
+                                                            {myRequest.status === 'accepted' && (
+                                                                <span className={styles.applyStatusAccepted}>
+                                                                    ✓ Ваша заявка принята
+                                                                </span>
+                                                            )}
+                                                            {myRequest.status === 'rejected' && (
+                                                                <span className={styles.applyStatusRejected}>
+                                                                    ✕ Ваша заявка отклонена
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    ) : coverLetterSlotId === slot.id ? (
+                                                        <div className={styles.coverLetterForm}>
+                                                            <textarea
+                                                                className={styles.coverLetterTextarea}
+                                                                placeholder="Сопроводительное письмо (необязательно)..."
+                                                                value={coverLetterDraft}
+                                                                onChange={(event) => { setCoverLetterDraft(event.target.value); }}
+                                                                rows={3}
+                                                                disabled={applyingSlotId === slot.id}
+                                                            />
+                                                            {applyError !== undefined && (
+                                                                <p className={styles.applyError}>{applyError}</p>
+                                                            )}
+                                                            <div className={styles.coverLetterActions}>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setCoverLetterSlotId(undefined);
+                                                                        setCoverLetterDraft('');
+                                                                        setApplyErrors((prev) => { const next = { ...prev }; delete next[slot.id]; return next; });
+                                                                    }}
+                                                                    disabled={applyingSlotId === slot.id}
+                                                                >
+                                                                    Отмена
+                                                                </Button>
+                                                                <Button
+                                                                    onClick={() => { void handleApply(slot.id, coverLetterDraft); }}
+                                                                    disabled={applyingSlotId === slot.id}
+                                                                >
+                                                                    <UserCheck size={16} />
+                                                                    {applyingSlotId === slot.id ? 'Отправка...' : 'Отправить заявку'}
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {applyError !== undefined && (
+                                                                <p className={styles.applyError}>{applyError}</p>
+                                                            )}
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => { setCoverLetterSlotId(slot.id); }}
+                                                            >
+                                                                <UserCheck size={16} />
+                                                                Откликнуться
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </>
                                             )}
 
                                             {/* Requests for leader */}

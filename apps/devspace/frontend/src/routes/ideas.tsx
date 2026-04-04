@@ -6,6 +6,7 @@ import type { JSX } from 'react';
 export interface IdeaSearch {
     page?: number | undefined;
     search?: string | undefined;
+    favorites?: boolean | undefined;
 }
 
 export const Route = createFileRoute('/ideas')({
@@ -13,11 +14,13 @@ export const Route = createFileRoute('/ideas')({
         return {
             page: Number(search.page) || 1,
             search: search.search as string | undefined,
+            favorites: search.favorites === true || search.favorites === 'true' ? true : undefined,
         };
     },
-    loaderDeps: ({ search: { page, search } }) => ({
+    loaderDeps: ({ search: { page, search, favorites } }) => ({
         page,
         search,
+        favorites,
     }),
     loader: async ({ deps }) => {
         const limit = 20;
@@ -28,6 +31,7 @@ export const Route = createFileRoute('/ideas')({
             search: deps.search,
             start_at,
             limit,
+            favorites: deps.favorites,
         });
     },
     component: IdeasPage,

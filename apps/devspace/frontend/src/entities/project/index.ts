@@ -12,6 +12,7 @@ export {
     deleteProject,
     createProjectSlot,
     deleteProjectSlot,
+    updateProjectSlot,
     applyToSlot,
     getProjectRequests,
     acceptRequest,

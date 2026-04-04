@@ -7,7 +7,7 @@ import { clsx } from "clsx";
 import { Button, Input, Skeleton, SkillSearch } from "@/shared/ui";
 import type { SkillSearchOption } from "@/shared/ui";
 import { fetchSkills } from "@/entities/skill";
-import { fetchProjects, ProjectCard } from "@/entities/project";
+import { fetchProjects, ProjectCard, getMyRequests, acceptRequest, rejectRequest, type IRequest } from "@/entities/project";
 // main_role comes as a full object from API now
 import styles from "./ProfileForm.module.scss";
 
@@ -50,6 +50,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
   const [initialMainRole, setInitialMainRole] = useState("");
+  const [initialMainRoleOption, setInitialMainRoleOption] = useState<SkillSearchOption | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | undefined>(undefined);
@@ -61,6 +62,10 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
 
   const [projects, setProjects] = useState<IProjectItem[]>([]);
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
+
+  const [myRequests, setMyRequests] = useState<IRequest[]>([]);
+  const [isRequestsLoading, setIsRequestsLoading] = useState(false);
+  const [requestActionId, setRequestActionId] = useState<string | undefined>(undefined);
 
   const successTimerReference = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -94,10 +99,13 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           const roleObj = data.main_role;
           setInitialMainRole(roleObj?.id ?? "");
           if (roleObj !== null && roleObj !== undefined && roleObj.id !== undefined) {
-            setMainRole({ id: roleObj.id, name: roleObj.name, color: roleObj.color });
+            const roleOption: SkillSearchOption = { id: roleObj.id, name: roleObj.name, color: roleObj.color };
+            setMainRole(roleOption);
+            setInitialMainRoleOption(roleOption);
           }
 
           void loadProjects(data.id);
+          void loadRequests();
         }
       } catch {
         if (!cancelled) setLoadError("Не удалось загрузить данные профиля");
@@ -119,6 +127,42 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       // no-op — projects section will be empty
     } finally {
       setIsProjectsLoading(false);
+    }
+  };
+
+  const loadRequests = async (): Promise<void> => {
+    try {
+      setIsRequestsLoading(true);
+      const data = await getMyRequests();
+      setMyRequests(data);
+    } catch {
+      // no-op — section will remain empty
+    } finally {
+      setIsRequestsLoading(false);
+    }
+  };
+
+  const handleAcceptInvite = async (requestId: string): Promise<void> => {
+    setRequestActionId(requestId);
+    try {
+      const updated = await acceptRequest(requestId);
+      setMyRequests((previous) => previous.map((r) => r.id === requestId ? updated : r));
+    } catch {
+      // no-op
+    } finally {
+      setRequestActionId(undefined);
+    }
+  };
+
+  const handleRejectInvite = async (requestId: string): Promise<void> => {
+    setRequestActionId(requestId);
+    try {
+      const updated = await rejectRequest(requestId);
+      setMyRequests((previous) => previous.map((r) => r.id === requestId ? updated : r));
+    } catch {
+      // no-op
+    } finally {
+      setRequestActionId(undefined);
     }
   };
 
@@ -156,7 +200,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const handleCancel = (): void => {
     setNickname(initialNickname);
     setBio(initialBio);
-    // Re-fetch the initial role from cache if possible; reset via id comparison
+    setMainRole(initialMainRoleOption);
     setSaveError(undefined);
   };
 
@@ -445,6 +489,58 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
               </Button>
             )}
           </div>
+        </section>
+
+        {/* My Requests & Invites */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Мои заявки и приглашения</h2>
+          {isRequestsLoading ? (
+            <Skeleton height={80} borderRadius={8} />
+          ) : myRequests.length === 0 ? (
+            <p className={styles.emptyHint}>Заявок и приглашений нет</p>
+          ) : (
+            <div className={styles.requestsList}>
+              {myRequests.map((req) => {
+                const statusClass =
+                  req.status === 'pending' ? styles.requestStatusPending :
+                  req.status === 'accepted' ? styles.requestStatusAccepted :
+                  styles.requestStatusRejected;
+                const statusLabel =
+                  req.status === 'pending' ? 'Ожидает' :
+                  req.status === 'accepted' ? 'Принято' : 'Отклонено';
+                return (
+                  <div key={req.id} className={styles.requestItem}>
+                    <div className={styles.requestMeta}>
+                      <span className={styles.requestType}>
+                        {req.type === 'apply' ? 'Отклик' : 'Приглашение'}
+                      </span>
+                      <span className={statusClass}>{statusLabel}</span>
+                    </div>
+                    {req.cover_letter !== '' && (
+                      <p className={styles.requestCoverLetter}>«{req.cover_letter}»</p>
+                    )}
+                    {req.type === 'invite' && req.status === 'pending' && (
+                      <div className={styles.requestActions}>
+                        <Button
+                          onClick={() => { void handleAcceptInvite(req.id); }}
+                          disabled={requestActionId === req.id}
+                        >
+                          Принять
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => { void handleRejectInvite(req.id); }}
+                          disabled={requestActionId === req.id}
+                        >
+                          Отклонить
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* My Projects */}

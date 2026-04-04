@@ -44,6 +44,7 @@ export interface FetchIdeasParameters {
     limit?: number | undefined;
     search?: string | undefined;
     author_id?: string | undefined;
+    favorites?: boolean | undefined;
 }
 
 export interface PaginatedIdeas {

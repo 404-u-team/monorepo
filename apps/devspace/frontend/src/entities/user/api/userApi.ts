@@ -5,6 +5,8 @@ export interface FetchUsersParameters {
   search?: string | undefined;
   start_at?: number | undefined;
   limit?: number | undefined;
+  main_role?: string | undefined;
+  skills?: string[] | undefined;
 }
 
 export interface PaginatedUsers {
@@ -19,10 +21,17 @@ export async function fetchUsers(parameters?: FetchUsersParameters): Promise<Pag
   const startAt = parameters?.start_at ?? 0;
 
   // Backend expects "username" query parameter, not "search"
-  const { search, ...rest } = parameters ?? {};
-  const apiParams = { ...rest, username: search };
+  const { search, skills, ...rest } = parameters ?? {};
+  const apiParams: Record<string, unknown> = { ...rest, username: search };
+  // skills[] must be passed as repeated query params: skills=a&skills=b
+  if (skills && skills.length > 0) {
+    apiParams.skills = skills;
+  }
 
-  const response = await apiClient.get<IUserResponse[]>('/users', { params: apiParams });
+  const response = await apiClient.get<IUserResponse[]>('/users', {
+    params: apiParams,
+    paramsSerializer: { indexes: null },
+  });
   const items = response.data;
 
   const hasMore = items.length >= limit;
