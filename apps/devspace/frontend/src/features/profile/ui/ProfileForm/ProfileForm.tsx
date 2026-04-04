@@ -6,20 +6,27 @@ import { apiClient } from "@/shared/api/client";
 import { clsx } from "clsx";
 import { Button, Input, Skeleton, SkillSearch } from "@/shared/ui";
 import type { SkillSearchOption } from "@/shared/ui";
-import { fetchSkills, fetchSkillById } from "@/entities/skill";
+import { fetchSkills } from "@/entities/skill";
 import { fetchProjects, ProjectCard } from "@/entities/project";
-import { isValidMainRole } from "@/entities/user/model/IUserResponse";
+// main_role comes as a full object from API now
 import styles from "./ProfileForm.module.scss";
 
 export type ProfileFormProps = Record<string, never>;
+
+interface IMainRoleObj {
+  id: string;
+  name: string;
+  parent_id?: string | null;
+  color?: string;
+}
 
 interface IProfileData {
   id: string;
   email: string;
   nickname: string;
-  avatar_uri: string | undefined;
+  avatar_url: string | undefined;
   bio: string | undefined;
-  main_role: string | undefined;
+  main_role: IMainRoleObj | null | undefined;
   skills: IProfileSkill[];
 }
 
@@ -84,15 +91,10 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           setInitialBio(data.bio ?? "");
           setSkills(data.skills);
 
-          const roleId = data.main_role ?? "";
-          setInitialMainRole(roleId);
-          if (isValidMainRole(roleId)) {
-            try {
-              const skill = await fetchSkillById(roleId);
-              setMainRole({ id: skill.id, name: skill.name, color: skill.color });
-            } catch {
-              // skill not found — leave mainRole undefined
-            }
+          const roleObj = data.main_role;
+          setInitialMainRole(roleObj?.id ?? "");
+          if (roleObj !== null && roleObj !== undefined && roleObj.id !== undefined) {
+            setMainRole({ id: roleObj.id, name: roleObj.name, color: roleObj.color });
           }
 
           void loadProjects(data.id);
@@ -286,9 +288,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       <aside className={styles.sidebar}>
         <div className={styles.avatarCard}>
           <div className={styles.avatarContainer}>
-            {userData?.avatar_uri !== undefined && userData.avatar_uri !== '' ? (
+            {userData?.avatar_url !== undefined && userData.avatar_url !== '' ? (
               <img
-                src={userData.avatar_uri}
+                src={userData.avatar_url}
                 alt={userData.nickname}
                 className={styles.avatarImage}
                 onError={(event) => {

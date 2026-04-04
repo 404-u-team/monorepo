@@ -53,13 +53,16 @@ export const AuthForm = observer((): JSX.Element => {
             const payload = mode === 'login' ? { login: email, password } : { email, password, nickname };
             const response = await apiClient.post<{ access_token: string }>(endpoint, payload);
             const accessToken = response.data.access_token;
-            const userResponse = await fetch(`${import.meta.env.VITE_API_URL as string}users/me`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
-            const user = await userResponse.json() as IUser;
             userStore.setAccessToken(accessToken);
+            const meResponse = await apiClient.get<Record<string, unknown>>('/users/me');
+            const data = meResponse.data;
+            const user: IUser = {
+                id: data.id as string,
+                nickname: data.nickname as string,
+                email: data.email as string,
+                avatarUrl: data.avatar_url as string | undefined,
+                bio: data.bio as string | undefined,
+            };
             userStore.setUser(user);
 
             void navigate({ to: '/' });

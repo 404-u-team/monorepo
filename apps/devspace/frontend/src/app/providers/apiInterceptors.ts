@@ -37,13 +37,13 @@ export const verifyInterceptors = (): void => {
                         const baseURL = apiClient.defaults.baseURL ?? '/api';
                         const authBaseURL = baseURL.endsWith('/api') ? baseURL.slice(0, -4) : baseURL;
 
-                        const refreshResponse = await axios.post<{ accessToken: string }>(
+                        const refreshResponse = await axios.post<{ access_token: string }>(
                             `${authBaseURL}auth/refresh`,
                             {},
                             { withCredentials: true }
                         );
 
-                        const newAccessToken = refreshResponse.data.accessToken;
+                        const newAccessToken = refreshResponse.data.access_token;
                         rootStore.userStore.setAccessToken(newAccessToken);
 
                         originalRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);

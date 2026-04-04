@@ -97,7 +97,7 @@ export const IdeaCard = observer(function IdeaCard({ ideaId, href, className }: 
                         <>
                             <img
                                 className={styles.avatar}
-                                src={author.avatar_uri}
+                                src={author.avatar_url}
                                 alt={author.nickname}
                                 onError={(event) => {
                                     (event.target as HTMLImageElement).style.display = 'none';

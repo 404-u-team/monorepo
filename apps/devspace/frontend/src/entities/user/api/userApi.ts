@@ -11,27 +11,26 @@ export interface PaginatedUsers {
   items: IUserResponse[];
   total: number;
   totalPages: number;
+  hasMore: boolean;
 }
 
 export async function fetchUsers(parameters?: FetchUsersParameters): Promise<PaginatedUsers> {
-  const response = await apiClient.get<IUserResponse[]>('/users', { params: parameters });
+  const limit = parameters?.limit ?? 20;
+  const startAt = parameters?.start_at ?? 0;
+
+  // Backend expects "username" query parameter, not "search"
+  const { search, ...rest } = parameters ?? {};
+  const apiParams = { ...rest, username: search };
+
+  const response = await apiClient.get<IUserResponse[]>('/users', { params: apiParams });
   const items = response.data;
-  const totalCountHeader = response.headers['x-total-count'] as string | undefined;
-  const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
-  let total: number;
-  let totalPages: number;
+  const hasMore = items.length >= limit;
+  const currentPage = Math.floor(startAt / limit) + 1;
+  const totalPages = hasMore ? currentPage + 1 : currentPage;
+  const total = startAt + items.length + (hasMore ? 1 : 0);
 
-  if (Number.isFinite(parsedTotal)) {
-    const limit = parameters?.limit ?? (items.length > 0 ? items.length : 1);
-    total = parsedTotal;
-    totalPages = Math.ceil(total / limit);
-  } else {
-    total = items.length;
-    totalPages = 1;
-  }
-
-  return { items, total, totalPages };
+  return { items, total, totalPages, hasMore };
 }
 
 export interface InviteToSlotParameters {

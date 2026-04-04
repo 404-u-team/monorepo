@@ -50,33 +50,26 @@ export interface PaginatedIdeas {
     items: IIdea[];
     total: number;
     totalPages: number;
+    hasMore: boolean;
 }
 
 export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<PaginatedIdeas> {
+    const limit = parameters?.limit ?? 20;
+    const startAt = parameters?.start_at ?? 0;
     const response = await apiClient.get<RawIdea[]>('/ideas', { params: parameters });
 
     const items = response.data.map((item) => mapIdea(item));
-    const totalCountHeader = response.headers['x-total-count'] as string | undefined;
-    const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
-    const limit = parameters?.limit ?? (items.length > 0 ? items.length : 1);
-    const startAt = parameters?.start_at ?? 0;
-
-    let total: number;
-    let totalPages: number;
-
-    if (Number.isFinite(parsedTotal)) {
-        total = parsedTotal;
-        totalPages = Math.ceil(total / limit);
-    } else {
-        total = startAt + items.length;
-        totalPages = Math.max(1, Math.ceil(total / limit));
-    }
+    const hasMore = items.length >= limit;
+    const currentPage = Math.floor(startAt / limit) + 1;
+    const totalPages = hasMore ? currentPage + 1 : currentPage;
+    const total = startAt + items.length + (hasMore ? 1 : 0);
 
     return {
         items,
         total,
         totalPages,
+        hasMore,
     };
 }
 
@@ -104,6 +97,5 @@ export async function deleteIdea(ideaId: string): Promise<void> {
     await apiClient.delete(`/ideas/${ideaId}`);
 }
 
-export async function createProjectFromIdea(ideaId: string): Promise<void> {
-    await apiClient.post(`/ideas/${ideaId}/project`);
-}
+// Note: There's no dedicated endpoint for creating a project from an idea.
+// Use createProject from projectApi with the idea_id parameter instead.

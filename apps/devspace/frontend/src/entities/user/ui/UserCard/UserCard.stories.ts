@@ -5,7 +5,7 @@ import { UserCard } from "./UserCard";
 
 const MOCK_USER = {
   id: "user-1",
-  avatar_uri: "https://i.pravatar.cc/150?u=user-1",
+  avatar_url: "https://i.pravatar.cc/150?u=user-1",
   main_role: "Senior Frontend Developer",
   nickname: "alice_wonder",
   bio: "Frontend developer with 5+ years of experience. Love React, TypeScript and clean code. Passionate about UI/UX and performance optimization.",
@@ -26,7 +26,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
   "user-1": MOCK_USER,
   "user-2": {
     id: "user-2",
-    avatar_uri: "https://i.pravatar.cc/150?u=user-2",
+    avatar_url: "https://i.pravatar.cc/150?u=user-2",
     main_role: "Backend Developer",
     nickname: "bob_builder",
     bio: "Backend engineer specializing in Python and microservices. Experienced with FastAPI, Django, and PostgreSQL.",
@@ -43,7 +43,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
   },
   "user-3": {
     id: "user-3",
-    avatar_uri: "https://i.pravatar.cc/150?u=user-3",
+    avatar_url: "https://i.pravatar.cc/150?u=user-3",
     main_role: "DevOps Engineer",
     nickname: "charlie_ops",
     bio: "Infrastructure and automation enthusiast. Kubernetes certified. Love building scalable and reliable systems.",
@@ -60,7 +60,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
   },
   "user-4": {
     id: "user-4",
-    avatar_uri: "https://i.pravatar.cc/150?u=user-4",
+    avatar_url: "https://i.pravatar.cc/150?u=user-4",
     main_role: "Fullstack Developer",
     nickname: "diana_fullstack",
     bio: "Fullstack developer who loves building complete products. Experience with React, Node.js, and MongoDB.",
@@ -77,7 +77,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
   },
   "user-5": {
     id: "user-5",
-    avatar_uri: "https://i.pravatar.cc/150?u=user-5",
+    avatar_url: "https://i.pravatar.cc/150?u=user-5",
     main_role: "Mobile Developer",
     nickname: "eve_mobile",
     bio: "Mobile app developer specializing in React Native and Flutter. Love creating smooth and beautiful mobile experiences.",
@@ -94,7 +94,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
   },
   "user-6": {
     id: "user-6",
-    avatar_uri: "https://i.pravatar.cc/150?u=user-6",
+    avatar_url: "https://i.pravatar.cc/150?u=user-6",
     main_role: "Data Scientist",
     nickname: "frank_ml",
     bio: "Machine learning engineer with focus on NLP and computer vision. Experienced with PyTorch and TensorFlow.",
@@ -162,7 +162,7 @@ export const LongBio: Story = {
         http.get("*/users/:id", () => {
           return HttpResponse.json({
             id: "user-long-bio",
-            avatar_uri: "https://i.pravatar.cc/150?u=user-long",
+            avatar_url: "https://i.pravatar.cc/150?u=user-long",
             main_role: "Principal Software Architect",
             nickname: "dr_architect",
             bio: "Visionary software architect with over 15 years of experience designing and building large-scale distributed systems for Fortune 500 companies. Passionate about system design, microservices architecture, event-driven systems, and cloud-native technologies. Mentored hundreds of engineers and contributed to open-source projects. Speaker at international conferences including AWS re:Invent, KubeCon, and React Summit. Author of several technical books on software architecture and design patterns. Believer in clean code, SOLID principles, and domain-driven design. Always eager to learn new technologies and share knowledge with the community.",
@@ -198,7 +198,7 @@ export const ManySkills: Story = {
         http.get("*/users/:id", () => {
           return HttpResponse.json({
             id: "user-many-skills",
-            avatar_uri: "https://i.pravatar.cc/150?u=user-skills",
+            avatar_url: "https://i.pravatar.cc/150?u=user-skills",
             main_role: "Polyglot Developer",
             nickname: "polyglot",
             bio: "Developer who loves learning new programming languages and technologies.",

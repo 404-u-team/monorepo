@@ -217,7 +217,7 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
                             <div className={styles.authorInfo}>
                                 <img
                                     className={styles.avatar}
-                                    src={author.avatar_uri}
+                                    src={author.avatar_url}
                                     alt={author.nickname}
                                     onError={(event) => {
                                         const target = event.currentTarget;

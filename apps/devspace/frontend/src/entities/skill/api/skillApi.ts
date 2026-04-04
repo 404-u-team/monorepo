@@ -4,7 +4,7 @@ import type { ISkill } from '../model/ISkill';
 export interface FetchSkillsParameters {
     parent_id?: string | undefined;
     search?: string | undefined;
-    page?: number | undefined;
+    start_at?: number | undefined;
     limit?: number | undefined;
 }
 
