@@ -1,10 +1,11 @@
-import { createElement } from 'react';
-import { definePreview } from '@storybook/react-vite';
-import { initialize, mswLoader } from 'msw-storybook-addon';
+import { definePreview } from "@storybook/react-vite";
+import { initialize, mswLoader } from "msw-storybook-addon";
+import { createElement } from "react";
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import '@/app/styles/index.scss';
-import { StoreContext, type IRootStore } from '@/shared/lib/store';
+import "@/app/styles/index.scss";
+import { StoreContext, type IRootStore } from "@/shared/lib/store";
 
 // Initialize MSW
 initialize();
@@ -19,17 +20,14 @@ const defaultMockStore: IRootStore = {
 
 const preview = definePreview({
   addons: [],
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 
   loaders: [mswLoader],
 
   decorators: [
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    (Story) => createElement(
-      StoreContext.Provider,
-      { value: defaultMockStore },
-      createElement(Story),
-    ),
+    (Story) =>
+      createElement(StoreContext.Provider, { value: defaultMockStore }, createElement(Story)),
   ],
 
   parameters: {
@@ -41,10 +39,9 @@ const preview = definePreview({
     },
 
     a11y: {
-      test: 'todo',
+      test: "todo",
     },
   },
-})
+});
 
-export default preview
-
+export default preview;

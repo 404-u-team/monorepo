@@ -1,1 +1,1 @@
-export { useTheme, type Theme, type ThemeContextValue } from '@/shared/lib/theme/ThemeContext';
+export { useTheme, type Theme, type ThemeContextValue } from "@/shared/lib/theme/ThemeContext";

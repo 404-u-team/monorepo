@@ -59,14 +59,14 @@ shared  ▼
 
 **Правило:** модуль может импортировать **только из слоёв ниже себя**.
 
-| Слой | Может импортировать из |
-|------|----------------------|
-| `app` | всё |
-| `routes` | `widgets`, `features`, `entities`, `shared` |
-| `widgets` | `features`, `entities`, `shared` |
-| `features` | `entities`, `shared` |
-| `entities` | `shared` |
-| `shared` | ничего |
+| Слой       | Может импортировать из                      |
+| ---------- | ------------------------------------------- |
+| `app`      | всё                                         |
+| `routes`   | `widgets`, `features`, `entities`, `shared` |
+| `widgets`  | `features`, `entities`, `shared`            |
+| `features` | `entities`, `shared`                        |
+| `entities` | `shared`                                    |
+| `shared`   | ничего                                      |
 
 ---
 
@@ -78,12 +78,12 @@ shared  ▼
 
 ```ts
 // Правильно
-import { Button } from '@/shared/ui/Button'
-import { UserStore } from '@/entities/user'
+import { Button } from "@/shared/ui/Button";
+import { UserStore } from "@/entities/user";
 
 // Неправильно
-import { Button } from '../../shared/ui/Button'
-import { UserStore } from '../user'
+import { Button } from "../../shared/ui/Button";
+import { UserStore } from "../user";
 ```
 
 ### 2. Запрет импорта из вышестоящих слоёв
@@ -93,11 +93,11 @@ import { UserStore } from '../user'
 ```ts
 // Ошибка: [FSD] "shared" cannot import from layers above it.
 // в файле src/shared/lib/utils.ts:
-import { useAuth } from '@/features/auth'
+import { useAuth } from "@/features/auth";
 
 // Ошибка: [FSD] "entities" cannot import from layers above it.
 // в файле src/entities/user/model.ts:
-import { Header } from '@/widgets/Header'
+import { Header } from "@/widgets/Header";
 ```
 
 ### 3. Запрет относительных импортов за пределы своего модуля
@@ -106,10 +106,10 @@ import { Header } from '@/widgets/Header'
 
 ```ts
 // Неправильно — выход из своего слайса через ../
-import { api } from '../../api/client'
+import { api } from "../../api/client";
 
 // Правильно
-import { api } from '@/shared/api/client'
+import { api } from "@/shared/api/client";
 ```
 
 > Соглашения по стилизации, CSS-переменные и цветовые токены — см. [docs/styling.md](./styling.md).
@@ -153,13 +153,13 @@ entities/idea/                          # Слайс
 
 ### Сегменты слайса
 
-| Сегмент | Назначение | Обязательный |
-|---------|-----------|-------------|
-| `model/` | Типы, интерфейсы (`I*.ts`), MobX-сторы, бизнес-логика | Да |
-| `api/` | Функции запросов к бэкенду (используют `apiClient` из shared) | По необходимости |
-| `ui/` | React-компоненты с `.module.scss` и `.stories.tsx` | По необходимости |
-| `lib/` | Кастомные React-хуки (`use*.ts`), утилиты, хелперы, специфичные для слайса | По необходимости |
-| `config/` | Константы, enum-маппинги, конфигурация (не env) | По необходимости |
+| Сегмент   | Назначение                                                                 | Обязательный     |
+| --------- | -------------------------------------------------------------------------- | ---------------- |
+| `model/`  | Типы, интерфейсы (`I*.ts`), MobX-сторы, бизнес-логика                      | Да               |
+| `api/`    | Функции запросов к бэкенду (используют `apiClient` из shared)              | По необходимости |
+| `ui/`     | React-компоненты с `.module.scss` и `.stories.tsx`                         | По необходимости |
+| `lib/`    | Кастомные React-хуки (`use*.ts`), утилиты, хелперы, специфичные для слайса | По необходимости |
+| `config/` | Константы, enum-маппинги, конфигурация (не env)                            | По необходимости |
 
 > **Когда добавлять `lib/` и `config/`?** Если хук или утилита нужны **только внутри одного слайса** — кладите в `lib/`. Если они могут быть полезны глобально — выносите в `shared/lib/`. Аналогично: `config/` для констант привязанных к слайсу, `shared/config/` для глобальных.
 
@@ -167,17 +167,17 @@ entities/idea/                          # Слайс
 
 ```ts
 // entities/idea/index.ts — реэкспортируем только то, что нужно снаружи
-export { IdeaCard } from './ui/IdeaCard/IdeaCard'
-export type { IIdea } from './model/IIdea'
-export { fetchIdeaById } from './api/ideaApi'
+export { IdeaCard } from "./ui/IdeaCard/IdeaCard";
+export type { IIdea } from "./model/IIdea";
+export { fetchIdeaById } from "./api/ideaApi";
 ```
 
 ```ts
 // ✅ Правильно
-import { IdeaCard } from '@/entities/idea'
+import { IdeaCard } from "@/entities/idea";
 
 // ❌ Неправильно — нарушение публичного API
-import { IdeaCard } from '@/entities/idea/ui/IdeaCard/IdeaCard'
+import { IdeaCard } from "@/entities/idea/ui/IdeaCard/IdeaCard";
 ```
 
 ### Внутренние импорты
@@ -186,17 +186,17 @@ import { IdeaCard } from '@/entities/idea/ui/IdeaCard/IdeaCard'
 
 ```ts
 // внутри entities/idea/ui/IdeaCard/IdeaCard.tsx — ок
-import type { IIdea } from '../../model/IIdea'
-import { fetchIdeaById } from '../../api/ideaApi'
+import type { IIdea } from "../../model/IIdea";
+import { fetchIdeaById } from "../../api/ideaApi";
 ```
 
 ---
 
 ## Автогенерируемые файлы
 
-| Файл | Генератор | Редактировать |
-|------|-----------|--------------|
-| `src/app/generated/routeTree.gen.ts` | TanStack Router (Vite plugin) | Никогда |
+| Файл                                 | Генератор                     | Редактировать |
+| ------------------------------------ | ----------------------------- | ------------- |
+| `src/app/generated/routeTree.gen.ts` | TanStack Router (Vite plugin) | Никогда       |
 
 Файл генерируется автоматически при запуске `bun run dev` или `bun run build`.
 Он находится в `.gitignore` и исключён из ESLint.
@@ -205,8 +205,8 @@ import { fetchIdeaById } from '../../api/ideaApi'
 
 ## Инструменты контроля архитектуры
 
-| Правило | Плагин | Что проверяет |
-|---------|--------|---------------|
-| `import-x/no-restricted-paths` | `eslint-plugin-import-x` | Запрет импортов из вышестоящих FSD-слоёв |
-| `import-x/no-relative-parent-imports` | `eslint-plugin-import-x` | Запрет `../` за пределы слайса |
-| `import-x/no-cycle` | `eslint-plugin-import-x` | Запрет циклических зависимостей |
+| Правило                               | Плагин                   | Что проверяет                            |
+| ------------------------------------- | ------------------------ | ---------------------------------------- |
+| `import-x/no-restricted-paths`        | `eslint-plugin-import-x` | Запрет импортов из вышестоящих FSD-слоёв |
+| `import-x/no-relative-parent-imports` | `eslint-plugin-import-x` | Запрет `../` за пределы слайса           |
+| `import-x/no-cycle`                   | `eslint-plugin-import-x` | Запрет циклических зависимостей          |

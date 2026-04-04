@@ -6,11 +6,11 @@
 
 ## Требования к окружению
 
-| Инструмент | Версия | Установка |
-|-----------|--------|-----------|
-| [Bun](https://bun.sh) | ≥ 1.x | bun.com |
-| [Node.js](https://nodejs.org) | ≥ 20 LTS | nodejs.org |
-| [Git](https://git-scm.com) | любая | git-scm.com |
+| Инструмент                    | Версия   | Установка   |
+| ----------------------------- | -------- | ----------- |
+| [Bun](https://bun.sh)         | ≥ 1.x    | bun.com     |
+| [Node.js](https://nodejs.org) | ≥ 20 LTS | nodejs.org  |
+| [Git](https://git-scm.com)    | любая    | git-scm.com |
 
 > Bun используется как пакетный менеджер и раннер скриптов вместо npm/yarn.
 
@@ -29,25 +29,25 @@ bun run storybook # запустить Storybook (http://localhost:6006)
 
 ## Технологический стек
 
-| Область | Инструмент | Версия |
-|---------|-----------|--------|
-| Язык | TypeScript | ~5.9 |
-| UI | React | ^19 |
-| Роутинг | TanStack Router | ^1.163 |
-| Состояние | MobX | — |
-| Стили | SCSS + CSS Modules | — |
-| Сборка | Vite | ^8 |
-| Пакетный менеджер | Bun | — |
-| Компонентная документация | Storybook | ^10 |
-| Линтер | ESLint | ^10 |
+| Область                   | Инструмент         | Версия |
+| ------------------------- | ------------------ | ------ |
+| Язык                      | TypeScript         | ~5.9   |
+| UI                        | React              | ^19    |
+| Роутинг                   | TanStack Router    | ^1.163 |
+| Состояние                 | MobX               | —      |
+| Стили                     | SCSS + CSS Modules | —      |
+| Сборка                    | Vite               | ^8     |
+| Пакетный менеджер         | Bun                | —      |
+| Компонентная документация | Storybook          | ^10    |
+| Линтер                    | ESLint             | ^10    |
 
 ---
 
 ## Архитектура и стилизация
 
-| Документ | Описание |
-|----------|---------|
-| [docs/fsd.md](./fsd.md) | Структура проекта, FSD-слои, правила импортов |
+| Документ                        | Описание                                        |
+| ------------------------------- | ----------------------------------------------- |
+| [docs/fsd.md](./fsd.md)         | Структура проекта, FSD-слои, правила импортов   |
 | [docs/styling.md](./styling.md) | CSS-переменные, CSS Modules, правила стилизации |
 
 ---
@@ -56,15 +56,15 @@ bun run storybook # запустить Storybook (http://localhost:6006)
 
 ### Именование файлов и компонентов
 
-| Сущность | Пример |
-|---------|--------|
-| React-компонент | `Button.tsx`, `UserCard.tsx` |
-| CSS Module | `Button.module.scss` |
-| MobX Store | `UserStore.ts` |
-| Хук | `useUser.ts` |
-| Утилита | `formatDate.ts` |
-| Тип/интерфейс | `user.types.ts` или `types.ts` внутри слайса |
-| Storybook Story | `Button.stories.tsx` |
+| Сущность        | Пример                                       |
+| --------------- | -------------------------------------------- |
+| React-компонент | `Button.tsx`, `UserCard.tsx`                 |
+| CSS Module      | `Button.module.scss`                         |
+| MobX Store      | `UserStore.ts`                               |
+| Хук             | `useUser.ts`                                 |
+| Утилита         | `formatDate.ts`                              |
+| Тип/интерфейс   | `user.types.ts` или `types.ts` внутри слайса |
+| Storybook Story | `Button.stories.tsx`                         |
 
 ---
 
@@ -88,6 +88,7 @@ MobX настроен в `src/app/main.tsx` в строгом режиме
 ## Линтер
 
 Запуск:
+
 ```bash
 bun run lint
 ```
@@ -110,34 +111,35 @@ bun run storybook          # dev-режим на :6006
 
 ```tsx
 // Button.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react'
-import { Button } from './Button'
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "./Button";
 
 const meta = {
-    component: Button,
-    tags: ['autodocs'],          // автодокументация из prop-types
-    args: {
-        label: 'Click me',
-    },
-} satisfies Meta<typeof Button>
+  component: Button,
+  tags: ["autodocs"], // автодокументация из prop-types
+  args: {
+    label: "Click me",
+  },
+} satisfies Meta<typeof Button>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-    args: {
-        variant: 'primary',
-    },
-}
+  args: {
+    variant: "primary",
+  },
+};
 
 export const Disabled: Story = {
-    args: {
-        disabled: true,
-    },
-}
+  args: {
+    disabled: true,
+  },
+};
 ```
 
 **Ключевые практики:**
+
 - `satisfies Meta<typeof Component>` вместо аннотации типом — даёт вывод типов в `args`
 - `tags: ['autodocs']` — автогенерация страницы документации с prop-таблицей
 - Базовые `args` в `meta`, перегрузки — в конкретных stories

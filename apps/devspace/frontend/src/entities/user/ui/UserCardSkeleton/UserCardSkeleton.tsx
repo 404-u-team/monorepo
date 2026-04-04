@@ -1,6 +1,8 @@
-import type { JSX } from "react";
 import { clsx } from "clsx";
+import type { JSX } from "react";
+
 import { Skeleton } from "@/shared/ui";
+
 import styles from "./UserCardSkeleton.module.scss";
 
 export interface UserCardSkeletonProps {

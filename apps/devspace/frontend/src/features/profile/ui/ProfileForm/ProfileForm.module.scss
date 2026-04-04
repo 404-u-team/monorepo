@@ -79,7 +79,9 @@
   justify-content: center;
   cursor: pointer;
   color: var(--text--secondary);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     background-color: var(--brand--subtle);
@@ -134,7 +136,9 @@
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   width: 100%;
 
   &:hover:not(:disabled) {

@@ -1,4 +1,5 @@
 import { apiClient } from "@/shared/api/client";
+
 import type { IUserResponse } from "../model/IUserResponse";
 
 export interface FetchUsersParameters {
@@ -22,15 +23,15 @@ export async function fetchUsers(parameters?: FetchUsersParameters): Promise<Pag
 
   // Backend expects "username" query parameter, not "search"
   const { search, skills, ...rest } = parameters ?? {};
-  const apiParams: Record<string, unknown> = { ...rest, username: search };
+  const apiParameters: Record<string, unknown> = { ...rest, username: search };
   // skills[] must be passed as repeated query params: skills=a&skills=b
   if (skills && skills.length > 0) {
-    apiParams.skills = skills;
+    apiParameters.skills = skills;
   }
 
-  const response = await apiClient.get<IUserResponse[]>('/users', {
-    params: apiParams,
-    paramsSerializer: { indexes: null },
+  const response = await apiClient.get<IUserResponse[]>("/users", {
+    params: apiParameters,
+    paramsSerializer: { indexes: false },
   });
   const items = response.data;
 

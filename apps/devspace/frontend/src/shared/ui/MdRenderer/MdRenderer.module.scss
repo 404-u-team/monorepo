@@ -1,118 +1,118 @@
 .wrapper {
-    :global(.wmde-markdown) {
-        background-color: transparent !important;
-        color: var(--text--primary) !important;
-        font-family: inherit !important;
-        font-size: 1rem !important;
-        line-height: 1.7 !important;
-    }
+  :global(.wmde-markdown) {
+    background-color: transparent !important;
+    color: var(--text--primary) !important;
+    font-family: inherit !important;
+    font-size: 1rem !important;
+    line-height: 1.7 !important;
+  }
 
-    :global(.wmde-markdown h1),
-    :global(.wmde-markdown h2),
-    :global(.wmde-markdown h3),
-    :global(.wmde-markdown h4),
-    :global(.wmde-markdown h5),
-    :global(.wmde-markdown h6) {
-        color: var(--text--primary) !important;
-        border-bottom: 1px solid var(--border--divider) !important;
-        padding-bottom: 0.5rem !important;
-        margin-top: 1.5rem !important;
-        margin-bottom: 0.75rem !important;
-    }
+  :global(.wmde-markdown h1),
+  :global(.wmde-markdown h2),
+  :global(.wmde-markdown h3),
+  :global(.wmde-markdown h4),
+  :global(.wmde-markdown h5),
+  :global(.wmde-markdown h6) {
+    color: var(--text--primary) !important;
+    border-bottom: 1px solid var(--border--divider) !important;
+    padding-bottom: 0.5rem !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 0.75rem !important;
+  }
 
-    :global(.wmde-markdown p) {
-        color: var(--text--secondary) !important;
-        margin: 0.75rem 0 !important;
-    }
+  :global(.wmde-markdown p) {
+    color: var(--text--secondary) !important;
+    margin: 0.75rem 0 !important;
+  }
 
-    :global(.wmde-markdown a) {
-        color: var(--brand) !important;
-        text-decoration: underline !important;
+  :global(.wmde-markdown a) {
+    color: var(--brand) !important;
+    text-decoration: underline !important;
 
-        &:hover {
-            color: var(--brand--hover) !important;
-        }
+    &:hover {
+      color: var(--brand--hover) !important;
     }
+  }
 
-    :global(.wmde-markdown code) {
-        background-color: var(--bg--surface) !important;
-        color: var(--text--primary) !important;
-        border-radius: 4px !important;
-        padding: 0.15em 0.4em !important;
-        font-size: 0.875em !important;
-        border: none !important;
-    }
+  :global(.wmde-markdown code) {
+    background-color: var(--bg--surface) !important;
+    color: var(--text--primary) !important;
+    border-radius: 4px !important;
+    padding: 0.15em 0.4em !important;
+    font-size: 0.875em !important;
+    border: none !important;
+  }
 
-    :global(.wmde-markdown pre) {
-        background-color: var(--bg--surface) !important;
-        border: 1px solid var(--border--main) !important;
-        border-radius: 8px !important;
-        padding: 1rem !important;
-        overflow-x: auto !important;
-    }
+  :global(.wmde-markdown pre) {
+    background-color: var(--bg--surface) !important;
+    border: 1px solid var(--border--main) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    overflow-x: auto !important;
+  }
 
-    :global(.wmde-markdown pre code) {
-        background-color: transparent !important;
-        padding: 0 !important;
-        font-size: 0.875rem !important;
-    }
+  :global(.wmde-markdown pre code) {
+    background-color: transparent !important;
+    padding: 0 !important;
+    font-size: 0.875rem !important;
+  }
 
-    :global(.wmde-markdown blockquote) {
-        border-left: 3px solid var(--brand) !important;
-        background-color: var(--brand--subtle) !important;
-        color: var(--text--secondary) !important;
-        padding: 0.75rem 1rem !important;
-        margin: 1rem 0 !important;
-        border-radius: 0 6px 6px 0 !important;
-    }
+  :global(.wmde-markdown blockquote) {
+    border-left: 3px solid var(--brand) !important;
+    background-color: var(--brand--subtle) !important;
+    color: var(--text--secondary) !important;
+    padding: 0.75rem 1rem !important;
+    margin: 1rem 0 !important;
+    border-radius: 0 6px 6px 0 !important;
+  }
 
-    :global(.wmde-markdown blockquote p) {
-        margin: 0 !important;
-    }
+  :global(.wmde-markdown blockquote p) {
+    margin: 0 !important;
+  }
 
-    :global(.wmde-markdown ul),
-    :global(.wmde-markdown ol) {
-        color: var(--text--secondary) !important;
-        padding-left: 1.5rem !important;
-    }
+  :global(.wmde-markdown ul),
+  :global(.wmde-markdown ol) {
+    color: var(--text--secondary) !important;
+    padding-left: 1.5rem !important;
+  }
 
-    :global(.wmde-markdown li) {
-        margin: 0.25rem 0 !important;
-    }
+  :global(.wmde-markdown li) {
+    margin: 0.25rem 0 !important;
+  }
 
-    :global(.wmde-markdown hr) {
-        border: none !important;
-        border-top: 1px solid var(--border--divider) !important;
-        margin: 1.5rem 0 !important;
-    }
+  :global(.wmde-markdown hr) {
+    border: none !important;
+    border-top: 1px solid var(--border--divider) !important;
+    margin: 1.5rem 0 !important;
+  }
 
-    :global(.wmde-markdown table) {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin: 1rem 0 !important;
-    }
+  :global(.wmde-markdown table) {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 1rem 0 !important;
+  }
 
-    :global(.wmde-markdown th) {
-        background-color: var(--bg--surface) !important;
-        border: 1px solid var(--border--main) !important;
-        padding: 0.5rem 0.75rem !important;
-        color: var(--text--primary) !important;
-        font-weight: 600 !important;
-    }
+  :global(.wmde-markdown th) {
+    background-color: var(--bg--surface) !important;
+    border: 1px solid var(--border--main) !important;
+    padding: 0.5rem 0.75rem !important;
+    color: var(--text--primary) !important;
+    font-weight: 600 !important;
+  }
 
-    :global(.wmde-markdown td) {
-        border: 1px solid var(--border--main) !important;
-        padding: 0.5rem 0.75rem !important;
-        color: var(--text--secondary) !important;
-    }
+  :global(.wmde-markdown td) {
+    border: 1px solid var(--border--main) !important;
+    padding: 0.5rem 0.75rem !important;
+    color: var(--text--secondary) !important;
+  }
 
-    :global(.wmde-markdown input[type='checkbox']) {
-        margin-right: 0.5rem !important;
-        accent-color: var(--brand) !important;
-    }
+  :global(.wmde-markdown input[type="checkbox"]) {
+    margin-right: 0.5rem !important;
+    accent-color: var(--brand) !important;
+  }
 
-    :global(.wmde-markdown img) {
-        max-width: 100% !important;
-        border-radius: 6px !important;
-    }
+  :global(.wmde-markdown img) {
+    max-width: 100% !important;
+    border-radius: 6px !important;
+  }
 }

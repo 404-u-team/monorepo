@@ -1,1 +1,1 @@
-export { EditIdeaForm } from './ui/EditIdeaForm';
+export { EditIdeaForm } from "./ui/EditIdeaForm";

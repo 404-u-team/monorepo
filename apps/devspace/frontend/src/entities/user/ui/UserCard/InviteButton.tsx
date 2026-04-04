@@ -1,8 +1,10 @@
 import { useState } from "react";
 import type { JSX } from "react";
-import { Button } from "@/shared/ui/Button/Button";
-import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
+
 import { inviteUserToSlot } from "@/entities/user/api/userApi";
+import { Button } from "@/shared/ui/Button/Button";
+
+import styles from "@/entities/user/ui/UserCard/UserCard.module.scss";
 
 interface InviteButtonProps {
   project_id?: string | undefined;

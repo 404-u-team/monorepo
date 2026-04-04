@@ -4,15 +4,9 @@
     "incremental": true,
     "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -34,17 +28,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     /* Aliases (adjust if you have different structure) */
-    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src",
-    ".storybook/preview.ts",
-    ".storybook/vitest.setup.ts"
-  ],
+  "include": ["src", ".storybook/preview.ts", ".storybook/vitest.setup.ts"],
   "references": []
 }

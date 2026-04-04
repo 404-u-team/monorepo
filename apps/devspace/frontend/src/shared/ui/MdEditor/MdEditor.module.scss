@@ -1,104 +1,108 @@
 .wrapper {
-    border-radius: 8px;
+  border-radius: 8px;
 
-    :global(.w-md-editor) {
-        border: 1px solid var(--border--main) !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-        font-family: inherit !important;
-        background-color: var(--bg--main) !important;
+  :global(.w-md-editor) {
+    border: 1px solid var(--border--main) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    background-color: var(--bg--main) !important;
+  }
+
+  :global(.w-md-editor:focus-within) {
+    border-color: var(--border--active) !important;
+  }
+
+  :global(.w-md-editor-toolbar) {
+    border-bottom: 1px solid var(--border--main) !important;
+    background-color: var(--bg--surface) !important;
+    padding: 6px 8px !important;
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  :global(.w-md-editor-toolbar ul) {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+  }
+
+  :global(.w-md-editor-toolbar li > button) {
+    color: var(--text--secondary) !important;
+    border-radius: 4px !important;
+    padding: 5px 7px !important;
+    transition:
+      color 0.15s,
+      background-color 0.15s !important;
+
+    &:hover {
+      color: var(--text--primary) !important;
+      background-color: var(--border--divider) !important;
     }
 
-    :global(.w-md-editor:focus-within) {
-        border-color: var(--border--active) !important;
+    &:disabled {
+      color: var(--text--disabled) !important;
+      cursor: not-allowed !important;
     }
+  }
 
-    :global(.w-md-editor-toolbar) {
-        border-bottom: 1px solid var(--border--main) !important;
-        background-color: var(--bg--surface) !important;
-        padding: 6px 8px !important;
-        border-radius: 8px 8px 0 0 !important;
-    }
+  :global(.w-md-editor-toolbar-divider) {
+    background-color: var(--border--divider) !important;
+    margin: 0 4px !important;
+  }
 
-    :global(.w-md-editor-toolbar ul) {
-        display: flex !important;
-        align-items: center !important;
-        gap: 2px !important;
-    }
+  :global(.w-md-editor-content) {
+    background-color: var(--bg--main) !important;
+    border-radius: 0 0 8px 8px !important;
+  }
 
-    :global(.w-md-editor-toolbar li > button) {
-        color: var(--text--secondary) !important;
-        border-radius: 4px !important;
-        padding: 5px 7px !important;
-        transition: color 0.15s, background-color 0.15s !important;
+  // Оба слоя (невидимая textarea с курсором и видимый pre с подсветкой)
+  // обязаны иметь идентичные шрифтовые метрики — иначе курсор уплывает.
+  // Используем моноширинный шрифт + фиксированные px-значения.
+  :global(.w-md-editor-text-pre),
+  :global(.w-md-editor-text-pre > code),
+  :global(.w-md-editor-text-input) {
+    // stylelint-disable-next-line font-family-no-missing-generic-family-keyword
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+      monospace !important;
+    font-size: 14px !important;
+    line-height: 22px !important;
+    tab-size: 2 !important;
+  }
 
-        &:hover {
-            color: var(--text--primary) !important;
-            background-color: var(--border--divider) !important;
-        }
+  :global(.w-md-editor-text-input) {
+    color: transparent !important;
+    caret-color: var(--text--primary) !important;
+  }
 
-        &:disabled {
-            color: var(--text--disabled) !important;
-            cursor: not-allowed !important;
-        }
-    }
+  :global(.w-md-editor-preview) {
+    background-color: var(--bg--main) !important;
+    border-left: 1px solid var(--border--divider) !important;
+  }
 
-    :global(.w-md-editor-toolbar-divider) {
-        background-color: var(--border--divider) !important;
-        margin: 0 4px !important;
-    }
+  // Title group dropdown
+  :global(.w-md-editor-toolbar .w-md-editor-toolbar-child) {
+    background-color: var(--bg--main) !important;
+    border: 1px solid var(--border--main) !important;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 8%) !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    overflow: hidden !important;
+  }
 
-    :global(.w-md-editor-content) {
-        background-color: var(--bg--main) !important;
-        border-radius: 0 0 8px 8px !important;
-    }
+  :global(.w-md-editor-toolbar .w-md-editor-toolbar-child ul) {
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
 
-    // Оба слоя (невидимая textarea с курсором и видимый pre с подсветкой)
-    // обязаны иметь идентичные шрифтовые метрики — иначе курсор уплывает.
-    // Используем моноширинный шрифт + фиксированные px-значения.
-    :global(.w-md-editor-text-pre),
-    :global(.w-md-editor-text-pre > code),
-    :global(.w-md-editor-text-input) {
-        // stylelint-disable-next-line font-family-no-missing-generic-family-keyword
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
-        font-size: 14px !important;
-        line-height: 22px !important;
-        tab-size: 2 !important;
-    }
+  :global(.w-md-editor-toolbar .w-md-editor-toolbar-child li > button) {
+    padding: 6px 12px !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
 
-    :global(.w-md-editor-text-input) {
-        color: transparent !important;
-        caret-color: var(--text--primary) !important;
-    }
-
-    :global(.w-md-editor-preview) {
-        background-color: var(--bg--main) !important;
-        border-left: 1px solid var(--border--divider) !important;
-    }
-
-    // Title group dropdown
-    :global(.w-md-editor-toolbar .w-md-editor-toolbar-child) {
-        background-color: var(--bg--main) !important;
-        border: 1px solid var(--border--main) !important;
-        box-shadow: 0 4px 16px rgb(0 0 0 / 8%) !important;
-        border-radius: 8px !important;
-        padding: 4px !important;
-        overflow: hidden !important;
-    }
-
-    :global(.w-md-editor-toolbar .w-md-editor-toolbar-child ul) {
-        flex-direction: column !important;
-        gap: 2px !important;
-    }
-
-    :global(.w-md-editor-toolbar .w-md-editor-toolbar-child li > button) {
-        padding: 6px 12px !important;
-        width: 100% !important;
-        justify-content: flex-start !important;
-    }
-
-    // Fullscreen mode
-    :global(.w-md-editor-fullscreen) {
-        z-index: 9999 !important;
-    }
+  // Fullscreen mode
+  :global(.w-md-editor-fullscreen) {
+    z-index: 9999 !important;
+  }
 }

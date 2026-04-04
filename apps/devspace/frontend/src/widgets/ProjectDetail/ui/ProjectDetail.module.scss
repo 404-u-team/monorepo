@@ -1,528 +1,532 @@
 .container {
-    padding: 2rem 0;
-    max-width: 1000px;
-    margin: 0 auto;
+  padding: 2rem 0;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .backLink {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text--secondary);
-    text-decoration: none;
-    font-size: 0.875rem;
-    margin-bottom: 2rem;
-    transition: color 0.2s;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text--secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 
-    &:hover {
-        color: var(--brand);
-    }
+  &:hover {
+    color: var(--brand);
+  }
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-    margin-bottom: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 3rem;
 
-    @media (width <= 768px) {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
+  @media (width <= 768px) {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 }
 
 .titleWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
 }
 
 .title {
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text--primary);
-    line-height: 1.2;
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text--primary);
+  line-height: 1.2;
 
-    @media (width <= 768px) {
-        font-size: 1.875rem;
-    }
+  @media (width <= 768px) {
+    font-size: 1.875rem;
+  }
 }
 
 .actionButtons {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    flex-shrink: 0;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .editTitle {
-    margin: 0 0 2rem;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text--primary);
+  margin: 0 0 2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text--primary);
 }
 
 .content {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 4rem;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 4rem;
 
-    @media (width <= 768px) {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
+  @media (width <= 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .mainSection {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
 .descriptionSection {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .sectionTitle {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text--primary);
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text--primary);
 }
 
 .descriptionText {
-    margin: 0;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--text--secondary);
-    white-space: pre-wrap;
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text--secondary);
+  white-space: pre-wrap;
 }
 
 // Slots section
 .slotsSection {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .slotsSectionHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .emptySlots {
-    margin: 0;
-    color: var(--text--disabled);
-    font-size: 0.9375rem;
+  margin: 0;
+  color: var(--text--disabled);
+  font-size: 0.9375rem;
 }
 
 .slotsList {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .secondarySkills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
 }
 
 .skillFilterRow {
-    max-width: 320px;
+  max-width: 320px;
 }
 
 .slotCard {
-    padding: 1.25rem;
-    border-radius: 10px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--main);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--main);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .slotHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .slotInfo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .slotTitle {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text--primary);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text--primary);
 }
 
 .slotDescription {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--text--secondary);
-    line-height: 1.5;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text--secondary);
+  line-height: 1.5;
 }
 
 .deleteSlotBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: var(--text--disabled);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s, background-color 0.2s;
-    flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text--disabled);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+  flex-shrink: 0;
 
-    &:hover {
-        color: var(--status--error);
-        background-color: var(--bg--surface);
-    }
+  &:hover {
+    color: var(--status--error);
+    background-color: var(--bg--surface);
+  }
 }
 
 // Create slot form
 .createSlotForm {
-    padding: 1.25rem;
-    border-radius: 10px;
-    border: 1px dashed var(--border--main);
-    background-color: var(--bg--surface);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px dashed var(--border--main);
+  background-color: var(--bg--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .createSlotTitle {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text--primary);
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text--primary);
 }
 
 .slotField {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
 }
 
 .slotLabel {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text--secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text--secondary);
 }
 
 .slotInput {
-    padding: 0.625rem 0.875rem;
-    border-radius: 6px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--main);
-    font-family: inherit;
-    font-size: 0.9375rem;
-    color: var(--text--primary);
-    transition: border-color 0.2s;
+  padding: 0.625rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--main);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--text--primary);
+  transition: border-color 0.2s;
 
-    &:focus {
-        outline: none;
-        border-color: var(--brand);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
 
-    &:disabled {
-        background-color: var(--bg--disabled);
-        cursor: not-allowed;
-    }
+  &:disabled {
+    background-color: var(--bg--disabled);
+    cursor: not-allowed;
+  }
 }
 
 .slotTextarea {
-    padding: 0.625rem 0.875rem;
-    border-radius: 6px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--main);
-    font-family: inherit;
-    font-size: 0.9375rem;
-    color: var(--text--primary);
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.2s;
+  padding: 0.625rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--main);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--text--primary);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
 
-    &:focus {
-        outline: none;
-        border-color: var(--brand);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
 
-    &:disabled {
-        background-color: var(--bg--disabled);
-        cursor: not-allowed;
-    }
+  &:disabled {
+    background-color: var(--bg--disabled);
+    cursor: not-allowed;
+  }
 }
 
 .slotError {
-    margin: 0;
-    color: var(--status--error);
-    font-size: 0.875rem;
+  margin: 0;
+  color: var(--status--error);
+  font-size: 0.875rem;
 }
 
 .slotFormActions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
 }
 
 // Cover letter inline form
 .coverLetterForm {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--border--divider);
-    margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border--divider);
+  margin-top: 0.25rem;
 }
 
 .coverLetterTextarea {
-    padding: 0.625rem 0.875rem;
-    border-radius: 6px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--main);
-    font-family: inherit;
-    font-size: 0.9375rem;
-    color: var(--text--primary);
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.2s;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 0.625rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--main);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--text--primary);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 
-    &::placeholder {
-        color: var(--text--disabled);
-    }
+  &::placeholder {
+    color: var(--text--disabled);
+  }
 
-    &:focus {
-        outline: none;
-        border-color: var(--brand);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
 
-    &:disabled {
-        background-color: var(--bg--surface);
-        cursor: not-allowed;
-    }
+  &:disabled {
+    background-color: var(--bg--surface);
+    cursor: not-allowed;
+  }
 }
 
 .coverLetterActions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
 }
 
 // Slot actions (edit + delete buttons grouped)
 .slotActions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .editSlotBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: var(--text--disabled);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s, background-color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text--disabled);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
 
-    &:hover {
-        color: var(--brand);
-        background-color: var(--bg--surface);
-    }
+  &:hover {
+    color: var(--brand);
+    background-color: var(--bg--surface);
+  }
 }
 
 // Inline edit form
 .editSlotForm {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px dashed var(--border--main);
-    background-color: var(--bg--surface);
-    margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px dashed var(--border--main);
+  background-color: var(--bg--surface);
+  margin-top: 0.25rem;
 }
 
 // Apply status badges
 .applyStatus {
-    padding-top: 0.5rem;
+  padding-top: 0.5rem;
 }
 
 .applyStatusPending {
-    display: inline-block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--status--warning, #d97706);
-    background-color: color-mix(in srgb, var(--status--warning, #d97706) 12%, transparent);
-    padding: 4px 10px;
-    border-radius: 20px;
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--status--warning, #d97706);
+  background-color: color-mix(in srgb, var(--status--warning, #d97706) 12%, transparent);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .applyStatusAccepted {
-    display: inline-block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--status--success);
-    background-color: color-mix(in srgb, var(--status--success) 12%, transparent);
-    padding: 4px 10px;
-    border-radius: 20px;
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--status--success);
+  background-color: color-mix(in srgb, var(--status--success) 12%, transparent);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .applyStatusRejected {
-    display: inline-block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--status--error);
-    background-color: color-mix(in srgb, var(--status--error) 12%, transparent);
-    padding: 4px 10px;
-    border-radius: 20px;
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--status--error);
+  background-color: color-mix(in srgb, var(--status--error) 12%, transparent);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .applyError {
-    margin: 0;
-    font-size: 0.8125rem;
-    color: var(--status--error);
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--status--error);
 }
 
 // Requests
 .requests {
-    margin-top: 0.5rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border--divider);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border--divider);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .requestsTitle {
-    margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text--secondary);
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text--secondary);
 }
 
 .requestItem {
-    padding: 0.75rem;
-    border-radius: 8px;
-    background-color: var(--bg--surface);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: var(--bg--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .requestUser {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text--primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text--primary);
 }
 
 .coverLetter {
-    margin: 0;
-    font-size: 0.8125rem;
-    color: var(--text--secondary);
-    line-height: 1.4;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text--secondary);
+  line-height: 1.4;
 }
 
 .requestActions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 // Sidebar
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .leaderCard {
-    padding: 1.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--surface);
 }
 
 .ideaCard {
-    padding: 1.25rem;
-    border-radius: 12px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--surface);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .ideaLink {
-    color: var(--brand);
-    font-size: 0.9375rem;
-    text-decoration: none;
-    font-weight: 500;
+  color: var(--brand);
+  font-size: 0.9375rem;
+  text-decoration: none;
+  font-weight: 500;
 
-    &:hover {
-        text-decoration: underline;
-    }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .sidebarTitle {
-    margin: 0 0 1rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text--primary);
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text--primary);
 }
 
 .leaderInfo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .nickname {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text--primary);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text--primary);
 }
 
 // Skeletons
 .skeletonTitle {
-    height: 48px;
-    width: 60%;
-    margin-bottom: 24px;
+  height: 48px;
+  width: 60%;
+  margin-bottom: 24px;
 }
 
 .skeletonText {
-    height: 20px;
-    width: 100%;
-    margin-bottom: 12px;
+  height: 20px;
+  width: 100%;
+  margin-bottom: 12px;
 }

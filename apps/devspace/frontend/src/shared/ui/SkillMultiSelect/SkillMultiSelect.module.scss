@@ -1,198 +1,198 @@
 .container {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 
-    &.disabled {
-        opacity: 0.5;
-        pointer-events: none;
-    }
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .label {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text--secondary);
-    margin-bottom: 0.375rem;
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text--secondary);
+  margin-bottom: 0.375rem;
 }
 
 /* ── Input area with tags ───────────────────────────────────────────────── */
 
 .inputArea {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    min-height: 44px;
-    padding: 0.375rem 0.625rem;
-    background-color: var(--bg--main);
-    border: 1px solid var(--border--main);
-    border-radius: 8px;
-    cursor: text;
-    transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.375rem 0.625rem;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
+  border-radius: 8px;
+  cursor: text;
+  transition: border-color 0.2s;
 
-    &:hover {
-        border-color: var(--border--hover);
-    }
+  &:hover {
+    border-color: var(--border--hover);
+  }
 
-    &.focused {
-        border-color: var(--brand);
-        border-radius: 8px 8px 0 0;
-    }
+  &.focused {
+    border-color: var(--brand);
+    border-radius: 8px 8px 0 0;
+  }
 }
 
 /* ── Tags ───────────────────────────────────────────────────────────────── */
 
 .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.1875rem 0.5rem;
-    border-radius: 6px;
-    background-color: var(--brand--subtle);
-    color: var(--brand);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1.4;
-    white-space: nowrap;
-    animation: tag-in 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 6px;
+  background-color: var(--brand--subtle);
+  color: var(--brand);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  animation: tag-in 0.15s ease;
 }
 
 .tagDot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .tagName {
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tagRemove {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    padding: 1px;
-    cursor: pointer;
-    color: var(--brand);
-    opacity: 0.6;
-    border-radius: 3px;
-    transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  cursor: pointer;
+  color: var(--brand);
+  opacity: 0.6;
+  border-radius: 3px;
+  transition: opacity 0.15s;
 
-    &:hover {
-        opacity: 1;
-    }
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .maxHint {
-    font-size: 0.75rem;
-    color: var(--text--disabled);
-    padding: 0 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text--disabled);
+  padding: 0 0.25rem;
 }
 
 /* ── Search input inside area ───────────────────────────────────────────── */
 
 .inputWrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    flex: 1;
-    min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 120px;
 }
 
 .searchIcon {
-    color: var(--text--disabled);
-    flex-shrink: 0;
+  color: var(--text--disabled);
+  flex-shrink: 0;
 }
 
 .input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: inherit;
-    font-size: 0.875rem;
-    color: var(--text--primary);
-    outline: none;
-    padding: 0.25rem 0;
-    min-width: 0;
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--text--primary);
+  outline: none;
+  padding: 0.25rem 0;
+  min-width: 0;
 
-    &::placeholder {
-        color: var(--text--disabled);
-    }
+  &::placeholder {
+    color: var(--text--disabled);
+  }
 }
 
 /* ── Dropdown ───────────────────────────────────────────────────────────── */
 
 .dropdown {
-    position: absolute;
-    z-index: 100;
-    left: 0;
-    right: 0;
-    top: 100%;
-    margin: 0;
-    padding: 0.25rem 0;
-    list-style: none;
-    background-color: var(--bg--main);
-    border: 1px solid var(--border--main);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0 8px 24px -4px rgb(8 16 26 / 12%);
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px -4px rgb(8 16 26 / 12%);
 }
 
 .option {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    color: var(--text--primary);
-    transition: background-color 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text--primary);
+  transition: background-color 0.1s;
 
-    &.highlighted {
-        background-color: var(--bg--surface);
-    }
+  &.highlighted {
+    background-color: var(--bg--surface);
+  }
 }
 
 .optionName {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .optionDot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .statusItem {
-    padding: 0.75rem;
-    text-align: center;
-    font-size: 0.875rem;
-    color: var(--text--disabled);
-    cursor: default;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text--disabled);
+  cursor: default;
 }
 
 /* ── Animations ─────────────────────────────────────────────────────────── */
 
 @keyframes tag-in {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
