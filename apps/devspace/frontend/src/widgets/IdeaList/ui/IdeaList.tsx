@@ -1,10 +1,11 @@
-import { type JSX } from "react";
 import { useNavigate, useSearch, Link } from "@tanstack/react-router";
-import { observer } from "mobx-react-lite";
 import { Plus, Star } from "lucide-react";
+import { observer } from "mobx-react-lite";
+import { type JSX } from "react";
+
 import { IdeaCard, type IIdea } from "@/entities/idea";
-import { DataListLayout, Button } from "@/shared/ui";
 import { useStore } from "@/shared/lib/store";
+import { DataListLayout, Button } from "@/shared/ui";
 
 interface SearchParameters {
   page?: number | undefined;
@@ -17,7 +18,10 @@ export interface IdeaListProps {
   totalPages: number;
 }
 
-export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaListProps): JSX.Element {
+export const IdeaList = observer(function IdeaList({
+  ideas,
+  totalPages,
+}: IdeaListProps): JSX.Element {
   const { userStore } = useStore();
   const searchParameters: SearchParameters = useSearch({
     strict: false,
@@ -45,7 +49,7 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
     void navigate({
       search: (previous: SearchParameters) => ({
         ...previous,
-        favorites: previous.favorites ? undefined : true,
+        favorites: previous.favorites === true ? undefined : true,
         page: 1,
       }),
     });
@@ -54,10 +58,7 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
   const isFavoritesActive = searchParameters.favorites === true;
 
   const favoritesButton = userStore.isAuthenticated ? (
-    <Button
-      variant={isFavoritesActive ? "primary" : "outline"}
-      onClick={handleToggleFavorites}
-    >
+    <Button variant={isFavoritesActive ? "primary" : "outline"} onClick={handleToggleFavorites}>
       <Star size={16} fill={isFavoritesActive ? "currentColor" : "none"} />
       Избранное
     </Button>
@@ -88,9 +89,7 @@ export const IdeaList = observer(function IdeaList({ ideas, totalPages }: IdeaLi
       controlsNode={userStore.isAuthenticated ? controls : createButton}
       isEmpty={ideas.length === 0}
       emptyMessage={isFavoritesActive ? "В избранном пока нет идей" : "Идеи не найдены"}
-      currentPage={
-        Number((searchParameters as Record<string, string>).page) || 1
-      }
+      currentPage={Number((searchParameters as Record<string, string>).page) || 1}
       totalPages={totalPages}
       onPageChange={handlePageChange}
     >

@@ -1,5 +1,6 @@
-import styles from './HowItWorks.module.scss';
-import type { JSX } from 'react';
+import type { JSX } from "react";
+
+import styles from "./HowItWorks.module.scss";
 
 export function HowItWorks(): JSX.Element {
   return (
@@ -7,9 +8,7 @@ export function HowItWorks(): JSX.Element {
       <div className={styles.container}>
         <div className={styles.header}>
           <h2 className={styles.title}>Как это работает</h2>
-          <p className={styles.subtitle}>
-            Весь путь от поиска команды до успешного релиза
-          </p>
+          <p className={styles.subtitle}>Весь путь от поиска команды до успешного релиза</p>
         </div>
 
         <div className={styles.steps}>
@@ -21,7 +20,8 @@ export function HowItWorks(): JSX.Element {
             <div className={styles.stepContent}>
               <h3 className={styles.stepTitle}>Расскажите о себе</h3>
               <p className={styles.stepText}>
-                Создайте профиль, укажите свой стек технологий, навыки и проекты, над которыми вы хотели бы поработать.
+                Создайте профиль, укажите свой стек технологий, навыки и проекты, над которыми вы
+                хотели бы поработать.
               </p>
             </div>
           </div>
@@ -34,7 +34,8 @@ export function HowItWorks(): JSX.Element {
             <div className={styles.stepContent}>
               <h3 className={styles.stepTitle}>Найдите или предложите</h3>
               <p className={styles.stepText}>
-                Опубликуйте свою идею проекта или изучите уже существующие, откликнувшись на открытые для вас слоты.
+                Опубликуйте свою идею проекта или изучите уже существующие, откликнувшись на
+                открытые для вас слоты.
               </p>
             </div>
           </div>
@@ -46,7 +47,8 @@ export function HowItWorks(): JSX.Element {
             <div className={styles.stepContent}>
               <h3 className={styles.stepTitle}>Создавайте вместе</h3>
               <p className={styles.stepText}>
-                Объединяйтесь с другими участниками, распределяйте задачи, общайтесь и доводите продукт до финального релиза.
+                Объединяйтесь с другими участниками, распределяйте задачи, общайтесь и доводите
+                продукт до финального релиза.
               </p>
             </div>
           </div>

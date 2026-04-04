@@ -3,13 +3,9 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "incremental": true,
     "target": "ES2023",
-    "lib": [
-      "ES2023"
-    ],
+    "lib": ["ES2023"],
     "module": "ESNext",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -28,18 +24,10 @@
     "noUncheckedSideEffectImports": true,
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "vite.config.ts",
-    "vitest.shims.d.ts",
-    "scripts/**/*.ts",
-    ".storybook/main.ts"
-  ],
+  "include": ["vite.config.ts", "vitest.shims.d.ts", "scripts/**/*.ts", ".storybook/main.ts"],
   "references": []
 }

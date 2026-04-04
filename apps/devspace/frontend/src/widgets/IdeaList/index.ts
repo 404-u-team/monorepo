@@ -1,1 +1,1 @@
-export { IdeaList, type IdeaListProps } from './ui/IdeaList';
+export { IdeaList, type IdeaListProps } from "./ui/IdeaList";

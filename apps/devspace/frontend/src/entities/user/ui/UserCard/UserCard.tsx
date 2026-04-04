@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState, type JSX } from "react";
-import { clsx } from "clsx";
 import { Link } from "@tanstack/react-router";
+import { clsx } from "clsx";
+import { useEffect, useRef, useState, type JSX } from "react";
+
+import { UserAvatar } from "@/shared/ui";
+
 import { fetchUserById } from "../../api/userApi";
 // main_role is now returned as an object from the API, no need to fetch separately
 import type { IUserResponse } from "../../model/IUserResponse";
 import { isValidMainRole } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
-import { UserAvatar } from "@/shared/ui";
 import InviteButton from "./InviteButton";
+
 import styles from "./UserCard.module.scss";
 
 export interface UserCardProps {
@@ -72,7 +75,9 @@ export function UserCard({
 
     const observer = new ResizeObserver(checkOverflow);
     if (skillBoxReference.current !== null) observer.observe(skillBoxReference.current);
-    return (): void => { observer.disconnect(); };
+    return (): void => {
+      observer.disconnect();
+    };
   }, [user?.skills, needsScroll]);
 
   if (isLoading || user === undefined) {
@@ -99,15 +104,11 @@ export function UserCard({
 
         <div className={styles.textInfo}>
           <span className={styles.nickname}>{user.nickname}</span>
-          {mainRoleName !== undefined && (
-            <span className={styles.mainRole}>{mainRoleName}</span>
-          )}
+          {mainRoleName !== undefined && <span className={styles.mainRole}>{mainRoleName}</span>}
         </div>
       </div>
 
-      {user.bio !== '' && (
-        <p className={styles.bio}>{user.bio}</p>
-      )}
+      {user.bio !== "" && <p className={styles.bio}>{user.bio}</p>}
 
       {skills.length > 0 && (
         <div

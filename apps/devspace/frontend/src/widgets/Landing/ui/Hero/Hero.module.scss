@@ -23,7 +23,7 @@
   z-index: 2;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -60px;
     background: var(--bg--main);
@@ -106,7 +106,9 @@
   border: 1px solid var(--border--divider);
   pointer-events: auto;
   cursor: default;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   svg {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);

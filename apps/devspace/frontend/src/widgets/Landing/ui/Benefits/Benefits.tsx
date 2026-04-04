@@ -1,6 +1,7 @@
-import styles from './Benefits.module.scss';
-import type { JSX } from 'react';
-import { Award, Briefcase, Globe } from 'lucide-react';
+import { Award, Briefcase, Globe } from "lucide-react";
+import type { JSX } from "react";
+
+import styles from "./Benefits.module.scss";
 
 export function Benefits(): JSX.Element {
   return (
@@ -9,7 +10,8 @@ export function Benefits(): JSX.Element {
         <div className={styles.header}>
           <h2 className={styles.title}>Почему DevSpace?</h2>
           <p className={styles.subtitle}>
-            Мы решаем главную проблему начинающих специалистов - отсутствие реального опыта работы в команде над настоящими продуктами.
+            Мы решаем главную проблему начинающих специалистов - отсутствие реального опыта работы в
+            команде над настоящими продуктами.
           </p>
         </div>
 
@@ -20,7 +22,8 @@ export function Benefits(): JSX.Element {
             </div>
             <h3 className={styles.cardTitle}>Реальный опыт</h3>
             <p className={styles.cardText}>
-              Получите практический опыт разработки в команде, который высоко ценят работодатели при найме.
+              Получите практический опыт разработки в команде, который высоко ценят работодатели при
+              найме.
             </p>
           </div>
 
@@ -30,7 +33,8 @@ export function Benefits(): JSX.Element {
             </div>
             <h3 className={styles.cardTitle}>Сильное портфолио</h3>
             <p className={styles.cardText}>
-              Превратите одиночные, скучные пет-проекты в полноценные совместные кейсы для вашего резюме.
+              Превратите одиночные, скучные пет-проекты в полноценные совместные кейсы для вашего
+              резюме.
             </p>
           </div>
 
@@ -40,7 +44,8 @@ export function Benefits(): JSX.Element {
             </div>
             <h3 className={styles.cardTitle}>Полезный нетворкинг</h3>
             <p className={styles.cardText}>
-              Находите крутых разработчиков, дизайнеров и продактов. Создавайте связи для будущих стартапов или работы.
+              Находите крутых разработчиков, дизайнеров и продактов. Создавайте связи для будущих
+              стартапов или работы.
             </p>
           </div>
         </div>

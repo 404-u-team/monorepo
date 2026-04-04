@@ -1,10 +1,11 @@
-import { type JSX } from "react";
 import { useNavigate, useSearch, Link } from "@tanstack/react-router";
-import { observer } from "mobx-react-lite";
 import { Plus } from "lucide-react";
+import { observer } from "mobx-react-lite";
+import { type JSX } from "react";
+
 import { ProjectCard, type IProject } from "@/entities/project";
-import { Dropdown, DataListLayout, Button } from "@/shared/ui";
 import { useStore } from "@/shared/lib/store";
+import { Dropdown, DataListLayout, Button } from "@/shared/ui";
 
 interface SearchParameters {
   page?: number | undefined;
@@ -78,7 +79,7 @@ export const ProjectList = observer(function ProjectList({
   ) : undefined;
 
   const controlsNode = (
-    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
       {StatusFilter}
       {createButton}
     </div>
@@ -93,18 +94,12 @@ export const ProjectList = observer(function ProjectList({
       controlsNode={controlsNode}
       isEmpty={projects.length === 0}
       emptyMessage="Проекты не найдены"
-      currentPage={
-        Number((searchParameters as Record<string, string>).page) || 1
-      }
+      currentPage={Number((searchParameters as Record<string, string>).page) || 1}
       totalPages={totalPages}
       onPageChange={handlePageChange}
     >
       {projects.map((project) => (
-        <ProjectCard
-          key={project.id}
-          projectId={project.id}
-          to={`/project/${project.id}`}
-        />
+        <ProjectCard key={project.id} projectId={project.id} to={`/project/${project.id}`} />
       ))}
     </DataListLayout>
   );

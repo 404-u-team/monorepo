@@ -1,22 +1,22 @@
 .pagination {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
 }
 
 .pages {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .navButton {
-    padding: 8px;
+  padding: 8px;
 }
 
 .pageButton {
-    min-width: 36px;
-    padding: 8px;
-    font-weight: 500;
+  min-width: 36px;
+  padding: 8px;
+  font-weight: 500;
 }

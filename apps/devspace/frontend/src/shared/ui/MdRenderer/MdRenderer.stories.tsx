@@ -1,13 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { MdRenderer } from './MdRenderer';
+import type { Meta, StoryObj } from "@storybook/react";
+
+import { MdRenderer } from "./MdRenderer";
 
 const meta: Meta<typeof MdRenderer> = {
-    title: 'shared/ui/MdRenderer',
-    component: MdRenderer,
-    tags: ['autodocs'],
-    parameters: {
-        layout: 'centered',
-    },
+  title: "shared/ui/MdRenderer",
+  component: MdRenderer,
+  tags: ["autodocs"],
+  parameters: {
+    layout: "centered",
+  },
 };
 
 export default meta;
@@ -33,19 +34,19 @@ console.log(greeting);
 `;
 
 export const Default: Story = {
-    args: {
-        source: sampleMarkdown,
-    },
+  args: {
+    source: sampleMarkdown,
+  },
 };
 
 export const LongContent: Story = {
-    args: {
-        source: sampleMarkdown.repeat(5),
-    },
+  args: {
+    source: sampleMarkdown.repeat(5),
+  },
 };
 
 export const Empty: Story = {
-    args: {
-        source: '',
-    },
+  args: {
+    source: "",
+  },
 };

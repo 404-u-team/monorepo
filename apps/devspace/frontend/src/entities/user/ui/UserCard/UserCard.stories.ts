@@ -1,6 +1,7 @@
-import { createElement } from "react";
-import { http, HttpResponse } from "msw";
 import type { Meta, StoryObj } from "@storybook/react";
+import { http, HttpResponse } from "msw";
+import { createElement } from "react";
+
 import { UserCard } from "./UserCard";
 
 const MOCK_USER = {
@@ -30,16 +31,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
     main_role: "Backend Developer",
     nickname: "bob_builder",
     bio: "Backend engineer specializing in Python and microservices. Experienced with FastAPI, Django, and PostgreSQL.",
-    skills: [
-      "Python",
-      "FastAPI",
-      "Django",
-      "PostgreSQL",
-      "Redis",
-      "Docker",
-      "Kafka",
-      "REST API",
-    ],
+    skills: ["Python", "FastAPI", "Django", "PostgreSQL", "Redis", "Docker", "Kafka", "REST API"],
   },
   "user-3": {
     id: "user-3",
@@ -47,16 +39,7 @@ const MOCK_USERS: Record<string, typeof MOCK_USER> = {
     main_role: "DevOps Engineer",
     nickname: "charlie_ops",
     bio: "Infrastructure and automation enthusiast. Kubernetes certified. Love building scalable and reliable systems.",
-    skills: [
-      "Kubernetes",
-      "Docker",
-      "AWS",
-      "Terraform",
-      "CI/CD",
-      "Prometheus",
-      "Grafana",
-      "Linux",
-    ],
+    skills: ["Kubernetes", "Docker", "AWS", "Terraform", "CI/CD", "Prometheus", "Grafana", "Linux"],
   },
   "user-4": {
     id: "user-4",
@@ -130,8 +113,7 @@ const meta = {
   },
   tags: ["autodocs"],
   decorators: [
-    (Story) =>
-      createElement("div", { style: { width: "380px" } }, createElement(Story)),
+    (Story) => createElement("div", { style: { width: "380px" } }, createElement(Story)),
   ],
 } satisfies Meta<typeof UserCard>;
 

@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ProfileForm } from "@/features/profile";
-import { useUserStore } from "@/entities/user";
 import type { JSX } from "react";
 import { useEffect } from "react";
+
+import { useUserStore } from "@/entities/user";
+import { ProfileForm } from "@/features/profile";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,

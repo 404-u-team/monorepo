@@ -1,171 +1,173 @@
 .overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgb(8 16 26 / 48%);
-    backdrop-filter: blur(4px);
-    padding: 1rem;
-    animation: fade-in 0.15s ease;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(8 16 26 / 48%);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+  animation: fade-in 0.15s ease;
 }
 
 .modal {
-    position: relative;
-    background-color: var(--bg--main);
-    border: 1px solid var(--border--main);
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 440px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    box-shadow:
-        0 4px 6px -1px rgb(8 16 26 / 8%),
-        0 20px 40px -8px rgb(8 16 26 / 16%);
-    animation: slide-up 0.2s ease;
+  position: relative;
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow:
+    0 4px 6px -1px rgb(8 16 26 / 8%),
+    0 20px 40px -8px rgb(8 16 26 / 16%);
+  animation: slide-up 0.2s ease;
 }
 
 /* ── Icon wrapper ── */
 
 .iconWrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .iconInfo {
-    background-color: var(--brand--subtle);
-    color: var(--brand);
+  background-color: var(--brand--subtle);
+  color: var(--brand);
 }
 
 .iconWarning {
-    background-color: rgb(247 144 9 / 12%);
-    color: var(--status--warning);
+  background-color: rgb(247 144 9 / 12%);
+  color: var(--status--warning);
 }
 
 .iconDanger {
-    background-color: rgb(217 45 32 / 10%);
-    color: var(--status--error);
+  background-color: rgb(217 45 32 / 10%);
+  color: var(--status--error);
 }
 
 /* ── Body ── */
 
 .body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text--primary);
-    margin: 0;
-    line-height: 1.4;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text--primary);
+  margin: 0;
+  line-height: 1.4;
 }
 
 .description {
-    font-size: 0.9375rem;
-    color: var(--text--secondary);
-    margin: 0;
-    line-height: 1.6;
+  font-size: 0.9375rem;
+  color: var(--text--secondary);
+  margin: 0;
+  line-height: 1.6;
 }
 
 .content {
-    margin-top: 0.25rem;
+  margin-top: 0.25rem;
 }
 
 /* ── Actions ── */
 
 .actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 /* ── Confirm button severity overrides ── */
 
 .confirmButton {
-    &.confirmWarning {
-        background-color: var(--status--warning);
-        color: var(--text--onWarning);
+  &.confirmWarning {
+    background-color: var(--status--warning);
+    color: var(--text--onWarning);
 
-        &:hover:not(:disabled) {
-            filter: brightness(1.08);
-        }
-
-        &:active:not(:disabled) {
-            filter: brightness(0.94);
-        }
+    &:hover:not(:disabled) {
+      filter: brightness(1.08);
     }
 
-    &.confirmDanger {
-        background-color: var(--status--error);
-        color: var(--text--onError);
-
-        &:hover:not(:disabled) {
-            filter: brightness(1.1);
-        }
-
-        &:active:not(:disabled) {
-            filter: brightness(0.92);
-        }
+    &:active:not(:disabled) {
+      filter: brightness(0.94);
     }
+  }
+
+  &.confirmDanger {
+    background-color: var(--status--error);
+    color: var(--text--onError);
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    &:active:not(:disabled) {
+      filter: brightness(0.92);
+    }
+  }
 }
 
 /* ── Close button ── */
 
 .closeButton {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: var(--text--disabled);
-    cursor: pointer;
-    transition: background-color 0.15s, color 0.15s;
-    padding: 0;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text--disabled);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+  padding: 0;
 
-    &:hover {
-        background-color: var(--bg--surface);
-        color: var(--text--primary);
-    }
+  &:hover {
+    background-color: var(--bg--surface);
+    color: var(--text--primary);
+  }
 }
 
 /* ── Animations ── */
 
 @keyframes fade-in {
-    from {
-        opacity: 0;
-    }
+  from {
+    opacity: 0;
+  }
 
-    to {
-        opacity: 1;
-    }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

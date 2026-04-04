@@ -1,19 +1,28 @@
+import { Link } from "@tanstack/react-router";
+import { clsx } from "clsx";
+import { Camera, Check, Plus, User, X } from "lucide-react";
 import type { JSX } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Camera, Check, Plus, User, X } from "lucide-react";
+
+import {
+  fetchProjects,
+  ProjectCard,
+  getMyRequests,
+  acceptRequest,
+  rejectRequest,
+  type IRequest,
+} from "@/entities/project";
+import { fetchSkills } from "@/entities/skill";
 import { apiClient } from "@/shared/api/client";
-import { clsx } from "clsx";
 import { Button, Input, Skeleton, SkillSearch } from "@/shared/ui";
 import type { SkillSearchOption } from "@/shared/ui";
-import { fetchSkills } from "@/entities/skill";
-import { fetchProjects, ProjectCard, getMyRequests, acceptRequest, rejectRequest, type IRequest } from "@/entities/project";
+
 // main_role comes as a full object from API now
 import styles from "./ProfileForm.module.scss";
 
 export type ProfileFormProps = Record<string, never>;
 
-interface IMainRoleObj {
+interface IMainRoleObject {
   id: string;
   name: string;
   parent_id?: string | null;
@@ -26,7 +35,7 @@ interface IProfileData {
   nickname: string;
   avatar_url: string | undefined;
   bio: string | undefined;
-  main_role: IMainRoleObj | null | undefined;
+  main_role: IMainRoleObject | null | undefined;
   skills: IProfileSkill[];
 }
 
@@ -50,13 +59,17 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
   const [initialNickname, setInitialNickname] = useState("");
   const [initialBio, setInitialBio] = useState("");
   const [initialMainRole, setInitialMainRole] = useState("");
-  const [initialMainRoleOption, setInitialMainRoleOption] = useState<SkillSearchOption | undefined>(undefined);
+  const [initialMainRoleOption, setInitialMainRoleOption] = useState<SkillSearchOption | undefined>(
+    undefined,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | undefined>(undefined);
 
   const [skills, setSkills] = useState<IProfileSkill[]>([]);
-  const [skillSearchValue, setSkillSearchValue] = useState<SkillSearchOption | undefined>(undefined);
+  const [skillSearchValue, setSkillSearchValue] = useState<SkillSearchOption | undefined>(
+    undefined,
+  );
   const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [removingSkillId, setRemovingSkillId] = useState<string | undefined>(undefined);
 
@@ -96,10 +109,14 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           setInitialBio(data.bio ?? "");
           setSkills(data.skills);
 
-          const roleObj = data.main_role;
-          setInitialMainRole(roleObj?.id ?? "");
-          if (roleObj !== null && roleObj !== undefined && roleObj.id !== undefined) {
-            const roleOption: SkillSearchOption = { id: roleObj.id, name: roleObj.name, color: roleObj.color };
+          const roleObject = data.main_role;
+          setInitialMainRole(roleObject?.id ?? "");
+          if (roleObject?.id !== undefined) {
+            const roleOption: SkillSearchOption = {
+              id: roleObject.id,
+              name: roleObject.name,
+              color: roleObject.color,
+            };
             setMainRole(roleOption);
             setInitialMainRoleOption(roleOption);
           }
@@ -115,7 +132,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
     }
 
     void load();
-    return (): void => { cancelled = true; };
+    return (): void => {
+      cancelled = true;
+    };
   }, []);
 
   const loadProjects = async (userId: string): Promise<void> => {
@@ -146,7 +165,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
     setRequestActionId(requestId);
     try {
       const updated = await acceptRequest(requestId);
-      setMyRequests((previous) => previous.map((r) => r.id === requestId ? updated : r));
+      setMyRequests((previous) => previous.map((r) => (r.id === requestId ? updated : r)));
     } catch {
       // no-op
     } finally {
@@ -158,7 +177,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
     setRequestActionId(requestId);
     try {
       const updated = await rejectRequest(requestId);
-      setMyRequests((previous) => previous.map((r) => r.id === requestId ? updated : r));
+      setMyRequests((previous) => previous.map((r) => (r.id === requestId ? updated : r)));
     } catch {
       // no-op
     } finally {
@@ -189,7 +208,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       setSaveSuccess(true);
 
       if (successTimerReference.current !== null) clearTimeout(successTimerReference.current);
-      successTimerReference.current = setTimeout(() => { setSaveSuccess(false); }, 3000);
+      successTimerReference.current = setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
     } catch {
       setSaveError("Не удалось сохранить изменения");
     } finally {
@@ -211,13 +232,16 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
   }, []);
 
-  const loadSkillOptions = useCallback(async (query: string): Promise<SkillSearchOption[]> => {
-    const results = await fetchSkills({ search: query !== "" ? query : undefined, limit: 30 });
-    const existingIds = new Set(skills.map((skill) => skill.id));
-    return results
-      .filter((skill) => !existingIds.has(skill.id))
-      .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
-  }, [skills]);
+  const loadSkillOptions = useCallback(
+    async (query: string): Promise<SkillSearchOption[]> => {
+      const results = await fetchSkills({ search: query !== "" ? query : undefined, limit: 30 });
+      const existingIds = new Set(skills.map((skill) => skill.id));
+      return results
+        .filter((skill) => !existingIds.has(skill.id))
+        .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
+    },
+    [skills],
+  );
 
   const handleAddSkill = async (selected: SkillSearchOption | undefined): Promise<void> => {
     if (selected === undefined) return;
@@ -265,11 +289,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       return (
         <div className={styles.projectsGrid}>
           {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              projectId={project.id}
-              to={`/project/${project.id}`}
-            />
+            <ProjectCard key={project.id} projectId={project.id} to={`/project/${project.id}`} />
           ))}
         </div>
       );
@@ -319,7 +339,11 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
     return (
       <div className={styles.errorPage}>
         <p className={styles.errorText}>{loadError}</p>
-        <Button onClick={() => { window.location.reload(); }}>
+        <Button
+          onClick={() => {
+            window.location.reload();
+          }}
+        >
           Попробовать снова
         </Button>
       </div>
@@ -332,7 +356,7 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
       <aside className={styles.sidebar}>
         <div className={styles.avatarCard}>
           <div className={styles.avatarContainer}>
-            {userData?.avatar_url !== undefined && userData.avatar_url !== '' ? (
+            {userData?.avatar_url !== undefined && userData.avatar_url !== "" ? (
               <img
                 src={userData.avatar_url}
                 alt={userData.nickname}
@@ -352,17 +376,13 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           </div>
           <div className={styles.userSummary}>
             <span className={styles.summaryNickname}>{userData?.nickname}</span>
-            {mainRole !== undefined && (
-              <span className={styles.summaryRole}>{mainRole.name}</span>
-            )}
+            {mainRole !== undefined && <span className={styles.summaryRole}>{mainRole.name}</span>}
             <span className={styles.summaryEmail}>{userData?.email}</span>
           </div>
         </div>
 
         <nav className={styles.sideNav}>
-          <button className={clsx(styles.navItem, styles.navItemActive)}>
-            Профиль
-          </button>
+          <button className={clsx(styles.navItem, styles.navItemActive)}>Профиль</button>
           <button className={styles.navItem} disabled>
             Уведомления
           </button>
@@ -376,22 +396,23 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           <h2 className={styles.sectionTitle}>Основная информация</h2>
           <div className={styles.formRow}>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-nickname">Никнейм</label>
+              <label className={styles.label} htmlFor="profile-nickname">
+                Никнейм
+              </label>
               <Input
                 id="profile-nickname"
                 placeholder="Например: john_doe"
                 value={nickname}
-                onChange={(event) => { setNickname(event.target.value); }}
+                onChange={(event) => {
+                  setNickname(event.target.value);
+                }}
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="profile-email">E-mail</label>
-              <Input
-                id="profile-email"
-                type="email"
-                value={userData?.email ?? ""}
-                disabled
-              />
+              <label className={styles.label} htmlFor="profile-email">
+                E-mail
+              </label>
+              <Input id="profile-email" type="email" value={userData?.email ?? ""} disabled />
             </div>
           </div>
           <div className={styles.field}>
@@ -411,7 +432,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           <textarea
             className={styles.bioTextarea}
             value={bio}
-            onChange={(event) => { setBio(event.target.value); }}
+            onChange={(event) => {
+              setBio(event.target.value);
+            }}
             placeholder="Расскажите о себе, своём опыте и интересах..."
             rows={4}
           />
@@ -426,19 +449,15 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
                 Изменения сохранены
               </span>
             )}
-            {saveError !== undefined && (
-              <span className={styles.errorText}>{saveError}</span>
-            )}
+            {saveError !== undefined && <span className={styles.errorText}>{saveError}</span>}
             <div className={styles.saveButtons}>
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSaving || !hasChanges}
-              >
+              <Button variant="outline" onClick={handleCancel} disabled={isSaving || !hasChanges}>
                 Отмена
               </Button>
               <Button
-                onClick={() => { void handleSave(); }}
+                onClick={() => {
+                  void handleSave();
+                }}
                 disabled={isSaving || !hasChanges}
               >
                 {isSaving ? "Сохранение..." : "Сохранить"}
@@ -458,7 +477,9 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
                   {skill.name}
                   <button
                     className={styles.skillRemove}
-                    onClick={() => { void handleRemoveSkill(skill.id); }}
+                    onClick={() => {
+                      void handleRemoveSkill(skill.id);
+                    }}
                     disabled={removingSkillId === skill.id}
                     aria-label={`Удалить навык ${skill.name}`}
                   >
@@ -474,14 +495,18 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
           <div className={styles.skillAdd}>
             <SkillSearch
               value={skillSearchValue}
-              onChange={(selected) => { void handleAddSkill(selected); }}
+              onChange={(selected) => {
+                void handleAddSkill(selected);
+              }}
               loadOptions={loadSkillOptions}
               placeholder="Найти и добавить навык..."
               disabled={isAddingSkill}
             />
             {skillSearchValue !== undefined && (
               <Button
-                onClick={() => { void handleAddSkill(skillSearchValue); }}
+                onClick={() => {
+                  void handleAddSkill(skillSearchValue);
+                }}
                 disabled={isAddingSkill}
               >
                 <Plus size={16} />
@@ -494,53 +519,65 @@ export function ProfileForm(_props: ProfileFormProps): JSX.Element {
         {/* My Requests & Invites */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Мои заявки и приглашения</h2>
-          {isRequestsLoading ? (
-            <Skeleton height={80} borderRadius={8} />
-          ) : myRequests.length === 0 ? (
-            <p className={styles.emptyHint}>Заявок и приглашений нет</p>
-          ) : (
-            <div className={styles.requestsList}>
-              {myRequests.map((req) => {
-                const statusClass =
-                  req.status === 'pending' ? styles.requestStatusPending :
-                  req.status === 'accepted' ? styles.requestStatusAccepted :
-                  styles.requestStatusRejected;
-                const statusLabel =
-                  req.status === 'pending' ? 'Ожидает' :
-                  req.status === 'accepted' ? 'Принято' : 'Отклонено';
-                return (
-                  <div key={req.id} className={styles.requestItem}>
-                    <div className={styles.requestMeta}>
-                      <span className={styles.requestType}>
-                        {req.type === 'apply' ? 'Отклик' : 'Приглашение'}
-                      </span>
-                      <span className={statusClass}>{statusLabel}</span>
-                    </div>
-                    {req.cover_letter !== '' && (
-                      <p className={styles.requestCoverLetter}>«{req.cover_letter}»</p>
-                    )}
-                    {req.type === 'invite' && req.status === 'pending' && (
-                      <div className={styles.requestActions}>
-                        <Button
-                          onClick={() => { void handleAcceptInvite(req.id); }}
-                          disabled={requestActionId === req.id}
-                        >
-                          Принять
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => { void handleRejectInvite(req.id); }}
-                          disabled={requestActionId === req.id}
-                        >
-                          Отклонить
-                        </Button>
+          {((): JSX.Element => {
+            if (isRequestsLoading) {
+              return <Skeleton height={80} borderRadius={8} />;
+            }
+            if (myRequests.length === 0) {
+              return <p className={styles.emptyHint}>Заявок и приглашений нет</p>;
+            }
+            return (
+              <div className={styles.requestsList}>
+                {myRequests.map((request) => {
+                  let statusClass = styles.requestStatusRejected;
+                  let statusLabel = "Отклонено";
+
+                  if (request.status === "pending") {
+                    statusClass = styles.requestStatusPending;
+                    statusLabel = "Ожидает";
+                  } else if (request.status === "accepted") {
+                    statusClass = styles.requestStatusAccepted;
+                    statusLabel = "Принято";
+                  }
+
+                  return (
+                    <div key={request.id} className={styles.requestItem}>
+                      <div className={styles.requestMeta}>
+                        <span className={styles.requestType}>
+                          {request.type === "apply" ? "Отклик" : "Приглашение"}
+                        </span>
+                        <span className={statusClass}>{statusLabel}</span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                      {request.cover_letter !== "" && (
+                        <p className={styles.requestCoverLetter}>«{request.cover_letter}»</p>
+                      )}
+                      {request.type === "invite" && request.status === "pending" && (
+                        <div className={styles.requestActions}>
+                          <Button
+                            onClick={() => {
+                              void handleAcceptInvite(request.id);
+                            }}
+                            disabled={requestActionId === request.id}
+                          >
+                            Принять
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              void handleRejectInvite(request.id);
+                            }}
+                            disabled={requestActionId === request.id}
+                          >
+                            Отклонить
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </section>
 
         {/* My Projects */}

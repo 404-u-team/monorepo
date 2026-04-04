@@ -14,9 +14,9 @@ background-color: var(--bg--main);
 border-color: var(--border--main);
 
 // Неправильно
-color: #08101A;
-background-color: #FFFFFF;
-border: 1px solid #D0D5DD;
+color: #08101a;
+background-color: #ffffff;
+border: 1px solid #d0d5dd;
 ```
 
 Это обеспечивает единый источник правды для всех значений
@@ -50,26 +50,27 @@ Button/
 Использование:
 
 ```tsx
-import styles from './Button.module.scss'
+import styles from "./Button.module.scss";
 
 export function Button() {
-    return <button className={styles.root}>Click</button>
+  return <button className={styles.root}>Click</button>;
 }
 ```
 
 ```scss
 // Button.module.scss
 .root {
-    color: var(--text--onPrimary);
-    background-color: var(--brand);
+  color: var(--text--onPrimary);
+  background-color: var(--brand);
 
-    &:hover {
-        background-color: var(--brand--hover);
-    }
+  &:hover {
+    background-color: var(--brand--hover);
+  }
 }
 ```
 
 **Запрещено:**
+
 - Писать стили компонентов в глобальных файлах
 - Использовать `className="my-button"` без CSS Modules (кроме случаев с внешними библиотеками)
 - Хардкодить цвета — только через `var(--...)`
@@ -103,47 +104,47 @@ export function Button() {
 
 ### Brand
 
-| Переменная | Значение | Использование |
-|-----------|----------|--------------|
-| `--brand` | `#005ED9` | Основной акцентный цвет |
-| `--brand--hover` | `#1A75E0` | Hover-состояние бренд-элементов |
-| `--brand--active` | `#0047A3` | Active/pressed состояние |
+| Переменная        | Значение  | Использование                   |
+| ----------------- | --------- | ------------------------------- |
+| `--brand`         | `#005ED9` | Основной акцентный цвет         |
+| `--brand--hover`  | `#1A75E0` | Hover-состояние бренд-элементов |
+| `--brand--active` | `#0047A3` | Active/pressed состояние        |
 | `--brand--subtle` | `#E5F0FA` | Мягкий бренд-фон (бейджи, тэги) |
 
 ### Text
 
-| Переменная | Значение | Использование |
-|-----------|----------|--------------|
-| `--text--primary` | `#08101A` | Основной текст |
-| `--text--secondary` | `#434445` | Вспомогательный текст |
-| `--text--disabled` | `#98A2B3` | Неактивный текст |
-| `--text--onError` | `#FFFFFF` | Текст поверх красного фона |
-| `--text--onSuccess` | `#FFFFFF` | Текст поверх зелёного фона |
-| `--text--onPrimary` | `#FFFFFF` | Текст поверх бренд-цвета |
-| `--text--onWarning` | `#08101A` | Текст поверх жёлтого фона |
+| Переменная          | Значение  | Использование                  |
+| ------------------- | --------- | ------------------------------ |
+| `--text--primary`   | `#08101A` | Основной текст                 |
+| `--text--secondary` | `#434445` | Вспомогательный текст          |
+| `--text--disabled`  | `#98A2B3` | Неактивный текст               |
+| `--text--onError`   | `#FFFFFF` | Текст поверх красного фона     |
+| `--text--onSuccess` | `#FFFFFF` | Текст поверх зелёного фона     |
+| `--text--onPrimary` | `#FFFFFF` | Текст поверх бренд-цвета       |
+| `--text--onWarning` | `#08101A` | Текст поверх жёлтого фона      |
 | `--text--onSurface` | `#08101A` | Текст поверх нейтрального фона |
 
 ### Background
 
-| Переменная | Значение | Использование |
-|-----------|----------|--------------|
-| `--bg--main` | `#FFFFFF` | Основной фон страницы |
-| `--bg--surface` | `#EDEDED` | Фон карточек, секций |
+| Переменная       | Значение  | Использование            |
+| ---------------- | --------- | ------------------------ |
+| `--bg--main`     | `#FFFFFF` | Основной фон страницы    |
+| `--bg--surface`  | `#EDEDED` | Фон карточек, секций     |
 | `--bg--disabled` | `#F2F4F7` | Фон неактивных элементов |
 
 ### Status
 
-| Переменная | Значение | Использование |
-|-----------|----------|--------------|
-| `--status--error` | `#D92D20` | Ошибка |
+| Переменная          | Значение  | Использование  |
+| ------------------- | --------- | -------------- |
+| `--status--error`   | `#D92D20` | Ошибка         |
 | `--status--warning` | `#F79009` | Предупреждение |
-| `--status--success` | `#039855` | Успех |
+| `--status--success` | `#039855` | Успех          |
 
 ### Border
 
-| Переменная | Значение | Использование |
-|-----------|----------|--------------|
-| `--border--main` | `#D0D5DD` | Основная граница |
-| `--border--hover` | `#98A2B3` | Граница при hover |
-| `--border--divider` | `#EAECF0` | Разделители |
-| `--border--active` | `#005CFF` | Граница активного элемента |
+| Переменная          | Значение  | Использование              |
+| ------------------- | --------- | -------------------------- |
+| `--border--main`    | `#D0D5DD` | Основная граница           |
+| `--border--hover`   | `#98A2B3` | Граница при hover          |
+| `--border--divider` | `#EAECF0` | Разделители                |
+| `--border--active`  | `#005CFF` | Граница активного элемента |

@@ -1,67 +1,67 @@
 :root {
-    // --- Brand Colors ---
-    --brand: #005ED9;
-    --brand--hover: #1A75E0;
-    --brand--active: #0047A3;
-    --brand--subtle: #E5F0FA;
+  // --- Brand Colors ---
+  --brand: #005ed9;
+  --brand--hover: #1a75e0;
+  --brand--active: #0047a3;
+  --brand--subtle: #e5f0fa;
 
-    // --- Text Colors ---
-    --text--primary: #08101A;
-    --text--secondary: #434445;
-    --text--disabled: #98A2B3;
-    --text--onError: #FFFFFF;
-    --text--onSuccess: #FFFFFF;
-    --text--onPrimary: #FFFFFF;
-    --text--onWarning: #08101A;
-    --text--onSurface: #08101A;
+  // --- Text Colors ---
+  --text--primary: #08101a;
+  --text--secondary: #434445;
+  --text--disabled: #98a2b3;
+  --text--onError: #ffffff;
+  --text--onSuccess: #ffffff;
+  --text--onPrimary: #ffffff;
+  --text--onWarning: #08101a;
+  --text--onSurface: #08101a;
 
-    // --- Background Colors ---
-    --bg--surface: #EDEDED;
-    --bg--main: #FFFFFF;
-    --bg--disabled: #F2F4F7;
+  // --- Background Colors ---
+  --bg--surface: #ededed;
+  --bg--main: #ffffff;
+  --bg--disabled: #f2f4f7;
 
-    // --- Status Colors ---
-    --status--error: #D92D20;
-    --status--warning: #F79009;
-    --status--success: #039855;
+  // --- Status Colors ---
+  --status--error: #d92d20;
+  --status--warning: #f79009;
+  --status--success: #039855;
 
-    // --- Border Colors ---
-    --border--main: #D0D5DD;
-    --border--hover: #98A2B3;
-    --border--divider: #EAECF0;
-    --border--active: #005CFF;
+  // --- Border Colors ---
+  --border--main: #d0d5dd;
+  --border--hover: #98a2b3;
+  --border--divider: #eaecf0;
+  --border--active: #005cff;
 }
 
 html.dark {
-    // --- Brand Colors ---
-    --brand: #3B82F6;
-    --brand--hover: #60A5FA;
-    --brand--active: #2563EB;
-    --brand--subtle: #1E2D3D;
+  // --- Brand Colors ---
+  --brand: #3b82f6;
+  --brand--hover: #60a5fa;
+  --brand--active: #2563eb;
+  --brand--subtle: #1e2d3d;
 
-    // --- Text Colors ---
-    --text--primary: #F1F5F9;
-    --text--secondary: #94A3B8;
-    --text--disabled: #475569;
-    --text--onError: #FFFFFF;
-    --text--onSuccess: #FFFFFF;
-    --text--onPrimary: #FFFFFF;
-    --text--onWarning: #08101A;
-    --text--onSurface: #F1F5F9;
+  // --- Text Colors ---
+  --text--primary: #f1f5f9;
+  --text--secondary: #94a3b8;
+  --text--disabled: #475569;
+  --text--onError: #ffffff;
+  --text--onSuccess: #ffffff;
+  --text--onPrimary: #ffffff;
+  --text--onWarning: #08101a;
+  --text--onSurface: #f1f5f9;
 
-    // --- Background Colors ---
-    --bg--surface: #1E293B;
-    --bg--main: #0F172A;
-    --bg--disabled: #1E2D3D;
+  // --- Background Colors ---
+  --bg--surface: #1e293b;
+  --bg--main: #0f172a;
+  --bg--disabled: #1e2d3d;
 
-    // --- Status Colors ---
-    --status--error: #F87171;
-    --status--warning: #FBB046;
-    --status--success: #34D399;
+  // --- Status Colors ---
+  --status--error: #f87171;
+  --status--warning: #fbb046;
+  --status--success: #34d399;
 
-    // --- Border Colors ---
-    --border--main: #334155;
-    --border--hover: #475569;
-    --border--divider: #1E293B;
-    --border--active: #3B82F6;
+  // --- Border Colors ---
+  --border--main: #334155;
+  --border--hover: #475569;
+  --border--divider: #1e293b;
+  --border--active: #3b82f6;
 }
