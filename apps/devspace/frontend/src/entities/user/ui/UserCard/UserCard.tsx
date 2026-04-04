@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import { clsx } from "clsx";
 import { Link } from "@tanstack/react-router";
 import { fetchUserById } from "../../api/userApi";
-import { fetchSkillById } from "@/entities/skill";
+// main_role is now returned as an object from the API, no need to fetch separately
 import type { IUserResponse } from "../../model/IUserResponse";
 import { isValidMainRole } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
@@ -44,12 +44,7 @@ export function UserCard({
         setUser(data);
 
         if (isValidMainRole(data.main_role)) {
-          try {
-            const skill = await fetchSkillById(data.main_role);
-            setMainRoleName(skill.name);
-          } catch {
-            // skill not found — don't show main_role
-          }
+          setMainRoleName(data.main_role.name);
         }
       } catch {
         // handled by empty state
@@ -96,7 +91,7 @@ export function UserCard({
     >
       <div className={styles.header}>
         <UserAvatar
-          avatarUrl={user.avatar_uri}
+          avatarUrl={user.avatar_url}
           nickname={user.nickname}
           size={44}
           className={styles.avatarWrapper}

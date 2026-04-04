@@ -532,7 +532,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
                         {leader !== undefined && (
                             <div className={styles.leaderInfo}>
                                 <UserAvatar
-                                    avatarUrl={leader.avatar_uri}
+                                    avatarUrl={leader.avatar_url}
                                     nickname={leader.nickname}
                                     size={40}
                                 />

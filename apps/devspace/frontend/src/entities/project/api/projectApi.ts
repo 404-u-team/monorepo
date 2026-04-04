@@ -29,6 +29,7 @@ export interface PaginatedProjects {
     items: IProject[];
     total: number;
     totalPages: number;
+    hasMore: boolean;
 }
 
 export async function createProject(data: {
@@ -104,28 +105,24 @@ export async function getMyRequests(parameters?: {
 }
 
 export async function fetchProjects(parameters?: FetchProjectsParameters): Promise<PaginatedProjects> {
+    const limit = parameters?.limit ?? 20;
+    const startAt = parameters?.start_at ?? 0;
     const response = await apiClient.get<IProject[]>('/projects', { params: parameters });
 
     const items = response.data;
-    const totalCountHeader = response.headers['x-total-count'] as string | undefined;
-    const parsedTotal = typeof totalCountHeader === 'string' ? Number(totalCountHeader) : Number.NaN;
 
-    let total: number;
-    let totalPages: number;
-
-    if (Number.isFinite(parsedTotal)) {
-        const limit = parameters?.limit ?? (items.length > 0 ? items.length : 1);
-        total = parsedTotal;
-        totalPages = Math.ceil(total / limit);
-    } else {
-        // No valid total from the server; fall back to the number of items we actually received.
-        total = items.length;
-        totalPages = 1;
-    }
+    // Backend doesn't provide x-total-count header.
+    // Detect "hasMore" heuristically: if we received exactly `limit` items, there's probably a next page.
+    const hasMore = items.length >= limit;
+    const currentPage = Math.floor(startAt / limit) + 1;
+    // totalPages is at least currentPage; if there are more items, assume at least one more page.
+    const totalPages = hasMore ? currentPage + 1 : currentPage;
+    const total = startAt + items.length + (hasMore ? 1 : 0);
 
     return {
         items,
         total,
-        totalPages
+        totalPages,
+        hasMore,
     };
 }

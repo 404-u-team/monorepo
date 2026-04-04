@@ -83,10 +83,10 @@ const MOCK_PROJECT = {
 };
 
 const MOCK_USERS: Record<string, object> = {
-    'user-2': { id: 'user-2', nickname: 'Alice', avatar_uri: '', bio: '', main_role: 'Dev', skills: [] },
-    'user-3': { id: 'user-3', nickname: 'Bob', avatar_uri: '', bio: '', main_role: 'Dev', skills: [] },
-    'user-4': { id: 'user-4', nickname: 'Charlie', avatar_uri: '', bio: '', main_role: 'DBA', skills: [] },
-    'user-5': { id: 'user-5', nickname: 'Diana', avatar_uri: '', bio: '', main_role: 'Backend', skills: [] },
+    'user-2': { id: 'user-2', nickname: 'Alice', avatar_url: '', bio: '', main_role: 'Dev', skills: [] },
+    'user-3': { id: 'user-3', nickname: 'Bob', avatar_url: '', bio: '', main_role: 'Dev', skills: [] },
+    'user-4': { id: 'user-4', nickname: 'Charlie', avatar_url: '', bio: '', main_role: 'DBA', skills: [] },
+    'user-5': { id: 'user-5', nickname: 'Diana', avatar_url: '', bio: '', main_role: 'Backend', skills: [] },
 };
 
 const meta = {
@@ -198,9 +198,9 @@ export const LongContent: Story = {
                 http.get('*/users/:userId', ({ params }) => {
                     const longUsers: Record<string, object> = {
                         ...MOCK_USERS,
-                        'user-6': { id: 'user-6', nickname: 'Edward', avatar_uri: '', bio: '', main_role: 'Go Dev', skills: [] },
-                        'user-7': { id: 'user-7', nickname: 'Fiona', avatar_uri: '', bio: '', main_role: 'API Dev', skills: [] },
-                        'user-8': { id: 'user-8', nickname: 'George', avatar_uri: '', bio: '', main_role: 'Cloud', skills: [] },
+                        'user-6': { id: 'user-6', nickname: 'Edward', avatar_url: '', bio: '', main_role: 'Go Dev', skills: [] },
+                        'user-7': { id: 'user-7', nickname: 'Fiona', avatar_url: '', bio: '', main_role: 'API Dev', skills: [] },
+                        'user-8': { id: 'user-8', nickname: 'George', avatar_url: '', bio: '', main_role: 'Cloud', skills: [] },
                     };
                     const user = longUsers[params.userId as string];
                     if (user !== undefined) return HttpResponse.json(user);

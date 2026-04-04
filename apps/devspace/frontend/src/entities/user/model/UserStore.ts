@@ -49,7 +49,7 @@ export class UserStore {
                     id: data.id as string,
                     nickname: data.nickname as string,
                     email: data.email as string,
-                    avatarUrl: (data.avatar_uri ?? data.avatarUrl) as string | undefined,
+                    avatarUrl: (data.avatar_url ?? data.avatarUrl) as string | undefined,
                     bio: data.bio as string | undefined,
                 };
                 runInAction(() => {

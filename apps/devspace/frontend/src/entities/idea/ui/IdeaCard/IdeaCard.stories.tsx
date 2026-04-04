@@ -19,7 +19,7 @@ const MOCK_IDEA = {
 const MOCK_AUTHOR = {
     id: 'user-1',
     nickname: 'TestUser1',
-    avatar_uri: '',
+    avatar_url: '',
     bio: 'Full-stack developer',
     main_role: 'Developer',
     skills: [],

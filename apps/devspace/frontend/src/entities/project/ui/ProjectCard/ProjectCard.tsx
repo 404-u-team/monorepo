@@ -18,7 +18,7 @@ export interface ProjectCardProps {
 
 interface SlotUser {
     id: string;
-    avatar_uri: string;
+    avatar_url: string;
     nickname: string;
 }
 
@@ -50,7 +50,7 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
                 );
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- cancelled may change across await
                 if (cancelled) return;
-                setSlotUsers(users.map((u) => ({ id: u.id, avatar_uri: u.avatar_uri, nickname: u.nickname })));
+                setSlotUsers(users.map((u) => ({ id: u.id, avatar_url: u.avatar_url, nickname: u.nickname })));
             } catch {
                 // handled by future error state
             } finally {
@@ -133,7 +133,7 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
                                 <img
                                     key={user.id}
                                     className={styles.avatar}
-                                    src={user.avatar_uri}
+                                    src={user.avatar_url}
                                     alt={user.nickname}
                                     onError={(event) => {
                                         (event.target as HTMLImageElement).style.display = 'none';

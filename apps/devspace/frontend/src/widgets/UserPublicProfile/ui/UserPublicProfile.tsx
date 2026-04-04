@@ -1,7 +1,6 @@
-import { useEffect, useState, type JSX } from 'react';
+import { type JSX } from 'react';
 import { Badge, Skeleton, UserAvatar } from '@/shared/ui';
 import type { IUserResponse } from '@/entities/user';
-import { fetchSkillById } from '@/entities/skill';
 import { isValidMainRole } from '@/entities/user/model/IUserResponse';
 import styles from './UserPublicProfile.module.scss';
 
@@ -10,22 +9,13 @@ export interface UserPublicProfileProps {
 }
 
 export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element {
-    const [mainRoleName, setMainRoleName] = useState<string | undefined>(undefined);
-
-    useEffect(() => {
-        if (!isValidMainRole(user.main_role)) return;
-        let cancelled = false;
-        fetchSkillById(user.main_role)
-            .then((skill) => { if (!cancelled) setMainRoleName(skill.name); })
-            .catch(() => { /* skill not found */ });
-        return (): void => { cancelled = true; };
-    }, [user.main_role]);
+    const mainRoleName = isValidMainRole(user.main_role) ? user.main_role.name : undefined;
 
     return (
         <div className={styles.wrapper}>
             <div className={styles.header}>
                 <UserAvatar
-                    avatarUrl={user.avatar_uri}
+                    avatarUrl={user.avatar_url}
                     nickname={user.nickname}
                     size={120}
                     className={styles.avatarWrapper}

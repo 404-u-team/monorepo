@@ -47,7 +47,7 @@ const meta = {
                     return HttpResponse.json({
                         id: 'user-1',
                         nickname: 'AuthorName',
-                        avatar_uri: '',
+                        avatar_url: '',
                     });
                 }),
             ],
