@@ -7,6 +7,7 @@ import { Button, Badge, Skeleton, ConfirmModal, SkillSearch, SkillMultiSelect, U
 import { fetchUserById, type IUserResponse, type UserStore } from '@/entities/user';
 import {
     fetchProjectById,
+    fetchProjectSlots,
     deleteProject,
     createProjectSlot,
     deleteProjectSlot,
@@ -63,9 +64,12 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
 
     const loadProject = async (): Promise<void> => {
         try {
-            const projectData = await fetchProjectById(projectId);
+            const [projectData, slotsData] = await Promise.all([
+                fetchProjectById(projectId),
+                fetchProjectSlots(projectId),
+            ]);
             if (isCancelled.current) return;
-            setProject(projectData);
+            setProject({ ...projectData, slots: slotsData });
 
             const leaderData = await fetchUserById(projectData.leader_id);
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- isCancelled.current may change after await
