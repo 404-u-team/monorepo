@@ -1,12 +1,14 @@
-name: Devspace Frontend Lint
+name: Devspace Frontend Formatter
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'apps/devspace/frontend/**'
 
 jobs:
-  lint-frontend:
-    name: lint-frontend
+  format-frontend:
+    name: format-frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,11 +42,11 @@ jobs:
         working-directory: apps/devspace/frontend
         run: bun install
 
-      - name: Run frontend linter
+      - name: Run frontend formatter
         if: steps.filter.outputs.frontend == 'true'
         working-directory: apps/devspace/frontend
-        run: bun lint
+        run: bun fmt:check
 
-      - name: Skip lint
+      - name: Skip formatter
         if: steps.filter.outputs.frontend == 'false'
         run: echo "No frontend changes, skipping."
