@@ -5,7 +5,7 @@ import { Badge } from '@/shared/ui';
 import { fetchUserById } from '@/entities/user';
 import type { IProject } from '../../model/IProject';
 import type { IProjectSlotSkill } from '../../model/IProjectSlot';
-import { fetchProjectById, type IProjectDetailResponse } from '../../api/projectApi';
+import { fetchProjectById, fetchProjectSlots, type IProjectDetailResponse } from '../../api/projectApi';
 import { Link } from '@tanstack/react-router';
 import { ProjectCardSkeleton } from '../ProjectCardSkeleton/ProjectCardSkeleton';
 import styles from './ProjectCard.module.scss';
@@ -37,11 +37,14 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
 
         async function load(): Promise<void> {
             try {
-                const data = await fetchProjectById(projectId);
+                const [data, slotsData] = await Promise.all([
+                    fetchProjectById(projectId),
+                    fetchProjectSlots(projectId),
+                ]);
                 if (cancelled) return;
-                setProject(data);
+                setProject({ ...data, slots: slotsData });
 
-                const occupiedUserIds = (data.slots ?? [])
+                const occupiedUserIds = slotsData
                     .map((s) => s.user_id)
                     .filter((uid): uid is string => uid !== null);
 
