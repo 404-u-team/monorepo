@@ -71,6 +71,17 @@ export async function deleteProjectSlot(projectId: string, slotId: string): Prom
     await apiClient.delete(`/projects/${projectId}/slots/${slotId}`);
 }
 
+export async function updateProjectSlot(projectId: string, slotId: string, data: {
+    primary_skills_id?: string[];
+    secondary_skills_id?: string[];
+    title?: string;
+    description?: string;
+    status?: 'open' | 'closed';
+}): Promise<IProjectSlot> {
+    const response = await apiClient.put<IProjectSlot>(`/projects/${projectId}/slots/${slotId}`, data);
+    return response.data;
+}
+
 export async function applyToSlot(projectId: string, slotId: string, data?: {
     cover_letter?: string;
 }): Promise<IRequest> {

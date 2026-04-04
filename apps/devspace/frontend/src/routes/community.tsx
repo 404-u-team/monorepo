@@ -5,16 +5,27 @@ import { UserList } from '@/widgets/UserList';
 export interface CommunitySearch {
     page?: number | undefined;
     search?: string | undefined;
+    main_role?: string | undefined;
+    skills?: string[] | undefined;
 }
 
 export const Route = createFileRoute('/community')({
     validateSearch: (search: Record<string, unknown>): CommunitySearch => {
+        const rawSkills = search.skills;
+        let skills: string[] | undefined;
+        if (Array.isArray(rawSkills)) {
+            skills = rawSkills.filter((s): s is string => typeof s === 'string');
+        } else if (typeof rawSkills === 'string') {
+            skills = [rawSkills];
+        }
         return {
             page: Number(search.page) || 1,
             search: search.search as string | undefined,
+            main_role: search.main_role as string | undefined,
+            skills: skills && skills.length > 0 ? skills : undefined,
         };
     },
-    loaderDeps: ({ search: { page, search } }) => ({ page, search }),
+    loaderDeps: ({ search: { page, search, main_role, skills } }) => ({ page, search, main_role, skills }),
     loader: async ({ deps }) => {
         const limit = 20;
         const { page, ...restDeps } = deps;

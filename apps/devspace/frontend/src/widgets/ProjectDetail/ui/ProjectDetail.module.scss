@@ -285,6 +285,129 @@
     justify-content: flex-end;
 }
 
+// Cover letter inline form
+.coverLetterForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border--divider);
+    margin-top: 0.25rem;
+}
+
+.coverLetterTextarea {
+    padding: 0.625rem 0.875rem;
+    border-radius: 6px;
+    border: 1px solid var(--border--main);
+    background-color: var(--bg--main);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    color: var(--text--primary);
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::placeholder {
+        color: var(--text--disabled);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: var(--brand);
+    }
+
+    &:disabled {
+        background-color: var(--bg--surface);
+        cursor: not-allowed;
+    }
+}
+
+.coverLetterActions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+// Slot actions (edit + delete buttons grouped)
+.slotActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.editSlotBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--text--disabled);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s, background-color 0.2s;
+
+    &:hover {
+        color: var(--brand);
+        background-color: var(--bg--surface);
+    }
+}
+
+// Inline edit form
+.editSlotForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px dashed var(--border--main);
+    background-color: var(--bg--surface);
+    margin-top: 0.25rem;
+}
+
+// Apply status badges
+.applyStatus {
+    padding-top: 0.5rem;
+}
+
+.applyStatusPending {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--status--warning, #d97706);
+    background-color: color-mix(in srgb, var(--status--warning, #d97706) 12%, transparent);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.applyStatusAccepted {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--status--success);
+    background-color: color-mix(in srgb, var(--status--success) 12%, transparent);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.applyStatusRejected {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--status--error);
+    background-color: color-mix(in srgb, var(--status--error) 12%, transparent);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.applyError {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--status--error);
+}
+
 // Requests
 .requests {
     margin-top: 0.5rem;
