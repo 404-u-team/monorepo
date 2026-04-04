@@ -20,8 +20,8 @@ type GetProjectsQuery struct {
 }
 
 type UpdateProjectRequest struct {
-	Title       *string `json:"title" binding:"min=3,max=255"`
-	Description *string `json:"description" binding:"min=3,max=255"`
+	Title       *string `json:"title" binding:"omitempty,min=3,max=255"`
+	Description *string `json:"description" binding:"omitempty,min=3,max=255"`
 	Status      *string `json:"status" binding:"omitempty,oneof=open closed"`
 	Content     *string `json:"content"`
 }
