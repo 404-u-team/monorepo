@@ -249,11 +249,11 @@ paths:
                       default: 10
                   description: "Лимит записей"
 
-                - name: username
+                - name: search
                   in: query
                   schema:
                       type: string
-                  description: "Фильтр по имени пользователя (префикс)"
+                  description: "Фильтр по имени пользователя"
 
                 - name: main_role
                   in: query
@@ -279,9 +279,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/PublicUserProfile"
+                                $ref: "#/components/schemas/GetUsersResponse"
                 "400":
                     description: Ошибка в параметрах запроса
                 "500":
@@ -623,9 +621,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/Idea"
+                                $ref: "#/components/schemas/GetIdeasResponse"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -900,9 +896,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/Project"
+                                $ref: "#/components/schemas/GetProjectsResponse"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -1881,6 +1875,23 @@ components:
                     type: string
                 color:
                     type: string
+                skills:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Skill"
+        GetUsersResponse:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                profiles:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/PublicUserProfile"
+            required:
+                - total
+                - profiles
         Skill:
             type: object
             properties:
@@ -1929,6 +1940,19 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        GetIdeasResponse:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                ideas:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Idea"
+            required:
+                - total
+                - ideas
         Project:
             type: object
             properties:
@@ -1960,6 +1984,19 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        GetProjectsResponse:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                projects:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Project"
+            required:
+                - total
+                - projects
         ProjectSlot:
             type: object
             properties:

@@ -65,13 +65,13 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 		return
 	}
 
-	projects, err := h.projectService.GetProjects(&query)
+	projectsResponse, err := h.projectService.GetProjects(&query)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, projects)
+	c.JSON(http.StatusOK, projectsResponse)
 }
 
 func (h *projectHandler) GetProjectByID(c *gin.Context) {

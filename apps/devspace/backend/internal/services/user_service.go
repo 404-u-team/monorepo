@@ -14,7 +14,12 @@ type UserService interface {
 	GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error)
 	UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error)
 	GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error)
-	GetUsersByParams(startAt *uint, limit *uint, username *string, mainRole *uuid.UUID, skills *dto.UUIDSlice) ([]dto.PublicUserProfile, error)
+	GetUsersPublicProfiles(
+		startAt, limit *uint,
+		username *string,
+		mainRole *uuid.UUID,
+		skills *dto.UUIDSlice,
+	) (*dto.GetUsersResponse, error)
 }
 
 type userService struct {
@@ -137,11 +142,40 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 	return &publicUserProfile, nil
 }
 
-func (s *userService) GetUsersByParams(
+func (s *userService) GetUsersPublicProfiles(
 	startAt, limit *uint,
-	username *string,
+	search *string,
 	mainRole *uuid.UUID,
 	skills *dto.UUIDSlice,
-) ([]dto.PublicUserProfile, error) {
-	return s.userRepo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+) (*dto.GetUsersResponse, error) {
+
+	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
+	users, total, err := s.userRepo.GetUsersByParams(startAt, limit, search, mainRole, skills)
+	if err != nil {
+		return nil, err
+	}
+
+	// Конвертируем в публичные профили с деревом навыков
+	profiles := make([]dto.PublicUserProfile, len(users))
+	for i, user := range users {
+		// Строим дерево навыков для пользователя
+		skillTree, dbError := s.userRepo.GetUserSkills(user.ID)
+
+		if dbError != nil {
+			return nil, dbError
+		}
+
+		profiles[i] = dto.PublicUserProfile{
+			ID:        user.ID,
+			Nickname:  user.Nickname,
+			MainRole:  user.MainRole,
+			AvatarUrl: user.AvatarUrl,
+			Bio:       user.Bio,
+			Skills:    skillTree,
+		}
+	}
+
+	response := dto.GetUsersResponse{Total: total, Profiles: profiles}
+
+	return &response, nil
 }

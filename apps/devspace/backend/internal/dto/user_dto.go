@@ -28,6 +28,11 @@ type PublicUserProfile struct {
 	Skills    []SkillCategoryResponse `json:"skills"`
 }
 
+type GetUsersResponse struct {
+	Total    int64               `json:"total"`
+	Profiles []PublicUserProfile `json:"profiles"`
+}
+
 type UpdateUserRequest struct {
 	Nickname  *string      `json:"nickname" binding:"omitempty,min=3,max=50"`
 	MainRole  OptionalUUID `json:"main_role"`
@@ -61,6 +66,14 @@ func (o *OptionalUUID) UnmarshalJSON(data []byte) error {
 
 	o.Value = &parsed
 	return nil
+}
+
+type GetUsersRequest struct {
+	StartAt  *uint      `form:"start_at" json:"start_at"`
+	Limit    *uint      `form:"limit" json:"limit"`
+	Search   *string    `form:"username" json:"search"`
+	MainRole *string    `form:"main_role" json:"main_role"`
+	Skills   *UUIDSlice `form:"skills" json:"skills"`
 }
 
 type UUIDSlice []uuid.UUID
@@ -133,12 +146,4 @@ func (u UUIDSlice) MarshalJSON() ([]byte, error) {
 		strings[i] = id.String()
 	}
 	return json.Marshal(strings)
-}
-
-type GetUsersRequest struct {
-	StartAt  *uint      `form:"start_at" json:"start_at"`
-	Limit    *uint      `form:"limit" json:"limit"`
-	Username *string    `form:"username" json:"username"`
-	MainRole *string    `form:"main_role" json:"main_role"`
-	Skills   *UUIDSlice `form:"skills" json:"skills"`
 }

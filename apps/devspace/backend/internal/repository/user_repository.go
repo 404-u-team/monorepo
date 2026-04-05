@@ -12,6 +12,7 @@ import (
 
 type UserRepository interface {
 	CreateUser(payload *dto.RegisterRequest) (uuid.UUID, error)
+	GetUsersTotalCount() (int64, error)
 	IsUserExistByEmail(email string) (bool, error)
 	IsUserExistByID(id uuid.UUID) (bool, error)
 	GetUserByID(userID uuid.UUID) (*models.User, error)
@@ -22,10 +23,10 @@ type UserRepository interface {
 	GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error)
 	GetUsersByParams(
 		startAt, limit *uint,
-		username *string,
+		search *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
-	) ([]dto.PublicUserProfile, error)
+	) ([]dto.PublicUserProfile, int64, error)
 }
 
 type userRepository struct {
@@ -49,6 +50,13 @@ func (r *userRepository) CreateUser(payload *dto.RegisterRequest) (uuid.UUID, er
 	}
 
 	return user.ID, nil
+}
+
+func (r *userRepository) GetUsersTotalCount() (int64, error) {
+	var count int64
+	err := r.conn.Model(&models.User{}).
+		Count(&count).Error
+	return count, err
 }
 
 func (r *userRepository) IsUserExistByEmail(email string) (bool, error) {
@@ -207,10 +215,10 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 
 func (r *userRepository) GetUsersByParams(
 	startAt, limit *uint,
-	username *string,
+	search *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
-) ([]dto.PublicUserProfile, error) {
+) ([]dto.PublicUserProfile, int64, error) {
 
 	var users []models.User
 
@@ -221,8 +229,8 @@ func (r *userRepository) GetUsersByParams(
 		Preload("MainRoleSkill")
 
 	// Фильтры
-	if username != nil && *username != "" {
-		query = query.Where("nickname LIKE ?", *username+"%")
+	if search != nil && *search != "" {
+		query = query.Where("nickname ILIKE ?", "%"+(*search)+"%")
 	}
 
 	if mainRole != nil {
@@ -238,6 +246,12 @@ func (r *userRepository) GetUsersByParams(
 			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
 	}
 
+	// получение total
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
 	// Пагинация
 	if startAt != nil {
 		query = query.Offset(int(*startAt))
@@ -248,7 +262,7 @@ func (r *userRepository) GetUsersByParams(
 
 	// Выполняем
 	if err := query.Find(&users).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Преобразуем в PublicUserProfile
@@ -264,5 +278,5 @@ func (r *userRepository) GetUsersByParams(
 		}
 	}
 
-	return profiles, nil
+	return profiles, total, nil
 }

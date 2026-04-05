@@ -13,7 +13,7 @@ import (
 
 type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
-	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
+	GetProjects(query *dto.GetProjectsQuery) (*dto.GetProjectsResponse, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
@@ -60,13 +60,15 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	return project, nil
 }
 
-func (s *projectService) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
-	projects, err := s.repo.GetProjects(query)
+func (s *projectService) GetProjects(query *dto.GetProjectsQuery) (*dto.GetProjectsResponse, error) {
+	projects, total, err := s.repo.GetProjects(query)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return projects, nil
+	projectsResponse := dto.GetProjectsResponse{Total: total, Projects: projects}
+
+	return &projectsResponse, nil
 }
 
 func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {

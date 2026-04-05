@@ -144,14 +144,11 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		mainRoleUUID = &id
 	}
 
-	log.Printf("Request: start_at=%v, limit=%v, username=%v, main_role=%v, skills=%v",
-		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
-
-	// Получаем публичные профили с деревом навыков и main_role
-	profiles, err := h.userService.GetUsersByParams(
+	// Получаем публичные профили с деревом навыков
+	profilesResponse, err := h.userService.GetUsersPublicProfiles(
 		req.StartAt,
 		req.Limit,
-		req.Username,
+		req.Search,
 		mainRoleUUID,
 		req.Skills,
 	)
@@ -164,7 +161,7 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, profiles)
+	c.JSON(http.StatusOK, profilesResponse)
 }
 
 // TODO: Прописать журналирование для остальных 500 в этом хэндлере. Мы же потом будем с недоумением смотреть на код.
