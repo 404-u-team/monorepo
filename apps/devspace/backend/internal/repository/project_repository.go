@@ -75,13 +75,14 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 	if query.Search != nil && *query.Search != "" {
 		result = result.Where("title ILIKE ?", "%"+*query.Search+"%")
 	}
-	if query.StartAt != nil && *query.StartAt > 0 {
-		result = result.Offset(*query.StartAt)
-	}
 
 	var total int64
 	if err := result.Count(&total).Error; err != nil {
 		return nil, 0, err
+	}
+
+	if query.StartAt != nil && *query.StartAt > 0 {
+		result = result.Offset(*query.StartAt)
 	}
 
 	if query.Limit != nil {
