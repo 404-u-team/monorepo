@@ -270,7 +270,7 @@ func (r *userRepository) GetUsersByParams(
 
 	// Фильтры
 	if username != nil && *username != "" {
-		query = query.Where("nickname LIKE ?", *username+"%")
+		query = query.Where("nickname ILIKE ?", "%"+(*username)+"%")
 	}
 
 	if mainRole != nil {

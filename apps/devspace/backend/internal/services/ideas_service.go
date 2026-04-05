@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -28,7 +27,7 @@ func GetIdeasList(req dto.GetIdeasRequest, db *gorm.DB) (*dto.GetIdeasResponse, 
 	var ideas []models.Idea
 
 	if req.Search != nil {
-		query = query.Where("title ILIKE ?", "%"+strings.ToLower(*req.Search)+"%")
+		query = query.Where("title ILIKE ?", "%"+(*req.Search)+"%")
 	}
 
 	if req.AuthorId != nil {

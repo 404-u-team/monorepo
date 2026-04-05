@@ -144,14 +144,11 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		mainRoleUUID = &id
 	}
 
-	log.Printf("Request: start_at=%v, limit=%v, username=%v, main_role=%v, skills=%v",
-		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
-
 	// Получаем публичные профили с деревом навыков
 	profilesResponse, err := h.userService.GetUsersPublicProfiles(
 		req.StartAt,
 		req.Limit,
-		req.Username,
+		req.Search,
 		mainRoleUUID,
 		req.Skills,
 	)

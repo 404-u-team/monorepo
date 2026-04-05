@@ -47,6 +47,14 @@ type SafeUser struct {
 	IsAdmin   bool      `gorm:"column:is_admin; not null"`
 }
 
+type GetUsersRequest struct {
+	StartAt  *uint      `form:"start_at" json:"start_at"`
+	Limit    *uint      `form:"limit" json:"limit"`
+	Search   *string    `form:"username" json:"search"`
+	MainRole *string    `form:"main_role" json:"main_role"`
+	Skills   *UUIDSlice `form:"skills" json:"skills"`
+}
+
 type UUIDSlice []uuid.UUID
 
 func (u *UUIDSlice) UnmarshalJSON(bytes []byte) error {
@@ -117,12 +125,4 @@ func (u UUIDSlice) MarshalJSON() ([]byte, error) {
 		strings[i] = id.String()
 	}
 	return json.Marshal(strings)
-}
-
-type GetUsersRequest struct {
-	StartAt  *uint      `form:"start_at" json:"start_at"`
-	Limit    *uint      `form:"limit" json:"limit"`
-	Username *string    `form:"username" json:"username"`
-	MainRole *string    `form:"main_role" json:"main_role"`
-	Skills   *UUIDSlice `form:"skills" json:"skills"`
 }
