@@ -895,7 +895,7 @@ paths:
                             schema:
                                 type: array
                                 items:
-                                    $ref: "#/components/schemas/Project"
+                                    $ref: "#/components/schemas/GetProjectsResponse"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -1977,6 +1977,19 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        GetProjectsResponse:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                project:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Project"
+            required:
+                - project
+                - ideas
         ProjectSlot:
             type: object
             properties:

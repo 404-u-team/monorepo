@@ -13,7 +13,7 @@ import (
 type ProjectRepository interface {
 	IsProjectExistsByTitle(title string) (bool, error)
 	CreateProject(project *models.Project) error
-	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error)
+	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, int64, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	GetProjectByTitle(title string) (*models.Project, error)
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
@@ -61,7 +61,7 @@ func (r *projectRepository) CreateProject(project *models.Project) error {
 	return nil
 }
 
-func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, error) {
+func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, int64, error) {
 	var projects []models.Project
 	result := r.conn.Model(&models.Project{})
 	if query.Status != nil {
@@ -79,6 +79,11 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 		result = result.Offset(*query.StartAt)
 	}
 
+	var total int64
+	if err := result.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
 	if query.Limit != nil {
 		if *query.Limit > 50 {
 			*query.Limit = 50
@@ -93,10 +98,10 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 	result = result.Find(&projects)
 	if result.Error != nil {
 		log.Println("Ошибка при получения списка проектов: ", result.Error)
-		return nil, result.Error
+		return nil, 0, result.Error
 	}
 
-	return projects, nil
+	return projects, total, nil
 }
 
 func (r *projectRepository) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {

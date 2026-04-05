@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/google/uuid"
 )
 
@@ -24,4 +25,9 @@ type UpdateProjectRequest struct {
 	Description *string `json:"description" binding:"min=3,max=255"`
 	Status      *string `json:"status" binding:"omitempty,oneof=open closed"`
 	Content     *string `json:"content"`
+}
+
+type GetProjectsResponse struct {
+	Total    int64            `json:"total"`
+	Projects []models.Project `json:"projects"`
 }
