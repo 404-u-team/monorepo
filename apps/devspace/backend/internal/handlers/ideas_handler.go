@@ -22,14 +22,14 @@ func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB) ideaHandler {
 }
 
 func (ih *ideaHandler) GetIdeas(ctx *gin.Context) {
-	var req dto.GetListIdeasRequest
+	var req dto.GetIdeasRequest
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
 
-	ideas, dbErr := services.GetIdeasList(req, ih.db)
+	ideasResponse, dbErr := services.GetIdeasList(req, ih.db)
 
 	if dbErr != nil {
 		// Find не возвращает ошибку при ненахождении записей, следовательно он вернет только ошибку БД
@@ -37,7 +37,7 @@ func (ih *ideaHandler) GetIdeas(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ideas)
+	ctx.JSON(http.StatusOK, ideasResponse)
 }
 
 func (ih *ideaHandler) AddIdea(ctx *gin.Context) {

@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -22,16 +23,21 @@ func NewIdeaService(repo repository.IdeaRepository) IdeaService {
 	return &ideaService{repo: repo}
 }
 
-func GetIdeasList(req dto.GetListIdeasRequest, db *gorm.DB) ([]models.Idea, error) {
+func GetIdeasList(req dto.GetIdeasRequest, db *gorm.DB) (*dto.GetIdeasResponse, error) {
 	query := db.Model(&models.Idea{})
 	var ideas []models.Idea
 
 	if req.Search != nil {
-		query = query.Where("title ILIKE ?", *req.Search+"%")
+		query = query.Where("title ILIKE ?", "%"+strings.ToLower(*req.Search)+"%")
 	}
 
 	if req.AuthorId != nil {
 		query = query.Where("author_id = ?", *req.AuthorId)
+	}
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, ErrInternal
 	}
 
 	if req.StartAt != nil {
@@ -47,7 +53,9 @@ func GetIdeasList(req dto.GetListIdeasRequest, db *gorm.DB) ([]models.Idea, erro
 	if res.Error != nil {
 		return nil, res.Error
 	}
-	return ideas, nil
+
+	ideasReponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
+	return &ideasReponse, nil
 }
 
 func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*models.Idea, error) {

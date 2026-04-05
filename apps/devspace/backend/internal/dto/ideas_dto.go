@@ -1,8 +1,11 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
+	"github.com/google/uuid"
+)
 
-type GetListIdeasRequest struct {
+type GetIdeasRequest struct {
 	AuthorId *uuid.UUID `form:"author_id"`
 	Search   *string    `form:"search"`
 	StartAt  *uint      `form:"start_at"`
@@ -19,4 +22,9 @@ type CreateIdeaRequest struct {
 type UpdateIdeaRequest struct {
 	Title       *string `json:"title" binding:"min=3,max=255"`
 	Description *string `json:"description" binding:"min=3,max=255"`
+}
+
+type GetIdeasResponse struct {
+	Total int64         `json:"total"`
+	Ideas []models.Idea `json:"ideas"`
 }
