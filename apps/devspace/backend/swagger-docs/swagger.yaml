@@ -616,9 +616,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/GetIdeasResponse"
+                                $ref: "#/components/schemas/GetIdeasResponse"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -893,9 +891,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/GetProjectsResponse"
+                                $ref: "#/components/schemas/GetProjectsResponse"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -1983,13 +1979,13 @@ components:
                 total:
                     type: integer
                     format: int64
-                project:
+                projects:
                     type: array
                     items:
                         $ref: "#/components/schemas/Project"
             required:
-                - project
-                - ideas
+                - total
+                - projects
         ProjectSlot:
             type: object
             properties:
