@@ -161,8 +161,6 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		return
 	}
 
-	// добавляем поле total
-
 	c.JSON(http.StatusOK, profilesResponse)
 }
 

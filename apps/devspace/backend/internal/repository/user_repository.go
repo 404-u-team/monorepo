@@ -26,7 +26,7 @@ type UserRepository interface {
 		search *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
-	) ([]dto.PublicUserProfile, error)
+	) ([]dto.PublicUserProfile, int64, error)
 }
 
 type userRepository struct {
@@ -218,7 +218,7 @@ func (r *userRepository) GetUsersByParams(
 	search *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
-) ([]dto.PublicUserProfile, error) {
+) ([]dto.PublicUserProfile, int64, error) {
 
 	var users []models.User
 
@@ -262,7 +262,7 @@ func (r *userRepository) GetUsersByParams(
 
 	// Выполняем
 	if err := query.Find(&users).Error; err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// Преобразуем в PublicUserProfile
@@ -278,5 +278,5 @@ func (r *userRepository) GetUsersByParams(
 		}
 	}
 
-	return profiles, nil
+	return profiles, total, nil
 }

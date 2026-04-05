@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -149,7 +150,7 @@ func (s *userService) GetUsersPublicProfiles(
 ) (*dto.GetUsersResponse, error) {
 
 	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
-	users, total, err := s.repo.GetUsersByParams(startAt, limit, search, mainRole, skills)
+	users, total, err := s.userRepo.GetUsersByParams(startAt, limit, search, mainRole, skills)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +159,7 @@ func (s *userService) GetUsersPublicProfiles(
 	profiles := make([]dto.PublicUserProfile, len(users))
 	for i, user := range users {
 		// Строим дерево навыков для пользователя
-		skillTree, dbError := s.repo.GetUserSkills(user.ID)
+		skillTree, dbError := s.userRepo.GetUserSkills(user.ID)
 
 		if dbError != nil {
 			return nil, dbError
@@ -168,7 +169,7 @@ func (s *userService) GetUsersPublicProfiles(
 			ID:        user.ID,
 			Nickname:  user.Nickname,
 			MainRole:  user.MainRole,
-			AvatarUri: user.AvatarUrl,
+			AvatarUrl: user.AvatarUrl,
 			Bio:       user.Bio,
 			Skills:    skillTree,
 		}
