@@ -1,5 +1,47 @@
 import { apiClient } from "@/shared/api/client";
+
 import type { IUserResponse } from "../model/IUserResponse";
+
+export interface FetchUsersParameters {
+  search?: string | undefined;
+  start_at?: number | undefined;
+  limit?: number | undefined;
+  main_role?: string | undefined;
+  skills?: string[] | undefined;
+}
+
+export interface PaginatedUsers {
+  items: IUserResponse[];
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export async function fetchUsers(parameters?: FetchUsersParameters): Promise<PaginatedUsers> {
+  const limit = parameters?.limit ?? 20;
+  const startAt = parameters?.start_at ?? 0;
+
+  // Backend expects "username" query parameter, not "search"
+  const { search, skills, ...rest } = parameters ?? {};
+  const apiParameters: Record<string, unknown> = { ...rest, username: search };
+  // skills[] must be passed as repeated query params: skills=a&skills=b
+  if (skills && skills.length > 0) {
+    apiParameters.skills = skills;
+  }
+
+  const response = await apiClient.get<IUserResponse[]>("/users", {
+    params: apiParameters,
+    paramsSerializer: { indexes: false },
+  });
+  const items = response.data;
+
+  const hasMore = items.length >= limit;
+  const currentPage = Math.floor(startAt / limit) + 1;
+  const totalPages = hasMore ? currentPage + 1 : currentPage;
+  const total = startAt + items.length + (hasMore ? 1 : 0);
+
+  return { items, total, totalPages, hasMore };
+}
 
 export interface InviteToSlotParameters {
   project_id: string;

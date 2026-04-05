@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState, type JSX } from "react";
+import { Link } from "@tanstack/react-router";
 import { clsx } from "clsx";
-import { Button } from "@/shared/ui";
+import { useEffect, useRef, useState, type JSX } from "react";
+
+import { UserAvatar } from "@/shared/ui";
+
 import { fetchUserById } from "../../api/userApi";
+// main_role is now returned as an object from the API, no need to fetch separately
 import type { IUserResponse } from "../../model/IUserResponse";
+import { isValidMainRole } from "../../model/IUserResponse";
 import { UserCardSkeleton } from "../UserCardSkeleton/UserCardSkeleton";
 import InviteButton from "./InviteButton";
+
 import styles from "./UserCard.module.scss";
 
 export interface UserCardProps {
@@ -25,6 +31,7 @@ export function UserCard({
   onInvite,
 }: UserCardProps): JSX.Element {
   const [user, setUser] = useState<IUserResponse | undefined>(undefined);
+  const [mainRoleName, setMainRoleName] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const skillBoxReference = useRef<HTMLDivElement>(null);
   const scrollReference = useRef<HTMLDivElement>(null);
@@ -38,8 +45,12 @@ export function UserCard({
         const data = await fetchUserById(id);
         if (cancelled) return;
         setUser(data);
+
+        if (isValidMainRole(data.main_role)) {
+          setMainRoleName(data.main_role.name);
+        }
       } catch {
-        // handled by future error state
+        // handled by empty state
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -55,20 +66,17 @@ export function UserCard({
     const checkOverflow = (): void => {
       const box = skillBoxReference.current;
       const inner = scrollReference.current;
-      if (!box || !inner) return;
+      if (box === null || inner === null) return;
       const contentWidth = inner.scrollWidth / (needsScroll ? 2 : 1);
-      const containerWidth = box.offsetWidth;
-
-      setNeedsScroll(contentWidth > containerWidth);
+      setNeedsScroll(contentWidth > box.offsetWidth);
     };
 
     checkOverflow();
 
-    const ro = new ResizeObserver(checkOverflow);
-    if (skillBoxReference.current) ro.observe(skillBoxReference.current);
-
+    const observer = new ResizeObserver(checkOverflow);
+    if (skillBoxReference.current !== null) observer.observe(skillBoxReference.current);
     return (): void => {
-      ro.disconnect();
+      observer.disconnect();
     };
   }, [user?.skills, needsScroll]);
 
@@ -76,8 +84,10 @@ export function UserCard({
     return <UserCardSkeleton className={className} />;
   }
 
-  const Wrapper = to !== undefined ? "a" : "article";
-  const wrapperProps = to !== undefined ? { href: to } : {};
+  const Wrapper = to !== undefined ? Link : "article";
+  const wrapperProps = to !== undefined ? { to } : {};
+
+  const skills = user.skills;
 
   return (
     <Wrapper
@@ -85,61 +95,55 @@ export function UserCard({
       className={clsx(styles.card, to !== undefined && styles.link, className)}
     >
       <div className={styles.header}>
-        <div className={styles.avatarWrapper}>
-          <img
-            className={styles.avatar}
-            src={user.avatar_uri}
-            alt={user.nickname}
-            onError={(event) => {
-              (event.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        </div>
+        <UserAvatar
+          avatarUrl={user.avatar_url}
+          nickname={user.nickname}
+          size={44}
+          className={styles.avatarWrapper}
+        />
 
         <div className={styles.textInfo}>
-          <div className={styles.nickname}>{user.nickname}</div>
-          <span className={styles.mainRole}>{user.main_role}</span>
+          <span className={styles.nickname}>{user.nickname}</span>
+          {mainRoleName !== undefined && <span className={styles.mainRole}>{mainRoleName}</span>}
         </div>
       </div>
 
-      <div className={styles.bio}>{user.bio}</div>
+      {user.bio !== "" && <p className={styles.bio}>{user.bio}</p>}
 
-      <div
-        ref={skillBoxReference}
-        className={clsx(
-          styles.skillBox,
-          needsScroll && styles.skillBoxWithMask,
-        )}
-      >
+      {skills.length > 0 && (
         <div
-          ref={scrollReference}
-          className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
+          ref={skillBoxReference}
+          className={clsx(styles.skillBox, needsScroll && styles.skillBoxWithMask)}
         >
-          {(needsScroll ? [...user.skills, ...user.skills] : user.skills).map(
-            (skill, index) => {
+          <div
+            ref={scrollReference}
+            className={clsx(styles.scroll, needsScroll && styles.scrollAnimated)}
+          >
+            {(needsScroll ? [...skills, ...skills] : skills).map((skill, index) => {
               const skillName = typeof skill === "string" ? skill : skill.name;
-              const uniqueKey = `${typeof skill === "string" ? skill : JSON.stringify(skill)}-${String(index)}`;
-
+              const uniqueKey = `${typeof skill === "string" ? skill : skill.id}-${String(index)}`;
               return (
-                <div key={uniqueKey} className={styles.skillName}>
+                <span key={uniqueKey} className={styles.skillName}>
                   {skillName}
-                </div>
+                </span>
               );
-            },
-          )}
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.profileButtonsBox}>
-        <Button variant="outline" className={styles.profileButton}>
-          Профиль
-        </Button>
+        {to === undefined && (
+          <Link to="/users/$userId" params={{ userId: id }} className={styles.profileButton}>
+            Профиль
+          </Link>
+        )}
         {project_id !== undefined && slot_id !== undefined && (
           <InviteButton
             project_id={project_id}
             slot_id={slot_id}
             user_id={id}
-            {...(onInvite ? { onInvite } : {})}
+            {...(onInvite !== undefined ? { onInvite } : {})}
           />
         )}
       </div>

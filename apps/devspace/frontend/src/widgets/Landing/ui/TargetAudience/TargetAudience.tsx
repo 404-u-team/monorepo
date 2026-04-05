@@ -1,6 +1,7 @@
-import styles from './TargetAudience.module.scss';
-import type { JSX } from 'react';
-import { clsx } from 'clsx';
+import { clsx } from "clsx";
+import type { JSX } from "react";
+
+import styles from "./TargetAudience.module.scss";
 
 export function TargetAudience(): JSX.Element {
   return (
@@ -22,7 +23,9 @@ export function TargetAudience(): JSX.Element {
             </div>
             <div className={styles.cardBody}>
               <p className={styles.cardText}>
-                Получите первую практику работы в распределенной команде, переймите опыт и соберите крутое портфолио для уверенного старта карьеры. Забудьте про скучные туду-листы или магазины.
+                Получите первую практику работы в распределенной команде, переймите опыт и соберите
+                крутое портфолио для уверенного старта карьеры. Забудьте про скучные туду-листы или
+                магазины.
               </p>
             </div>
           </div>
@@ -35,7 +38,8 @@ export function TargetAudience(): JSX.Element {
             </div>
             <div className={styles.cardBody}>
               <p className={styles.cardText}>
-                Реализуйте свои амбициозные идеи, соберите команду мечты или просто попробуйте новые для себя технологии на реальных, интересных задачах вне работы.
+                Реализуйте свои амбициозные идеи, соберите команду мечты или просто попробуйте новые
+                для себя технологии на реальных, интересных задачах вне работы.
               </p>
             </div>
           </div>
@@ -48,7 +52,8 @@ export function TargetAudience(): JSX.Element {
             </div>
             <div className={styles.cardBody}>
               <p className={styles.cardText}>
-                Найдите тех, кто так же горит вашей идеей, и воплотите ее в жизнь. Отличный старт для будущих фаундеров, продактов.
+                Найдите тех, кто так же горит вашей идеей, и воплотите ее в жизнь. Отличный старт
+                для будущих фаундеров, продактов.
               </p>
             </div>
           </div>

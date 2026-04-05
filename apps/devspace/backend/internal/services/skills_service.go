@@ -12,31 +12,38 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSkills(req dto.SkillCategoriesListRequest, db *gorm.DB) ([]models.SkillCategory, error) {
-	query := db.Table("Skill_Category")
-	if req.ParentId == nil {
-		query = query.Where("parent_id IS null")
+// TODO: пиздец. Не работает поиск по любым родителям (только корень или только ребенок определенного скила)
+func GetSkills(query dto.SkillCategoriesListQuery, db *gorm.DB) ([]dto.SkillCategoryResponse, error) {
+	result := db.Model(&models.SkillCategory{})
+	if query.ParentId == nil {
+		result = result.Where("parent_id IS null")
 	} else {
-		query = query.Where("parent_id = ?", req.ParentId)
+		result = result.Where("parent_id = ?", query.ParentId)
 	}
 
-	if req.Search != nil {
-		query = query.Where("name ILIKE ?", *req.Search+"%")
+	if query.Search != nil {
+		result = result.Where("name ILIKE ?", *query.Search+"%")
 	}
 
-	if req.Limit != nil {
-		query = query.Limit(int(*req.Limit))
+	if query.StartAt != nil {
+		result = result.Offset(*query.StartAt)
+	}
+
+	if query.Limit != nil {
+		result = result.Limit(*query.Limit)
 	}
 
 	var skills []models.SkillCategory
 
-	res := query.Find(&skills)
+	res := result.Find(&skills)
 
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return skills, nil
+	skillCategoryResponse := repository.BuildSkillTree(skills)
+
+	return skillCategoryResponse, nil
 }
 
 func CutIntoPages(skills []models.SkillCategory, pages int) ([][]models.SkillCategory, error) {

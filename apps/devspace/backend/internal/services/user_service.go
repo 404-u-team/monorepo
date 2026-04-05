@@ -22,15 +22,16 @@ type UserService interface {
 }
 
 type userService struct {
-	repo repository.UserRepository
+	userRepo  repository.UserRepository
+	skillRepo repository.SkillRepository
 }
 
-func NewUserService(repo repository.UserRepository) *userService {
-	return &userService{repo: repo}
+func NewUserService(userRepo repository.UserRepository, skillRepo repository.SkillRepository) *userService {
+	return &userService{userRepo: userRepo, skillRepo: skillRepo}
 }
 
 func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
@@ -38,7 +39,15 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		return nil, ErrInternal
 	}
 
-	userSkills, err := s.repo.GetUserSkills(userID)
+	var mainRole *models.SkillCategory
+	if user.MainRole != nil {
+		mainRole, err = s.skillRepo.GetSkillByID(*user.MainRole)
+		if err != nil {
+			return nil, ErrInternal
+		}
+	}
+
+	userSkills, err := s.userRepo.GetUserSkills(userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -47,20 +56,24 @@ func (s *userService) GetMe(userID uuid.UUID) (*dto.PrivateUserProfile, error) {
 		ID:        userID,
 		Email:     user.Email,
 		Nickname:  user.Nickname,
-		AvatarUri: "",
+		MainRole:  nil,
+		AvatarUrl: user.AvatarUrl,
 		Bio:       user.Bio,
 		CreatedAt: user.CreatedAt,
 		Skills:    userSkills,
+	}
+	if user.MainRole != nil {
+		privateUserProfile.MainRole = mainRole
 	}
 	return &privateUserProfile, nil
 }
 
 func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) (*dto.PrivateUserProfile, error) {
-	if updateRequest.Nickname == nil && updateRequest.Bio == nil {
+	if updateRequest.Nickname == nil && updateRequest.Bio == nil && updateRequest.AvatarUrl == nil && !updateRequest.MainRole.IsSet {
 		return nil, ErrEmptyPayload
 	}
 
-	exists, err := s.repo.IsUserExistByID(userID)
+	exists, err := s.userRepo.IsUserExistByID(userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -68,8 +81,14 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 		return nil, ErrUserNotFound
 	}
 
-	err = s.repo.UpdateUserByID(userID, updateRequest)
+	err = s.userRepo.UpdateUserByID(userID, updateRequest)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrMainRoleNotFound
+		}
+		if errors.Is(err, gorm.ErrInvalidValue) {
+			return nil, ErrMainRoleIsNotRoot
+		}
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrUserConflict
 		}
@@ -86,7 +105,7 @@ func (s *userService) UpdateMe(userID uuid.UUID, updateRequest *dto.UpdateUserRe
 }
 
 func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, error) {
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.userRepo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
@@ -94,21 +113,32 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 		return nil, ErrInternal
 	}
 
-	userSkills, err := s.repo.GetUserSkills(user.ID)
+	var mainRole *models.SkillCategory
+	if user.MainRole != nil {
+		mainRole, err = s.skillRepo.GetSkillByID(*user.MainRole)
+		if err != nil {
+			return nil, ErrInternal
+		}
+	}
+
+	userSkills, err := s.userRepo.GetUserSkills(user.ID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	getMeResponse := dto.PublicUserProfile{
+	publicUserProfile := dto.PublicUserProfile{
 		ID:        user.ID,
 		Nickname:  user.Nickname,
-		MainRole:  user.MainRole,
-		AvatarUri: user.AvatarUrl,
+		MainRole:  nil,
+		AvatarUrl: user.AvatarUrl,
 		Bio:       user.Bio,
 		Skills:    userSkills,
 	}
+	if user.MainRole != nil {
+		publicUserProfile.MainRole = mainRole
+	}
 
-	return &getMeResponse, nil
+	return &publicUserProfile, nil
 }
 
 func (s *userService) GetUsersPublicProfiles(

@@ -17,25 +17,31 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	router := gin.Default()
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}
+	restrictedOrigins := []string{
+		"http://localhost:3000",
+		"http://localhost:8081",
+		"https://fe.dev-main.stand.devspace.404.ms0ur.dev",
+		"https://be.dev-main.stand.devspace.404.ms0ur.dev",
+	}
 	if config.AllowAnyOrigin {
 		corsConfig.AllowOriginFunc = func(origin string) bool {
 			return true
 		}
 	} else {
-		corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+		corsConfig.AllowOrigins = restrictedOrigins
 	}
 
 	router.Use(cors.New(corsConfig))
 
 	// создание репозиториев (круды для работы с entity)
 	userRepo := repository.NewUserRepository(dbConn)
+	skillRepo := repository.NewSkillRepository(dbConn)
 	projectRepo := repository.NewProjectRepository(dbConn)
 	slotRepo := repository.NewSlotRepository(dbConn)
 	projectRequestRepo := repository.NewProjectRequestRepository(dbConn)
@@ -43,7 +49,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 	// создание сервисов (бизнес логика)
 	authService := services.NewAuthService(userRepo)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, skillRepo)
 	projectService := services.NewProjectService(projectRepo)
 	slotService := services.NewSlotService(slotRepo, projectRepo)
 	projectRequestService := services.NewProjectRequestService(projectRequestRepo, slotRepo, projectRepo)

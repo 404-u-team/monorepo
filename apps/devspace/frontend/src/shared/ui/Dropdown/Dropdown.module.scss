@@ -1,49 +1,49 @@
 .wrapper {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 
-    &.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .dropdown {
-    appearance: none;
-    width: 100%;
-    padding: 10px 36px 10px 16px;
-    font-size: 14px;
-    line-height: 20px;
-    color: var(--text--primary);
-    background-color: var(--bg--main);
-    border: 1px solid var(--border--main);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: border-color 0.2s;
+  appearance: none;
+  width: 100%;
+  padding: 10px 36px 10px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text--primary);
+  background-color: var(--bg--main);
+  border: 1px solid var(--border--main);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
 
-    &:hover:not(:disabled) {
-        border-color: var(--border--hover);
-    }
+  &:hover:not(:disabled) {
+    border-color: var(--border--hover);
+  }
 
-    &:focus {
-        outline: none;
-        border-color: var(--border--active);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--border--active);
+  }
 
-    &:disabled {
-        cursor: not-allowed;
-        background-color: var(--bg--disabled);
-    }
+  &:disabled {
+    cursor: not-allowed;
+    background-color: var(--bg--disabled);
+  }
 }
 
 .iconWrapper {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: var(--text--secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

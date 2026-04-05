@@ -25,33 +25,23 @@ func NewSkillsHandler(d *gorm.DB) skillsHandler {
 }
 
 func (ch *skillsHandler) GetSkills(context *gin.Context) {
-	var req dto.SkillCategoriesListRequest
-	bindErr := context.ShouldBindQuery(&req)
+	var query dto.SkillCategoriesListQuery
+	bindErr := context.ShouldBindQuery(&query)
 
 	if bindErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка query параметров"})
 		return
 	}
 
-	skills, dbError := services.GetSkills(req, ch.db)
+	skills, err := services.GetSkills(query, ch.db)
 
-	if dbError != nil {
-		if errors.Is(dbError, gorm.ErrRecordNotFound) {
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			context.Status(http.StatusOK)
 		} else {
 			context.Status(http.StatusInternalServerError)
-			log.Println("Ошибка обращения к БД:", dbError.Error())
+			log.Println("Ошибка обращения к БД:", err.Error())
 		}
-		return
-	}
-
-	if req.Page != nil {
-		//делим на страницы
-		splittedByPages, err := services.CutIntoPages(skills, int(*req.Page))
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		context.JSON(http.StatusOK, splittedByPages)
 		return
 	}
 

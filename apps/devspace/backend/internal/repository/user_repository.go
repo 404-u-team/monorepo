@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"log"
-	"sort"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -27,7 +26,7 @@ type UserRepository interface {
 		search *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
-	) ([]models.User, int64, error)
+	) ([]dto.PublicUserProfile, error)
 }
 
 type userRepository struct {
@@ -137,9 +136,8 @@ func (r *userRepository) CheckUserIsAdmin(id uuid.UUID) (bool, error) {
 	return user.IsAdmin, nil
 }
 
-// обновить nickname и bio пользователя по ID. Возвращает ошибку
 func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.UpdateUserRequest) error {
-	updates := map[string]string{}
+	updates := map[string]interface{}{}
 
 	if updateRequest.Nickname != nil {
 		updates["nickname"] = *updateRequest.Nickname
@@ -147,6 +145,28 @@ func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.Upd
 
 	if updateRequest.Bio != nil {
 		updates["bio"] = *updateRequest.Bio
+	}
+
+	if updateRequest.AvatarUrl != nil {
+		updates["avatar_url"] = *updateRequest.AvatarUrl
+	}
+
+	if updateRequest.MainRole.IsSet {
+		if updateRequest.MainRole.Value == nil {
+			updates["main_role"] = nil
+		} else {
+			var skill models.SkillCategory
+			result := r.conn.Select("id", "parent_id").First(&skill, "id = ?", *updateRequest.MainRole.Value)
+			if result.Error != nil {
+				return result.Error
+			}
+
+			if skill.ParentID != nil {
+				return gorm.ErrInvalidValue
+			}
+
+			updates["main_role"] = *updateRequest.MainRole.Value
+		}
 	}
 
 	result := r.conn.Model(&models.User{}).Where("id = ?", userID).Updates(updates)
@@ -190,68 +210,7 @@ func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryRes
 	}
 
 	// преобразовываем список скиллов в дерево (на основе полей ID и parentID)
-	return r.buildTreeRecursive(allSkills), nil
-}
-
-func (r *userRepository) buildTreeRecursive(skills []models.SkillCategory) []dto.SkillCategoryResponse {
-	if len(skills) == 0 {
-		return []dto.SkillCategoryResponse{}
-	}
-
-	// создаем map детей для каждого родителя
-	childrenMap := make(map[uuid.UUID][]models.SkillCategory)
-	var roots []models.SkillCategory
-
-	for _, skill := range skills {
-		if skill.ParentID == nil {
-			// Это корневой навык
-			roots = append(roots, skill)
-		} else {
-			// Это дочерний навык
-			parentID := *skill.ParentID
-			childrenMap[parentID] = append(childrenMap[parentID], skill)
-		}
-	}
-
-	// сортируем корни для консистентного порядка
-	sort.Slice(roots, func(i, j int) bool {
-		return roots[i].Name < roots[j].Name
-	})
-
-	// рекурсивно строим дерево
-	result := make([]dto.SkillCategoryResponse, 0, len(roots))
-
-	for _, root := range roots {
-		tree := buildNode(root, childrenMap)
-		result = append(result, tree)
-	}
-
-	return result
-}
-
-// buildNode рекурсивно строит узел дерева
-func buildNode(skill models.SkillCategory, childrenMap map[uuid.UUID][]models.SkillCategory) dto.SkillCategoryResponse {
-	node := dto.SkillCategoryResponse{
-		ID:       skill.ID,
-		Name:     skill.Name,
-		ParentID: skill.ParentID,
-		Children: []dto.SkillCategoryResponse{},
-	}
-
-	// добавляем детей
-	if children, exists := childrenMap[skill.ID]; exists {
-		// сортируем детей по имени
-		sort.Slice(children, func(i, j int) bool {
-			return children[i].Name < children[j].Name
-		})
-
-		for _, child := range children {
-			childNode := buildNode(child, childrenMap)
-			node.Children = append(node.Children, childNode)
-		}
-	}
-
-	return node
+	return BuildSkillTree(allSkills), nil
 }
 
 func (r *userRepository) GetUsersByParams(
@@ -259,14 +218,15 @@ func (r *userRepository) GetUsersByParams(
 	search *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
-) ([]models.User, int64, error) {
+) ([]dto.PublicUserProfile, error) {
 
 	var users []models.User
 
-	// подгружаем навки
+	// подгружаем навки и main_role через Preload
 	query := r.conn.Session(&gorm.Session{}).
 		Model(&models.User{}).
-		Preload("Skills")
+		Preload("Skills").
+		Preload("MainRoleSkill")
 
 	// Фильтры
 	if search != nil && *search != "" {
@@ -302,8 +262,21 @@ func (r *userRepository) GetUsersByParams(
 
 	// Выполняем
 	if err := query.Find(&users).Error; err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return users, total, nil
+	// Преобразуем в PublicUserProfile
+	profiles := make([]dto.PublicUserProfile, len(users))
+	for i, user := range users {
+		profiles[i] = dto.PublicUserProfile{
+			ID:        user.ID,
+			Nickname:  user.Nickname,
+			MainRole:  user.MainRoleSkill,
+			AvatarUrl: user.AvatarUrl,
+			Bio:       user.Bio,
+			Skills:    BuildSkillTree(user.Skills),
+		}
+	}
+
+	return profiles, nil
 }

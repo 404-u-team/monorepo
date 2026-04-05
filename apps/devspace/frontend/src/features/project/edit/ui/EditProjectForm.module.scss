@@ -1,54 +1,54 @@
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text--primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text--primary);
 }
 
 .textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border--main);
-    background-color: var(--bg--main);
-    font-family: inherit;
-    font-size: 1rem;
-    color: var(--text--primary);
-    resize: vertical;
-    transition: border-color 0.2s;
-    box-sizing: border-box;
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border--main);
+  background-color: var(--bg--main);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text--primary);
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
 
-    &:focus {
-        outline: none;
-        border-color: var(--brand);
-    }
+  &:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
 
-    &:disabled {
-        background-color: var(--bg--disabled);
-        cursor: not-allowed;
-    }
+  &:disabled {
+    background-color: var(--bg--disabled);
+    cursor: not-allowed;
+  }
 }
 
 .error {
-    color: var(--status--error);
-    font-size: 0.875rem;
-    margin: 0;
+  color: var(--status--error);
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 .actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
 }

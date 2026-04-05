@@ -10,7 +10,7 @@
 }
 
 .content {
-  background: linear-gradient(135deg, var(--brand) 0%, #0047A3 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, #0047a3 100%);
   border-radius: 24px;
   padding: 80px 40px;
   text-align: center;
@@ -22,7 +22,7 @@
 /* Background decorative circles */
 .content::before,
 .content::after {
-  content: '';
+  content: "";
   position: absolute;
   border-radius: 50%;
   background: rgb(255 255 255 / 5%);
