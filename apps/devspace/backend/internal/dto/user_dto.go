@@ -27,6 +27,11 @@ type PublicUserProfile struct {
 	Skills    []SkillCategoryResponse `json:"skills"`
 }
 
+type GetUsersResponse struct {
+	Total    int64               `json:"total"`
+	Profiles []PublicUserProfile `json:"profiles"`
+}
+
 type UpdateUserRequest struct {
 	Nickname *string `json:"nickname" binding:"min=3,max=50"`
 	Bio      *string `json:"bio" binding:"min=3,max=255"`

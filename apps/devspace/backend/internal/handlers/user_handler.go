@@ -148,7 +148,7 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		req.StartAt, req.Limit, req.Username, mainRoleUUID, req.Skills)
 
 	// Получаем публичные профили с деревом навыков
-	profiles, err := h.userService.GetUsersPublicProfiles(
+	profilesResponse, err := h.userService.GetUsersPublicProfiles(
 		req.StartAt,
 		req.Limit,
 		req.Username,
@@ -164,7 +164,9 @@ func (h *userHandler) GetUsersByParams(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, profiles)
+	// добавляем поле total
+
+	c.JSON(http.StatusOK, profilesResponse)
 }
 
 // TODO: Прописать журналирование для остальных 500 в этом хэндлере. Мы же потом будем с недоумением смотреть на код.

@@ -13,6 +13,7 @@ import (
 
 type UserRepository interface {
 	CreateUser(payload *dto.RegisterRequest) (uuid.UUID, error)
+	GetUsersTotalCount() (int64, error)
 	IsUserExistByEmail(email string) (bool, error)
 	IsUserExistByID(id uuid.UUID) (bool, error)
 	GetUserByID(userID uuid.UUID) (*models.User, error)
@@ -26,7 +27,7 @@ type UserRepository interface {
 		username *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
-	) ([]models.User, error)
+	) ([]models.User, int64, error)
 }
 
 type userRepository struct {
@@ -50,6 +51,13 @@ func (r *userRepository) CreateUser(payload *dto.RegisterRequest) (uuid.UUID, er
 	}
 
 	return user.ID, nil
+}
+
+func (r *userRepository) GetUsersTotalCount() (int64, error) {
+	var count int64
+	err := r.conn.Model(&models.User{}).
+		Count(&count).Error
+	return count, err
 }
 
 func (r *userRepository) IsUserExistByEmail(email string) (bool, error) {
@@ -251,7 +259,7 @@ func (r *userRepository) GetUsersByParams(
 	username *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
-) ([]models.User, error) {
+) ([]models.User, int64, error) {
 
 	var users []models.User
 
@@ -278,6 +286,12 @@ func (r *userRepository) GetUsersByParams(
 			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
 	}
 
+	// получение totla
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
 	// Пагинация
 	if startAt != nil {
 		query = query.Offset(int(*startAt))
@@ -288,12 +302,8 @@ func (r *userRepository) GetUsersByParams(
 
 	// Выполняем
 	if err := query.Find(&users).Error; err != nil {
-		return nil, err
-	}
-	// ОТЛАДКА: выводим количество навыков у каждого пользователя
-	for _, user := range users {
-		log.Printf("User %s (%s) has %d skills", user.ID, user.Nickname, len(user.Skills))
+		return nil, 0, err
 	}
 
-	return users, nil
+	return users, total, nil
 }

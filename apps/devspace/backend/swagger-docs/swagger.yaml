@@ -274,16 +274,11 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: "#/components/schemas/User"
+                                $ref: "#/components/schemas/GetUsersResponse"
                 "400":
                     description: Ошибка в параметрах запроса
                 "500":
                     description: Внутренняя ошибка сервера
-
-
-
 
     /users/me/skills:
         post:
@@ -1881,6 +1876,19 @@ components:
                     type: array
                     items:
                         $ref: "#/components/schemas/Skill"
+        GetUsersResponse:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                profiles:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/PublicUserProfile"
+            required:
+                - total
+                - profiles
         Skill:
             type: object
             properties:
