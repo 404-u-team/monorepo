@@ -286,7 +286,7 @@ func (r *userRepository) GetUsersByParams(
 			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
 	}
 
-	// получение totla
+	// получение total
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err

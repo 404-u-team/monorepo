@@ -53,8 +53,8 @@ func GetIdeasList(req dto.GetIdeasRequest, db *gorm.DB) (*dto.GetIdeasResponse, 
 		return nil, res.Error
 	}
 
-	ideasReponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
-	return &ideasReponse, nil
+	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
+	return &ideasResponse, nil
 }
 
 func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*models.Idea, error) {
