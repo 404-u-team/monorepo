@@ -24,7 +24,7 @@ type UserRepository interface {
 	GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error)
 	GetUsersByParams(
 		startAt, limit *uint,
-		username *string,
+		search *string,
 		mainRole *uuid.UUID,
 		requiredSkills *dto.UUIDSlice,
 	) ([]models.User, int64, error)
@@ -256,7 +256,7 @@ func buildNode(skill models.SkillCategory, childrenMap map[uuid.UUID][]models.Sk
 
 func (r *userRepository) GetUsersByParams(
 	startAt, limit *uint,
-	username *string,
+	search *string,
 	mainRole *uuid.UUID,
 	requiredSkills *dto.UUIDSlice,
 ) ([]models.User, int64, error) {
@@ -269,8 +269,8 @@ func (r *userRepository) GetUsersByParams(
 		Preload("Skills")
 
 	// Фильтры
-	if username != nil && *username != "" {
-		query = query.Where("nickname ILIKE ?", "%"+(*username)+"%")
+	if search != nil && *search != "" {
+		query = query.Where("nickname ILIKE ?", "%"+(*search)+"%")
 	}
 
 	if mainRole != nil {

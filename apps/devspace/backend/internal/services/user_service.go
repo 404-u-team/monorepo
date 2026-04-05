@@ -113,13 +113,13 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*dto.PublicUserProfile, err
 
 func (s *userService) GetUsersPublicProfiles(
 	startAt, limit *uint,
-	username *string,
+	search *string,
 	mainRole *uuid.UUID,
 	skills *dto.UUIDSlice,
 ) (*dto.GetUsersResponse, error) {
 
 	// Получаем пользователей с навыками (Preload уже подгрузил Skills)
-	users, total, err := s.repo.GetUsersByParams(startAt, limit, username, mainRole, skills)
+	users, total, err := s.repo.GetUsersByParams(startAt, limit, search, mainRole, skills)
 	if err != nil {
 		return nil, err
 	}
