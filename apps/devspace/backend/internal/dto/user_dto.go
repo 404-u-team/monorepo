@@ -136,6 +136,10 @@ func (u *UUIDSlice) UnmarshalText(text []byte) error {
 	return nil
 }
 
+func (u *UUIDSlice) UnmarshalParam(param string) error {
+	return u.UnmarshalText([]byte(param))
+}
+
 func (u UUIDSlice) MarshalJSON() ([]byte, error) {
 	if u == nil {
 		return []byte("null"), nil

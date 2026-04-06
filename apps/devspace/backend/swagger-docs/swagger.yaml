@@ -876,6 +876,40 @@ paths:
                   required: false
                   schema:
                       type: string
+                - name: idea_id
+                  in: query
+                  description: Фильтр по идее
+                  required: false
+                  schema:
+                      type: string
+                      format: uuid
+                - name: open_slots
+                  in: query
+                  description: Фильтр по наличию слотов (true - только с открытыми, false - все)
+                  required: false
+                  schema:
+                      type: boolean
+                - name: slots_skills
+                  in: query
+                  description: Фильтр по скиллам в слотах
+                  required: false
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                          format: uuid
+                - name: min_people
+                  in: query
+                  description: Фильтрация по минимальному кол-ву людей в проекте (учитывая создателя)
+                  required: false
+                  schema:
+                      type: integer
+                - name: max_people
+                  in: query
+                  description: Фильтрация по максимальному кол-ву людей в проекте (учитывая создателя)
+                  required: false
+                  schema:
+                      type: integer
                 - name: start_at
                   in: query
                   description: Смещение для выборки

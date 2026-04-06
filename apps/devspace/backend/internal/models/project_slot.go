@@ -12,6 +12,23 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type ProjectSlot struct {
+	ID                uuid.UUID  `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ProjectID         uuid.UUID  `gorm:"column:project_id;type:uuid;not null;uniqueIndex:idx_project_user,where:project_id IS NOT NULL" json:"project_id"`
+	PrimarySkillsID   UUIDArray  `gorm:"column:primary_skills_id;type:uuid[];not null" json:"primary_skills_id"`
+	SecondarySkillsID UUIDArray  `gorm:"column:secondary_skills_id;type:uuid[];not null" json:"secondary_skills_id"`
+	UserID            *uuid.UUID `gorm:"column:user_id;type:uuid;uniqueIndex:idx_project_user,where:user_id IS NOT NULL" json:"user_id"`
+	Title             string     `gorm:"column:title; not null" json:"title"`
+	Description       *string    `gorm:"column:description" json:"description"`
+	Status            string     `gorm:"column:status; not null" json:"status"`
+	CreatedAt         time.Time  `gorm:"column:created_at; not null" json:"created_at"`
+
+	Project Project `gorm:"foreignKey:ProjectID" json:"-"`
+	User    User    `gorm:"foreignKey:UserID" json:"-"`
+}
+
+func (ps *ProjectSlot) TableName() string { return "Project_Slot" }
+
 type UUIDArray []uuid.UUID
 
 func (a UUIDArray) Value() (driver.Value, error) {
@@ -79,20 +96,3 @@ func (a *UUIDArray) Scan(src interface{}) error {
 	*a = UUIDArray(res)
 	return nil
 }
-
-type ProjectSlot struct {
-	ID                uuid.UUID  `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ProjectID         uuid.UUID  `gorm:"column:project_id;type:uuid;not null;uniqueIndex:idx_project_user,where:project_id IS NOT NULL" json:"project_id"`
-	PrimarySkillsID   UUIDArray  `gorm:"column:primary_skills_id;type:uuid[];not null" json:"primary_skills_id"`
-	SecondarySkillsID UUIDArray  `gorm:"column:secondary_skills_id;type:uuid[];not null" json:"secondary_skills_id"`
-	UserID            *uuid.UUID `gorm:"column:user_id;type:uuid;uniqueIndex:idx_project_user,where:user_id IS NOT NULL" json:"user_id"`
-	Title             string     `gorm:"column:title; not null" json:"title"`
-	Description       *string    `gorm:"column:description" json:"description"`
-	Status            string     `gorm:"column:status; not null" json:"status"`
-	CreatedAt         time.Time  `gorm:"column:created_at; not null" json:"created_at"`
-
-	Project Project `gorm:"foreignKey:ProjectID" json:"-"`
-	User    User    `gorm:"foreignKey:UserID" json:"-"`
-}
-
-func (ps *ProjectSlot) TableName() string { return "Project_Slot" }
