@@ -22,16 +22,25 @@ func BuildSkillTree(skills []models.SkillCategory) []dto.SkillCategoryResponse {
 
 	// создаем map детей для каждого родителя
 	childrenMap := make(map[uuid.UUID][]models.SkillCategory)
+	skillsByID := make(map[uuid.UUID]models.SkillCategory, len(skills))
 	var roots []models.SkillCategory
+
+	for _, skill := range skills {
+		skillsByID[skill.ID] = skill
+	}
 
 	for _, skill := range skills {
 		if skill.ParentID == nil {
 			// Это корневой навык
 			roots = append(roots, skill)
 		} else {
-			// Это дочерний навык
+			// Если родителя нет в слайсе, считаем узел корнем текущего дерева.
 			parentID := *skill.ParentID
-			childrenMap[parentID] = append(childrenMap[parentID], skill)
+			if _, exists := skillsByID[parentID]; exists {
+				childrenMap[parentID] = append(childrenMap[parentID], skill)
+			} else {
+				roots = append(roots, skill)
+			}
 		}
 	}
 

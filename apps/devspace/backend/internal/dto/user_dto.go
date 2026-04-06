@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -40,6 +41,14 @@ type UpdateUserRequest struct {
 	Bio       *string      `json:"bio" binding:"omitempty,min=3,max=255"`
 }
 
+type GetUsersRequest struct {
+	StartAt  *uint      `form:"start_at" json:"start_at"`
+	Limit    *uint      `form:"limit" json:"limit"`
+	Search   *string    `form:"search" json:"search"`
+	MainRole *string    `form:"main_role" json:"main_role"`
+	Skills   *UUIDSlice `form:"skills" json:"skills"`
+}
+
 // OptionalUUID distinguishes between omitted field and explicit null in JSON.
 type OptionalUUID struct {
 	IsSet bool
@@ -66,14 +75,6 @@ func (o *OptionalUUID) UnmarshalJSON(data []byte) error {
 
 	o.Value = &parsed
 	return nil
-}
-
-type GetUsersRequest struct {
-	StartAt  *uint      `form:"start_at" json:"start_at"`
-	Limit    *uint      `form:"limit" json:"limit"`
-	Search   *string    `form:"username" json:"search"`
-	MainRole *string    `form:"main_role" json:"main_role"`
-	Skills   *UUIDSlice `form:"skills" json:"skills"`
 }
 
 type UUIDSlice []uuid.UUID
@@ -108,10 +109,12 @@ func (u *UUIDSlice) UnmarshalText(text []byte) error {
 		return nil
 	}
 
+	raw := strings.TrimSpace(string(text))
+
 	// Если пришло как JSON массив
-	if text[0] == '[' {
+	if strings.HasPrefix(raw, "[") {
 		var strings []string
-		if err := json.Unmarshal(text, &strings); err != nil {
+		if err := json.Unmarshal([]byte(raw), &strings); err != nil {
 			return err
 		}
 
@@ -127,8 +130,28 @@ func (u *UUIDSlice) UnmarshalText(text []byte) error {
 		return nil
 	}
 
+	// Если пришло как CSV: uuid1,uuid2
+	if strings.Contains(raw, ",") {
+		parts := strings.Split(raw, ",")
+		result := make(UUIDSlice, 0, len(parts))
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+
+			id, err := uuid.Parse(part)
+			if err != nil {
+				return err
+			}
+			result = append(result, id)
+		}
+		*u = result
+		return nil
+	}
+
 	// Если пришло как один UUID
-	id, err := uuid.Parse(string(text))
+	id, err := uuid.Parse(raw)
 	if err != nil {
 		return err
 	}

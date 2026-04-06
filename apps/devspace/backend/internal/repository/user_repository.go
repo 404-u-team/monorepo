@@ -178,35 +178,19 @@ func (r *userRepository) UpdateUserByID(userID uuid.UUID, updateRequest *dto.Upd
 	return nil
 }
 func (r *userRepository) GetUserSkills(userID uuid.UUID) ([]dto.SkillCategoryResponse, error) {
-	// подумал, что лучше один сложный запрос вместо кучи запросов для дочерних обьектов дерева
-
-	// находим все skillID которые есть в дереве навыков
-	var skillIDs []uuid.UUID
-	query := `
-        WITH RECURSIVE user_skill_tree AS (
-            SELECT skill_id FROM "User_Skill" WHERE user_id = $1
-            UNION
-            SELECT sc.id FROM "Skill_Category" sc
-            JOIN user_skill_tree ust ON sc.parent_id = ust.skill_id
-        )
-        SELECT DISTINCT skill_id FROM user_skill_tree
-    `
-	result := r.conn.Raw(query, userID).Scan(&skillIDs)
-	if result.Error != nil {
-		log.Println("Ошибка при получении рекурсивно списка скиллов пользователя: ", result.Error)
-		return nil, result.Error
-	}
-
-	if len(skillIDs) == 0 {
-		return []dto.SkillCategoryResponse{}, nil
-	}
-
-	// получаем скиллы на основе ID
+	// Получаем только навыки, явно назначенные пользователю в User_Skill.
 	var allSkills []models.SkillCategory
-	result = r.conn.Where("id IN ?", skillIDs).Find(&allSkills)
+	result := r.conn.Model(&models.SkillCategory{}).
+		Joins(`JOIN "User_Skill" ON "User_Skill".skill_id = "Skill_Category".id`).
+		Where(`"User_Skill".user_id = ?`, userID).
+		Find(&allSkills)
 	if result.Error != nil {
-		log.Println("Ошибка при списка скиллов по IDs: ", result.Error)
+		log.Println("Ошибка при получении списка скиллов пользователя: ", result.Error)
 		return nil, result.Error
+	}
+
+	if len(allSkills) == 0 {
+		return []dto.SkillCategoryResponse{}, nil
 	}
 
 	// преобразовываем список скиллов в дерево (на основе полей ID и parentID)
@@ -230,20 +214,21 @@ func (r *userRepository) GetUsersByParams(
 
 	// Фильтры
 	if search != nil && *search != "" {
-		query = query.Where("nickname ILIKE ?", "%"+(*search)+"%")
+		postgresSearch := "%" + (*search) + "%"
+		query = query.Where("(nickname ILIKE ? OR bio ILIKE ?)", postgresSearch, postgresSearch)
 	}
 
 	if mainRole != nil {
 		query = query.Where("main_role = ?", *mainRole)
 	}
 
-	// Фильтр по навыкам
+	// Фильтр по навыкам - простое объединение с таблицей User_Skill
 	if requiredSkills != nil && len(*requiredSkills) > 0 {
 		query = query.
-			Joins("JOIN user_skills ON users.id = user_skills.user_id").
-			Where("user_skills.skill_id IN ?", []uuid.UUID(*requiredSkills)).
-			Group("users.id").
-			Having("COUNT(DISTINCT user_skills.skill_id) = ?", len(*requiredSkills))
+			Joins(`JOIN "User_Skill" ON "User".id = "User_Skill".user_id`).
+			Where(`"User_Skill".skill_id IN ?`, []uuid.UUID(*requiredSkills)).
+			Group(`"User".id`).
+			Having(`COUNT(DISTINCT "User_Skill".skill_id) = ?`, len(*requiredSkills))
 	}
 
 	// получение total

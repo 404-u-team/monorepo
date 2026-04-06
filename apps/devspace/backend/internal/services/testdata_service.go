@@ -215,15 +215,19 @@ func (s *testDataService) generate(ctx context.Context) {
 	s.setProgress(completed)
 
 	// Assign 1–3 skills to ~50 % of users.
-	userSkillModels := make([]models.UserSkill, 0, tdTotalUsers*2)
-	for i := 0; i < tdTotalUsers/2; i++ {
+	// 50% of users = tdTotalUsers/2; each gets max 3 skills
+	usersWithSkills := tdTotalUsers / 2
+	maxSkillsPerUser := 3
+	userSkillModels := make([]models.UserSkill, 0, usersWithSkills*maxSkillsPerUser)
+	for i := 0; i < usersWithSkills; i++ {
 		if ctx.Err() != nil {
 			s.finish(fmt.Errorf("отменено"))
 			return
 		}
 		userID := userIDs[i]
 		used := make(map[uuid.UUID]bool)
-		for k := 0; k < rng.Intn(3)+1; k++ {
+		numSkills := rng.Intn(3) + 1 // 1 to 3
+		for k := 0; k < numSkills; k++ {
 			skillID := allSkillIDs[rng.Intn(len(allSkillIDs))]
 			if !used[skillID] {
 				used[skillID] = true
