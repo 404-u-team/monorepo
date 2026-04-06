@@ -70,10 +70,77 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 		}
 	}
 	if query.LeaderID != nil {
-		result = result.Where("leader_id = ?", *query.LeaderID)
+		result = result.Where("leader_id = ?", query.LeaderID.UUID())
 	}
 	if query.Search != nil && *query.Search != "" {
 		result = result.Where("title ILIKE ?", "%"+*query.Search+"%")
+	}
+
+	if query.IdeaID != nil {
+		result = result.Where("idea_id = ?", query.IdeaID.UUID())
+	}
+
+	if query.OpenSlots != nil && *query.OpenSlots {
+		subQuery := r.conn.Model(&models.ProjectSlot{}).
+			Select("1").
+			Where(`project_id = "Project".id AND status='open'`)
+		result = result.Where("EXISTS (?)", subQuery)
+	}
+
+	if query.SlotsSkills != nil {
+		if len(*query.SlotsSkills) == 0 {
+			return []models.Project{}, 0, nil
+		}
+
+		// находим через subquery список id проектов у которых есть
+		// все навыки из SlotsSkills (внутри primary и secondary skills)
+		skills := *query.SlotsSkills
+
+		var projectIDs []uuid.UUID
+
+		// Convert UUIDs to PostgreSQL ARRAY format: '{uuid1,uuid2,...}'::uuid[]
+		skillArray := "ARRAY["
+		for i, skill := range skills {
+			if i > 0 {
+				skillArray += ","
+			}
+			skillArray += "'" + skill.String() + "'::uuid"
+		}
+		skillArray += "]"
+
+		subquery := r.conn.Raw(`
+			SELECT project_id
+			FROM (
+				SELECT project_id, unnest(primary_skills_id || secondary_skills_id) AS skill
+				FROM "Project_Slot"
+				GROUP BY project_id, skill
+			) AS all_skills
+			WHERE skill = ANY(`+skillArray+`)
+			GROUP BY project_id
+			HAVING COUNT(DISTINCT skill) = ?
+		`, len(skills)).Scan(&projectIDs)
+		if subquery.Error != nil {
+			return nil, 0, subquery.Error
+		}
+
+		if len(projectIDs) > 0 {
+			result = result.Where("id IN ?", projectIDs)
+		} else {
+			return []models.Project{}, 0, nil
+		}
+	}
+
+	if query.MinPeople != nil || query.MaxPeople != nil {
+		subQuery := r.conn.Model(&models.ProjectSlot{}).
+			Select("COUNT(*)").
+			Where(`project_id = "Project".id`)
+
+		if query.MinPeople != nil {
+			result = result.Where("(?) >= ?", subQuery, *query.MinPeople)
+		}
+		if query.MaxPeople != nil {
+			result = result.Where("(?) <= ?", subQuery, *query.MinPeople)
+		}
 	}
 
 	var total int64
