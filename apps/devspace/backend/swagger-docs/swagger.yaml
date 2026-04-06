@@ -888,7 +888,7 @@ paths:
                   description: Фильтр по наличию слотов (true - только с открытыми, false - все)
                   required: false
                   schema:
-                      type: string
+                      type: boolean
                       enum:
                           - true
                           - false
@@ -906,13 +906,13 @@ paths:
                   description: Фильрация по минимальному кол-ву людей в проекте (учитывая создателя)
                   required: false
                   schema:
-                      type: int
+                      type: integer
                 - name: max_people
                   in: query
                   description: Фильрация по максимальному кол-ву людей в проекте (учитывая создателя)
                   required: false
                   schema:
-                      type: int
+                      type: integer
                 - name: start_at
                   in: query
                   description: Смещение для выборки
