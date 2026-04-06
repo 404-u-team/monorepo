@@ -108,17 +108,31 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 		}
 		skillArray += "]"
 
-		subquery := r.conn.Raw(`
-			SELECT project_id
-			FROM (
-				SELECT project_id, unnest(primary_skills_id || secondary_skills_id) AS skill
-				FROM "Project_Slot"
-				GROUP BY project_id, skill
-			) AS all_skills
-			WHERE skill = ANY(`+skillArray+`)
-			GROUP BY project_id
-			HAVING COUNT(DISTINCT skill) = ?
-		`, len(skills)).Scan(&projectIDs)
+		var subquery *gorm.DB
+		if query.OpenSlots != nil && *query.OpenSlots {
+			subquery = r.conn.Raw(`
+				SELECT project_id
+				FROM (
+					SELECT project_id, unnest(primary_skills_id || secondary_skills_id) AS skill
+					FROM "Project_Slot"
+					WHERE status = 'open'
+				) AS all_skills
+				WHERE skill = ANY(`+skillArray+`)
+				GROUP BY project_id
+				HAVING COUNT(DISTINCT skill) = ?
+			`, len(skills)).Scan(&projectIDs)
+		} else {
+			subquery = r.conn.Raw(`
+				SELECT project_id
+				FROM (
+					SELECT project_id, unnest(primary_skills_id || secondary_skills_id) AS skill
+					FROM "Project_Slot"
+				) AS all_skills
+				WHERE skill = ANY(`+skillArray+`)
+				GROUP BY project_id
+				HAVING COUNT(DISTINCT skill) = ?
+			`, len(skills)).Scan(&projectIDs)
+		}
 		if subquery.Error != nil {
 			return nil, 0, subquery.Error
 		}
@@ -132,14 +146,14 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 
 	if query.MinPeople != nil || query.MaxPeople != nil {
 		subQuery := r.conn.Model(&models.ProjectSlot{}).
-			Select("COUNT(*)").
+			Select("COUNT(user_id)").
 			Where(`project_id = "Project".id`)
 
 		if query.MinPeople != nil {
 			result = result.Where("(?) >= ?", subQuery, *query.MinPeople)
 		}
 		if query.MaxPeople != nil {
-			result = result.Where("(?) <= ?", subQuery, *query.MinPeople)
+			result = result.Where("(?) <= ?", subQuery, *query.MaxPeople)
 		}
 	}
 

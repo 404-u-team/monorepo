@@ -889,9 +889,6 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                      enum:
-                          - true
-                          - false
                 - name: slots_skills
                   in: query
                   description: Фильтр по скиллам в слотах
@@ -903,13 +900,13 @@ paths:
                           format: uuid
                 - name: min_people
                   in: query
-                  description: Фильрация по минимальному кол-ву людей в проекте (учитывая создателя)
+                  description: Фильтрация по минимальному кол-ву людей в проекте (учитывая создателя)
                   required: false
                   schema:
                       type: integer
                 - name: max_people
                   in: query
-                  description: Фильрация по максимальному кол-ву людей в проекте (учитывая создателя)
+                  description: Фильтрация по максимальному кол-ву людей в проекте (учитывая создателя)
                   required: false
                   schema:
                       type: integer
