@@ -58,8 +58,6 @@ func (h *projectHandler) CreateProject(c *gin.Context) {
 }
 
 func (h *projectHandler) GetProjects(c *gin.Context) {
-	log.Println("Raw query:", c.Request.URL.RawQuery)
-	log.Println("Query map:", c.Request.URL.Query())
 	var query dto.GetProjectsQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		log.Println("Ошибка при парсинге query: ", err)

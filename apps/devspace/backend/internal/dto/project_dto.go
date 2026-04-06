@@ -46,11 +46,10 @@ type GetProjectsResponse struct {
 type QueryUUID uuid.UUID
 
 func (u *QueryUUID) UnmarshalText(text []byte) error {
-	if len(text) == 0 {
-		return nil
-	}
-
 	raw := strings.TrimSpace(string(text))
+	if raw == "" {
+		return fmt.Errorf("uuid cannot be empty")
+	}
 
 	// 1) Plain UUID
 	if parsed, err := uuid.Parse(raw); err == nil {

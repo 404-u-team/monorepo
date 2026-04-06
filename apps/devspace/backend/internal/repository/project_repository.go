@@ -150,10 +150,10 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 			Where(`project_id = "Project".id`)
 
 		if query.MinPeople != nil {
-			result = result.Where("(?) >= ?", subQuery, *query.MinPeople)
+			result = result.Where("(?) + 1 >= ?", subQuery, *query.MinPeople)
 		}
 		if query.MaxPeople != nil {
-			result = result.Where("(?) <= ?", subQuery, *query.MaxPeople)
+			result = result.Where("(?) + 1 <= ?", subQuery, *query.MaxPeople)
 		}
 	}
 
