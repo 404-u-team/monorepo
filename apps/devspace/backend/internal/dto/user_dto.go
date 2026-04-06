@@ -71,7 +71,7 @@ func (o *OptionalUUID) UnmarshalJSON(data []byte) error {
 type GetUsersRequest struct {
 	StartAt  *uint      `form:"start_at" json:"start_at"`
 	Limit    *uint      `form:"limit" json:"limit"`
-	Search   *string    `form:"username" json:"search"`
+	Search   *string    `form:"search" json:"search"`
 	MainRole *string    `form:"main_role" json:"main_role"`
 	Skills   *UUIDSlice `form:"skills" json:"skills"`
 }

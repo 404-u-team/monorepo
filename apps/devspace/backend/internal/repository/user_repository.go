@@ -230,7 +230,8 @@ func (r *userRepository) GetUsersByParams(
 
 	// Фильтры
 	if search != nil && *search != "" {
-		query = query.Where("nickname ILIKE ?", "%"+(*search)+"%")
+		postgresSearch := "%" + (*search) + "%"
+		query = query.Where("nickname ILIKE ? OR bio ILIKE ?", postgresSearch, postgresSearch)
 	}
 
 	if mainRole != nil {
