@@ -283,7 +283,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	completed += tdTotalIdeas
 	s.setProgress(completed)
 
-	// ── 4. Projects ───────────────────────────────────────────────────────────
+	// ── 5. Projects ───────────────────────────────────────────────────────────
 	s.setStage("Генерация проектов")
 
 	projectTitles := []string{
@@ -337,7 +337,62 @@ func (s *testDataService) generate(ctx context.Context) {
 	completed += tdTotalProjects
 	s.setProgress(completed)
 
-	// ── 5. Slots ─────────────────────────────────────────────────────────────
+	// ── 5. Favorites ─────────────────────────────────────────────────────────
+	s.setStage("Генерация избранного")
+
+	favoriteModels := make([]models.UserFavorite, 0, tdTotalUsers)
+	usedIdeaFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
+	usedProjectFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
+
+	for i := 0; i < tdTotalUsers/2; i++ {
+		if ctx.Err() != nil {
+			s.finish(fmt.Errorf("отменено"))
+			return
+		}
+
+		userID := userIDs[i]
+		if usedIdeaFavorites[userID] == nil {
+			usedIdeaFavorites[userID] = make(map[uuid.UUID]bool)
+		}
+		if usedProjectFavorites[userID] == nil {
+			usedProjectFavorites[userID] = make(map[uuid.UUID]bool)
+		}
+
+		favoriteCount := rng.Intn(4) + 1 // 1 to 4 favorites
+		for j := 0; j < favoriteCount; j++ {
+			if rng.Intn(2) == 0 {
+				ideaID := ideaIDs[rng.Intn(len(ideaIDs))]
+				if usedIdeaFavorites[userID][ideaID] {
+					continue
+				}
+				usedIdeaFavorites[userID][ideaID] = true
+				favoriteModels = append(favoriteModels, models.UserFavorite{
+					UserID: userID,
+					IdeaID: &ideaID,
+				})
+				continue
+			}
+
+			projectID := projectIDs[rng.Intn(len(projectIDs))]
+			if usedProjectFavorites[userID][projectID] {
+				continue
+			}
+			usedProjectFavorites[userID][projectID] = true
+			favoriteModels = append(favoriteModels, models.UserFavorite{
+				UserID:    userID,
+				ProjectID: &projectID,
+			})
+		}
+	}
+
+	if len(favoriteModels) > 0 {
+		if err := s.db.WithContext(ctx).CreateInBatches(favoriteModels, 200).Error; err != nil {
+			s.finish(err)
+			return
+		}
+	}
+
+	// ── 6. Slots ─────────────────────────────────────────────────────────────
 	s.setStage("Генерация слотов")
 
 	slotTitles := []string{
