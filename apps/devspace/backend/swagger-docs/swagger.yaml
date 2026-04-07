@@ -593,7 +593,25 @@ paths:
                   required: false
                   schema:
                       type: string
+                - name: views
+                  in: query
+                  description: Сортировка по кол-ву просмотров
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
                 - name: favorites
+                  in: query
+                  description: Сортировка по кол-ву добавлений в избранное
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: is_favorite
                   in: query
                   description: >-
                       Показать только избранные идеи текущего пользователя (требует
