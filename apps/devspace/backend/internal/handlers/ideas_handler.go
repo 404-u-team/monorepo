@@ -26,6 +26,7 @@ func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB, config *confi
 func (ih *ideaHandler) GetIdeas(c *gin.Context) {
 	var query dto.GetIdeasRequest
 	if err := c.ShouldBindQuery(&query); err != nil {
+		log.Println("Ошибка ShouldBindQuery: ", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
@@ -39,52 +40,52 @@ func (ih *ideaHandler) GetIdeas(c *gin.Context) {
 	c.JSON(http.StatusOK, ideasResponse)
 }
 
-func (ih *ideaHandler) AddIdea(ctx *gin.Context) {
+func (ih *ideaHandler) AddIdea(c *gin.Context) {
 	var req dto.CreateIdeaRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.Status(http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	userID, _ := ctx.Get("userID")
+	userID, _ := c.Get("userID")
 
 	// разыменовываем any, т.к там 100% uuid
 	idea, err := services.CreateIdea(req, userID.(uuid.UUID), ih.db)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			ctx.JSON(http.StatusConflict, gin.H{"code": http.StatusConflict, "error": "Идея с таким названием уже существует"})
+			c.JSON(http.StatusConflict, gin.H{"code": http.StatusConflict, "error": "Идея с таким названием уже существует"})
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка записи идеи в БД: " + err.Error())
 		}
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, idea)
+	c.JSON(http.StatusCreated, idea)
 }
 
-func (ih *ideaHandler) GetIdeaByID(ctx *gin.Context) {
-	id := ctx.Param("id")
+func (ih *ideaHandler) GetIdeaByID(c *gin.Context) {
+	id := c.Param("id")
 
 	converted, parseError := uuid.Parse(id)
 
 	if parseError != nil {
-		ctx.Status(http.StatusBadRequest)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	idea, dbErr := services.GetIdeaByID(converted, ih.db)
+	idea, dbErr := ih.ideaService.GetIdeaByID(converted, ih.config, c)
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.Status(http.StatusNotFound)
+			c.Status(http.StatusNotFound)
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка получения идеи из БД по uuid: " + dbErr.Error())
 		}
 		return
 	}
 
-	ctx.JSON(http.StatusOK, idea)
+	c.JSON(http.StatusOK, idea)
 }
 
 func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
@@ -136,48 +137,48 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, idea)
 }
-func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
-	rawID := ctx.Param("id")
+func (ih *ideaHandler) DeleteIdeaByID(c *gin.Context) {
+	rawID := c.Param("id")
 	ideaID, parseErr := uuid.Parse(rawID)
 
 	if parseErr != nil {
-		ctx.Status(http.StatusBadRequest)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
 	//это защищенный путь, ID 100% существует
-	userID := ctx.MustGet("userID").(uuid.UUID)
+	userID := c.MustGet("userID").(uuid.UUID)
 
 	canDelete, dbErr := services.CheckRightsOnIdea(ideaID, userID, ih.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Запись с таким id не существует"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Запись с таким id не существует"})
 			return
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка получения прав пользователя на удаление записи: " + dbErr.Error())
 		}
 		return
 	}
 
 	if !canDelete {
-		ctx.Status(http.StatusForbidden)
+		c.Status(http.StatusForbidden)
 		return
 	}
 
 	dbErr = services.DeleteIdeaByID(ideaID, ih.db)
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "идеи с таким ID не существует"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "идеи с таким ID не существует"})
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка удаления записи: " + dbErr.Error())
 		}
 		return
 	}
 
-	ctx.Status(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
 func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {

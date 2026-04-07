@@ -15,8 +15,9 @@ import (
 )
 
 type IdeaService interface {
-	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
+	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error)
 	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
+	GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error)
 	ToggleFavorite(ideaID uuid.UUID, config *config.Config, c *gin.Context) (bool, error)
 }
 
@@ -71,18 +72,22 @@ func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*mo
 	return &idea, nil
 }
 
-func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
-	var idea models.Idea
+func (s *ideaService) GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error) {
+	// получаем userID, если зарегистрирован пользователей для доп информации о идее
+	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
-	res := db.Where("id = ?", id).First(&idea)
-
-	if res.Error != nil {
-		return nil, res.Error
+	ideaResponse, err := s.ideaRepo.GetIdeaByIDIncr(ideaID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIdeaNotFound
+		}
+		return nil, ErrInternal
 	}
-	return &idea, nil
+
+	return ideaResponse, nil
 }
 
-func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error) {
+func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error) {
 	// является ли пользователь владельцем данной идеи
 	isUserIdeaAuthor, err := s.ideaRepo.IsUserIdeaAuthor(ideaID, userID)
 	if err != nil {
@@ -106,7 +111,7 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 	}
 
 	// получаем обновленную идею для возвращения
-	idea, err := s.ideaRepo.GetIdeaByID(ideaID)
+	ideaResponse, err := s.ideaRepo.GetIdeaByID(ideaID, uuid.Nil)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrIdeaNotFound
@@ -114,7 +119,7 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 		return nil, ErrInternal
 	}
 
-	return idea, nil
+	return ideaResponse, nil
 }
 
 func CheckRightsOnIdea(ideaID uuid.UUID, userID uuid.UUID, db *gorm.DB) (bool, error) {

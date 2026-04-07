@@ -7,7 +7,7 @@ import (
 )
 
 type GetIdeasRequest struct {
-	AuthorId   *uuid.UUID `form:"author_id"`
+	AuthorId   *QueryUUID `form:"author_id"`
 	Search     *string    `form:"search"`
 	StartAt    *uint      `form:"start_at"`
 	Limit      *uint      `form:"limit"`
@@ -17,16 +17,32 @@ type GetIdeasRequest struct {
 }
 
 type IdeaBlock struct {
-	ID             uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	IsAuthor       bool      `gorm:"column:is_author" json:"is_author"`
-	IsFavorite     bool      `gorm:"column:is_favorite" json:"is_favorite"`
-	Title          string    `gorm:"column:title; not null; unique" json:"title"`
-	Description    string    `gorm:"column:description; not null" json:"description"`
-	ViewsCount     uint      `gorm:"column:views_count; not null" json:"views_count"`
-	FavoritesCount uint      `gorm:"column:favorites_count; not null" json:"favorites_count"`
-	Category       string    `gorm:"column:category; not null" json:"category"`
-	CreatedAt      time.Time `gorm:"column:created_at; not null" json:"created_at"`
-	UpdatedAt      time.Time `gorm:"column:updated_at; not null" json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	AuthorID       uuid.UUID `json:"author_id"`
+	IsAuthor       bool      `json:"is_author"`
+	IsFavorite     bool      `json:"is_favorite"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	ViewsCount     uint      `json:"views_count"`
+	FavoritesCount uint      `json:"favorites_count"`
+	Category       string    `json:"category"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type GetIdeaResponse struct {
+	ID             uuid.UUID `json:"id"`
+	AuthorID       uuid.UUID `json:"author_id"`
+	IsAuthor       bool      `json:"is_author"`
+	IsFavorite     bool      `json:"is_favorite"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Content        *string   `json:"content"`
+	ViewsCount     uint      `json:"views_count"`
+	FavoritesCount uint      `json:"favorites_count"`
+	Category       string    `json:"category"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type CreateIdeaRequest struct {

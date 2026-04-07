@@ -1992,6 +1992,46 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        IdeaBlock:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                author_id:
+                    type: string
+                    format: uuid
+                is_author:
+                    type: boolean
+                is_favorite:
+                    type: boolean
+                title:
+                    type: string
+                description:
+                    type: string
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
+                category:
+                    type: string
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+            required:
+                - id
+                - is_author
+                - is_favorite
+                - title
+                - description
+                - views_count
+                - favorites_count
+                - category
+                - created_at
+                - updated_at
         GetIdeasResponse:
             type: object
             properties:
@@ -2001,7 +2041,7 @@ components:
                 ideas:
                     type: array
                     items:
-                        $ref: "#/components/schemas/Idea"
+                        $ref: "#/components/schemas/IdeaBlock"
             required:
                 - total
                 - ideas

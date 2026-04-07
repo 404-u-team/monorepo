@@ -12,7 +12,8 @@ import (
 type IdeaRepository interface {
 	UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error)
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
-	GetIdeaByID(id uuid.UUID) (*models.Idea, error)
+	GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
+	GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]dto.IdeaBlock, int64, error)
 	ToggleFavorite(ideaID, userID uuid.UUID) (bool, error)
 }
@@ -60,21 +61,61 @@ func (r *ideaRepository) IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error
 	return count == 1, nil
 }
 
-func (r *ideaRepository) GetIdeaByID(id uuid.UUID) (*models.Idea, error) {
-	var idea models.Idea
+func (r *ideaRepository) GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error) {
+	var ideaResponse dto.GetIdeaResponse
+	result := r.conn.Table("Idea").Select(`id, author_id, author_id = ? AS is_author, COALESCE("User_Favorite_Idea".idea_id IS NOT NULL, false) AS is_favorite, 
+		title, description, views_count, favorites_count, category, created_at, updated_at`, userID).
+		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID).
+		Where("id = ?", ideaID)
 
-	res := r.conn.Model(&models.Idea{}).Where("id = ?", id).First(&idea)
-
-	if res.Error != nil {
-		log.Println("Ошибка при получении идеи по ID: ", res.Error)
-		return nil, res.Error
+	if err := result.Find(&ideaResponse).Error; err != nil {
+		log.Println("Ошибка при получении идеи по ID: ", err)
+		return nil, err
 	}
-	return &idea, nil
+	return &ideaResponse, nil
+}
+
+// такая же версия как и GetIdeaByID, но с инкрементацией счетчика views
+func (r *ideaRepository) GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error) {
+	var ideaResponse dto.GetIdeaResponse
+	result := r.conn.Raw(`
+		UPDATE "Idea" i
+		SET views_count = views_count + 1
+		FROM (
+			SELECT 
+				i2.id,
+				i2.author_id = ? AS is_author,
+				COALESCE(uf.idea_id IS NOT NULL, false) AS is_favorite
+			FROM "Idea" i2
+			LEFT JOIN "User_Favorite_Idea" uf 
+				ON uf.idea_id = i2.id AND uf.user_id = ?
+			WHERE i2.id = ?
+		) AS sub
+		WHERE i.id = sub.id
+		RETURNING 
+			i.id,
+			i.author_id,
+			sub.is_author,
+			sub.is_favorite,
+			i.title,
+			i.description,
+			i.views_count,
+			i.favorites_count,
+			i.category,
+			i.created_at,
+			i.updated_at
+	`, userID, userID, ideaID)
+
+	if err := result.Find(&ideaResponse).Error; err != nil {
+		log.Println("Ошибка при получении идеи по ID: ", err)
+		return nil, err
+	}
+	return &ideaResponse, nil
 }
 
 func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]dto.IdeaBlock, int64, error) {
 	result := r.conn.Table("Idea").
-		Select(`id, author_id = ? AS is_author, COALESCE("User_Favorite_Idea".idea_id IS NOT NULL, false) AS is_favorite, 
+		Select(`id, author_id, author_id = ? AS is_author, COALESCE("User_Favorite_Idea".idea_id IS NOT NULL, false) AS is_favorite, 
 		title, description, views_count, favorites_count, category, created_at, updated_at`, userID).
 		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID)
 
