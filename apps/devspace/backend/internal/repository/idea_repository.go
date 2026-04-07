@@ -64,7 +64,7 @@ func (r *ideaRepository) IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error
 func (r *ideaRepository) GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error) {
 	var ideaResponse dto.GetIdeaResponse
 	result := r.conn.Table("Idea").Select(`id, author_id, author_id = ? AS is_author, COALESCE("User_Favorite_Idea".idea_id IS NOT NULL, false) AS is_favorite, 
-		title, description, views_count, favorites_count, category, created_at, updated_at`, userID).
+		title, description, content, views_count, favorites_count, category, created_at, updated_at`, userID).
 		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID).
 		Where("id = ?", ideaID)
 
@@ -99,6 +99,7 @@ func (r *ideaRepository) GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdea
 			sub.is_favorite,
 			i.title,
 			i.description,
+			i.content,
 			i.views_count,
 			i.favorites_count,
 			i.category,
