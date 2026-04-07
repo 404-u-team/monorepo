@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
@@ -15,29 +16,27 @@ import (
 type ideaHandler struct {
 	ideaService services.IdeaService
 	db          *gorm.DB
+	config      *config.Config
 }
 
-func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB) ideaHandler {
-	return ideaHandler{ideaService: ideaService, db: db}
+func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB, config *config.Config) ideaHandler {
+	return ideaHandler{ideaService: ideaService, db: db, config: config}
 }
 
-func (ih *ideaHandler) GetIdeas(ctx *gin.Context) {
-	var req dto.GetIdeasRequest
-
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.Status(http.StatusBadRequest)
+func (ih *ideaHandler) GetIdeas(c *gin.Context) {
+	var query dto.GetIdeasRequest
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	ideasResponse, dbErr := services.GetIdeasList(req, ih.db)
-
-	if dbErr != nil {
-		// Find не возвращает ошибку при ненахождении записей, следовательно он вернет только ошибку БД
-		ctx.Status(http.StatusInternalServerError)
+	ideasResponse, err := ih.ideaService.GetIdeas(&query, ih.config, c)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ideasResponse)
+	c.JSON(http.StatusOK, ideasResponse)
 }
 
 func (ih *ideaHandler) AddIdea(ctx *gin.Context) {

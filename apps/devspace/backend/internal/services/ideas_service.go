@@ -3,54 +3,45 @@ package services
 import (
 	"errors"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type IdeaService interface {
 	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
+	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
 }
 
 type ideaService struct {
-	repo repository.IdeaRepository
+	ideaRepo repository.IdeaRepository
+	userRepo repository.UserRepository
 }
 
-func NewIdeaService(repo repository.IdeaRepository) IdeaService {
-	return &ideaService{repo: repo}
+func NewIdeaService(ideaRepo repository.IdeaRepository, userRepo repository.UserRepository) IdeaService {
+	return &ideaService{ideaRepo: ideaRepo, userRepo: userRepo}
 }
 
-func GetIdeasList(req dto.GetIdeasRequest, db *gorm.DB) (*dto.GetIdeasResponse, error) {
-	query := db.Model(&models.Idea{})
-	var ideas []models.Idea
+func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error) {
+	var userID uuid.UUID
+	var statusCode int
+	if query.IsFavorite {
+		userID, statusCode = middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
-	if req.Search != nil {
-		query = query.Where("title ILIKE ?", "%"+(*req.Search)+"%")
+		// у незарегистрированного пользователя не может быть любимых идей
+		if statusCode != 0 {
+			return &dto.GetIdeasResponse{Total: 0, Ideas: []models.Idea{}}, nil
+		}
 	}
 
-	if req.AuthorId != nil {
-		query = query.Where("author_id = ?", *req.AuthorId)
-	}
-
-	var total int64
-	if err := query.Count(&total).Error; err != nil {
+	ideas, total, err := s.ideaRepo.GetIdeas(query, userID)
+	if err != nil {
 		return nil, ErrInternal
-	}
-
-	if req.StartAt != nil {
-		query = query.Offset(int(*req.StartAt))
-	}
-
-	if req.Limit != nil {
-		query = query.Limit(int(*req.Limit))
-	}
-
-	res := query.Find(&ideas)
-
-	if res.Error != nil {
-		return nil, res.Error
 	}
 
 	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
@@ -91,7 +82,7 @@ func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
 
 func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error) {
 	// является ли пользователь владельцем данной идеи
-	isUserIdeaAuthor, err := s.repo.IsUserIdeaAuthor(ideaID, userID)
+	isUserIdeaAuthor, err := s.ideaRepo.IsUserIdeaAuthor(ideaID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -100,7 +91,7 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 	}
 
 	// обновление идеи по ID
-	rowsAffected, err := s.repo.UpdateIdeaByID(ideaID, updateRequest)
+	rowsAffected, err := s.ideaRepo.UpdateIdeaByID(ideaID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrIdeaConflict
@@ -113,7 +104,7 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 	}
 
 	// получаем обновленную идею для возвращения
-	idea, err := s.repo.GetIdeaByID(ideaID)
+	idea, err := s.ideaRepo.GetIdeaByID(ideaID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrIdeaNotFound

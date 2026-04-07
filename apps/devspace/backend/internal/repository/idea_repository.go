@@ -13,6 +13,7 @@ type IdeaRepository interface {
 	UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error)
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
 	GetIdeaByID(id uuid.UUID) (*models.Idea, error)
+	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]models.Idea, int64, error)
 }
 
 type ideaRepository struct {
@@ -68,4 +69,42 @@ func (r *ideaRepository) GetIdeaByID(id uuid.UUID) (*models.Idea, error) {
 		return nil, res.Error
 	}
 	return &idea, nil
+}
+
+func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]models.Idea, int64, error) {
+	result := r.conn.Model(&models.Idea{})
+
+	if query.Search != nil {
+		searchInner := "%" + (*query.Search) + "%"
+		result = result.Where("(title ILIKE ? OR description ILIKE ? OR content ILIKE ? OR category ILIKE ?)", searchInner, searchInner, searchInner, searchInner)
+	}
+
+	if query.AuthorId != nil {
+		result = result.Where("author_id = ?", *query.AuthorId)
+	}
+
+	if query.IsFavorite {
+		result = result.Joins(`JOIN "User_Favorite" ON "User_Favorite".idea_id = "Idea".id`).
+			Where(`"User_Favorite".user_id = ?`, userID)
+	}
+
+	var total int64
+	if err := result.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if query.StartAt != nil {
+		result = result.Offset(int(*query.StartAt))
+	}
+
+	if query.Limit != nil {
+		result = result.Limit(int(*query.Limit))
+	}
+
+	var ideas []models.Idea
+	if err := result.Find(&ideas).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return ideas, total, nil
 }
