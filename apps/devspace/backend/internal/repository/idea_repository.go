@@ -13,7 +13,7 @@ type IdeaRepository interface {
 	UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error)
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
 	GetIdeaByID(id uuid.UUID) (*models.Idea, error)
-	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]models.Idea, int64, error)
+	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]dto.IdeaBlock, int64, error)
 	ToggleFavorite(ideaID, userID uuid.UUID) (bool, error)
 }
 
@@ -72,8 +72,11 @@ func (r *ideaRepository) GetIdeaByID(id uuid.UUID) (*models.Idea, error) {
 	return &idea, nil
 }
 
-func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]models.Idea, int64, error) {
-	result := r.conn.Model(&models.Idea{})
+func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]dto.IdeaBlock, int64, error) {
+	result := r.conn.Table("Idea").
+		Select(`id, author_id = ? AS is_author, COALESCE("User_Favorite_Idea".idea_id IS NOT NULL, false) AS is_favorite, 
+		title, description, views_count, favorites_count, category, created_at, updated_at`, userID).
+		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID)
 
 	if query.Search != nil {
 		searchInner := "%" + (*query.Search) + "%"
@@ -85,8 +88,23 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 	}
 
 	if query.IsFavorite {
-		result = result.Joins(`JOIN "User_Favorite" ON "User_Favorite".idea_id = "Idea".id`).
-			Where(`"User_Favorite".user_id = ?`, userID)
+		result = result.Where(`"User_Favorite_Idea".idea_id IS NOT NULL`)
+	}
+
+	if query.Views != nil {
+		if *query.Views == "asc" {
+			result = result.Order("views_count ASC")
+		} else {
+			result = result.Order("views_count DESC")
+		}
+	}
+
+	if query.Favorites != nil {
+		if *query.Views == "asc" {
+			result = result.Order("favorites_count ASC")
+		} else {
+			result = result.Order("favorites_count DESC")
+		}
 	}
 
 	var total int64
@@ -102,12 +120,12 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 		result = result.Limit(int(*query.Limit))
 	}
 
-	var ideas []models.Idea
-	if err := result.Find(&ideas).Error; err != nil {
+	var ideasBlock []dto.IdeaBlock
+	if err := result.Find(&ideasBlock).Error; err != nil {
 		return nil, 0, err
 	}
 
-	return ideas, total, nil
+	return ideasBlock, total, nil
 }
 
 func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) {
@@ -116,20 +134,33 @@ func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) 
 	// 		2. Если не нашли ничего, то создаем новую строчку
 	var isFavorite bool // произошло удаление или создание
 	err := r.conn.Raw(`
-		WITH deleted AS (
+		WITH
+		deleted AS (
 			DELETE FROM "User_Favorite_Idea"
 			WHERE user_id = ? AND idea_id = ?
+			RETURNING idea_id
+		),
+		decremented AS (
+			UPDATE "Idea"
+			SET favorites_count = favorites_count - 1
+			WHERE id IN (SELECT idea_id FROM deleted)
 			RETURNING FALSE AS action
 		),
 		inserted AS (
 			INSERT INTO "User_Favorite_Idea" (user_id, idea_id)
 			SELECT ?, ?
 			WHERE NOT EXISTS (SELECT 1 FROM deleted)
+			RETURNING idea_id
+		),
+		incremented AS (
+			UPDATE "Idea"
+			SET favorites_count = favorites_count + 1
+			WHERE id IN (SELECT idea_id FROM inserted)
 			RETURNING TRUE AS action
 		)
-		SELECT action FROM deleted
+		SELECT action FROM decremented
 		UNION ALL
-		SELECT action FROM inserted
+		SELECT action FROM incremented;	
 	`, userID, ideaID, userID, ideaID).Scan(&isFavorite).Error
 
 	if err != nil {

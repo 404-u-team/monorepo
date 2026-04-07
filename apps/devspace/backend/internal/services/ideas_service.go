@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -16,7 +17,7 @@ import (
 type IdeaService interface {
 	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
 	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
-	ToggleFavorite(ideaID, userID uuid.UUID) (bool, error)
+	ToggleFavorite(ideaID uuid.UUID, config *config.Config, c *gin.Context) (bool, error)
 }
 
 type ideaService struct {
@@ -36,16 +37,16 @@ func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config
 
 		// у незарегистрированного пользователя не может быть любимых идей
 		if statusCode != 0 {
-			return &dto.GetIdeasResponse{Total: 0, Ideas: []models.Idea{}}, nil
+			return &dto.GetIdeasResponse{Total: 0, Ideas: []dto.IdeaBlock{}}, nil
 		}
 	}
 
-	ideas, total, err := s.ideaRepo.GetIdeas(query, userID)
+	ideasBlock, total, err := s.ideaRepo.GetIdeas(query, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
+	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideasBlock}
 	return &ideasResponse, nil
 }
 
@@ -155,7 +156,15 @@ func DeleteIdeaByID(ideaID uuid.UUID, db *gorm.DB) error {
 	return nil
 }
 
-func (s *ideaService) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) {
+func (s *ideaService) ToggleFavorite(ideaID uuid.UUID, config *config.Config, c *gin.Context) (bool, error) {
+	userID, statusCode := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
+	if statusCode != 0 {
+		if statusCode == http.StatusUnauthorized {
+			return false, ErrUnauthorized
+		}
+		return false, ErrInternal
+	}
+
 	isFavorite, err := s.ideaRepo.ToggleFavorite(ideaID, userID)
 	if err != nil {
 		return false, ErrInternal

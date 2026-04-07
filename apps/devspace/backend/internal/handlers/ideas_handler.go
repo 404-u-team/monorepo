@@ -181,20 +181,14 @@ func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
 }
 
 func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {
-	ideaIDStr := c.Param("projectID")
+	ideaIDStr := c.Param("ideaID")
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	userID, err := getUserId(c)
-	if err != nil {
-		c.Status(http.StatusUnauthorized)
-		return
-	}
-
-	isFavorite, err := ih.ideaService.ToggleFavorite(ideaID, userID)
+	isFavorite, err := ih.ideaService.ToggleFavorite(ideaID, ih.config, c)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
