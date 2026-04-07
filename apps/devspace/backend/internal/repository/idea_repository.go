@@ -68,7 +68,7 @@ func (r *ideaRepository) GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResp
 		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID).
 		Where("id = ?", ideaID)
 
-	if err := result.Find(&ideaResponse).Error; err != nil {
+	if err := result.First(&ideaResponse).Error; err != nil {
 		log.Println("Ошибка при получении идеи по ID: ", err)
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r *ideaRepository) GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdea
 			i.updated_at
 	`, userID, userID, ideaID)
 
-	if err := result.Find(&ideaResponse).Error; err != nil {
+	if err := result.First(&ideaResponse).Error; err != nil {
 		log.Println("Ошибка при получении идеи по ID: ", err)
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 	}
 
 	if query.Favorites != nil {
-		if *query.Views == "asc" {
+		if *query.Favorites == "asc" {
 			result = result.Order("favorites_count ASC")
 		} else {
 			result = result.Order("favorites_count DESC")
@@ -163,6 +163,7 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 
 	var ideasBlock []dto.IdeaBlock
 	if err := result.Find(&ideasBlock).Error; err != nil {
+		log.Println("Произошла ошибка при получении списка идей: ", err)
 		return nil, 0, err
 	}
 
@@ -205,6 +206,7 @@ func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) 
 	`, userID, ideaID, userID, ideaID).Scan(&isFavorite).Error
 
 	if err != nil {
+		log.Println("Произошла ошибка при toggle favorite idea: ", err)
 		return false, err
 	}
 
