@@ -340,9 +340,8 @@ func (s *testDataService) generate(ctx context.Context) {
 	// ── 5. Favorites ─────────────────────────────────────────────────────────
 	s.setStage("Генерация избранного")
 
-	favoriteModels := make([]models.UserFavorite, 0, tdTotalUsers)
+	favoriteModels := make([]models.UserFavoriteIdea, 0, tdTotalUsers)
 	usedIdeaFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
-	usedProjectFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
 
 	for i := 0; i < tdTotalUsers/2; i++ {
 		if ctx.Err() != nil {
@@ -354,33 +353,17 @@ func (s *testDataService) generate(ctx context.Context) {
 		if usedIdeaFavorites[userID] == nil {
 			usedIdeaFavorites[userID] = make(map[uuid.UUID]bool)
 		}
-		if usedProjectFavorites[userID] == nil {
-			usedProjectFavorites[userID] = make(map[uuid.UUID]bool)
-		}
 
 		favoriteCount := rng.Intn(4) + 1 // 1 to 4 favorites
 		for j := 0; j < favoriteCount; j++ {
-			if rng.Intn(2) == 0 {
-				ideaID := ideaIDs[rng.Intn(len(ideaIDs))]
-				if usedIdeaFavorites[userID][ideaID] {
-					continue
-				}
-				usedIdeaFavorites[userID][ideaID] = true
-				favoriteModels = append(favoriteModels, models.UserFavorite{
-					UserID: userID,
-					IdeaID: &ideaID,
-				})
+			ideaID := ideaIDs[rng.Intn(len(ideaIDs))]
+			if usedIdeaFavorites[userID][ideaID] {
 				continue
 			}
-
-			projectID := projectIDs[rng.Intn(len(projectIDs))]
-			if usedProjectFavorites[userID][projectID] {
-				continue
-			}
-			usedProjectFavorites[userID][projectID] = true
-			favoriteModels = append(favoriteModels, models.UserFavorite{
-				UserID:    userID,
-				ProjectID: &projectID,
+			usedIdeaFavorites[userID][ideaID] = true
+			favoriteModels = append(favoriteModels, models.UserFavoriteIdea{
+				UserID: userID,
+				IdeaID: &ideaID,
 			})
 		}
 	}

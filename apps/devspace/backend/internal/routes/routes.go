@@ -53,7 +53,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	projectService := services.NewProjectService(projectRepo)
 	slotService := services.NewSlotService(slotRepo, projectRepo)
 	projectRequestService := services.NewProjectRequestService(projectRequestRepo, slotRepo, projectRepo)
-	ideaService := services.NewIdeaService(ideaRepo)
+	ideaService := services.NewIdeaService(ideaRepo, userRepo)
 
 	// создание хендлеров
 	authHandler := handlers.NewAuthHandler(authService, config)
@@ -61,7 +61,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 	skillHandler := handlers.NewSkillsHandler(dbConn)
 	projectHandler := handlers.NewProjectHandler(projectService)
 	slotHandler := handlers.NewSlotHandler(slotService)
-	ideaHandler := handlers.NewIdeaHandler(ideaService, dbConn)
+	ideaHandler := handlers.NewIdeaHandler(ideaService, dbConn, config)
 	projectRequestHandler := handlers.NewProjectRequestHandler(projectRequestService)
 	testDataHandler := handlers.NewTestDataHandler(services.NewTestDataService(dbConn, config))
 
@@ -84,6 +84,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 		api.GET("/ideas", ideaHandler.GetIdeas)
 		api.GET("/ideas/:id", ideaHandler.GetIdeaByID)
+		api.POST("/ideas/:ideaID/favorite", ideaHandler.ToggleFavorite)
 
 		// тестовые данные (dev-only)
 		api.GET("/generate-test-data", testDataHandler.Start)
@@ -110,8 +111,6 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.PUT("/requests/:projectRequestID/accept", projectRequestHandler.AcceptProjectRequest)
 			protected.PUT("/requests/:projectRequestID/reject", projectRequestHandler.RejectProjectRequest)
 
-			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
-
 			protected.POST("/projects/:projectID/slots/:slotID/apply", projectRequestHandler.CreateProjectRequestApply)
 			protected.POST("/projects/:projectID/slots/:slotID/invite", projectRequestHandler.CreateProjectRequestInvite)
 
@@ -120,6 +119,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 
 			protected.POST("/ideas", ideaHandler.AddIdea)
 			protected.DELETE("/ideas/:id", ideaHandler.DeleteIdeaByID)
+			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
 		}
 
 		//только для админов

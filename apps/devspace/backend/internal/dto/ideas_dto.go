@@ -31,3 +31,7 @@ type GetIdeasResponse struct {
 	Total int64         `json:"total"`
 	Ideas []models.Idea `json:"ideas"`
 }
+
+type ToggleFavoriteResponse struct {
+	IsFavorite bool `json:"is_favorite"`
+}

@@ -16,6 +16,7 @@ import (
 type IdeaService interface {
 	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
 	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
+	ToggleFavorite(ideaID, userID uuid.UUID) (bool, error)
 }
 
 type ideaService struct {
@@ -152,4 +153,13 @@ func DeleteIdeaByID(ideaID uuid.UUID, db *gorm.DB) error {
 		return gorm.ErrRecordNotFound
 	}
 	return nil
+}
+
+func (s *ideaService) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) {
+	isFavorite, err := s.ideaRepo.ToggleFavorite(ideaID, userID)
+	if err != nil {
+		return false, ErrInternal
+	}
+
+	return isFavorite, nil
 }

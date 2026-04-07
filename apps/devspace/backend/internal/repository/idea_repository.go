@@ -14,6 +14,7 @@ type IdeaRepository interface {
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
 	GetIdeaByID(id uuid.UUID) (*models.Idea, error)
 	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]models.Idea, int64, error)
+	ToggleFavorite(ideaID, userID uuid.UUID) (bool, error)
 }
 
 type ideaRepository struct {
@@ -107,4 +108,33 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 	}
 
 	return ideas, total, nil
+}
+
+func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) {
+	// создаем транзакцию, у которой есть два исхода
+	// 		1. Если есть строчка с idea_id = true – удаляем строчку
+	// 		2. Если не нашли ничего, то создаем новую строчку
+	var isFavorite bool // произошло удаление или создание
+	err := r.conn.Raw(`
+		WITH deleted AS (
+			DELETE FROM "User_Favorite_Idea"
+			WHERE user_id = ? AND idea_id = ?
+			RETURNING FALSE AS action
+		),
+		inserted AS (
+			INSERT INTO "User_Favorite_Idea" (user_id, idea_id)
+			SELECT ?, ?
+			WHERE NOT EXISTS (SELECT 1 FROM deleted)
+			RETURNING TRUE AS action
+		)
+		SELECT action FROM deleted
+		UNION ALL
+		SELECT action FROM inserted
+	`, userID, ideaID, userID, ideaID).Scan(&isFavorite).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return isFavorite, nil
 }
