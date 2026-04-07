@@ -6,10 +6,13 @@ import (
 )
 
 type GetIdeasRequest struct {
-	AuthorId *uuid.UUID `form:"author_id"`
-	Search   *string    `form:"search"`
-	StartAt  *uint      `form:"start_at"`
-	Limit    *uint      `form:"limit"`
+	AuthorId   *uuid.UUID `form:"author_id"`
+	Search     *string    `form:"search"`
+	StartAt    *uint      `form:"start_at"`
+	Limit      *uint      `form:"limit"`
+	Views      *string    `form:"views" binding:"omitempty,oneof=asc desc"`
+	Favorites  *string    `form:"favorites" binding:"omitempty,oneof=asc desc"`
+	IsFavorite bool       `form:"is_favorite"`
 }
 
 type CreateIdeaRequest struct {
