@@ -337,7 +337,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	completed += tdTotalProjects
 	s.setProgress(completed)
 
-	// ── 5. Favorites ─────────────────────────────────────────────────────────
+	// ── 6. Favorites ─────────────────────────────────────────────────────────
 	s.setStage("Генерация избранного")
 
 	favoriteModels := make([]models.UserFavoriteIdea, 0, tdTotalUsers)
@@ -375,7 +375,7 @@ func (s *testDataService) generate(ctx context.Context) {
 		}
 	}
 
-	// ── 6. Slots ─────────────────────────────────────────────────────────────
+	// ── 7. Slots ─────────────────────────────────────────────────────────────
 	s.setStage("Генерация слотов")
 
 	slotTitles := []string{
