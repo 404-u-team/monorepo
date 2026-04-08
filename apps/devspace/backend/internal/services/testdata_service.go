@@ -287,7 +287,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	completed += tdTotalIdeas
 	s.setProgress(completed)
 
-	// ── 4. Projects ───────────────────────────────────────────────────────────
+	// ── 5. Projects ───────────────────────────────────────────────────────────
 	s.setStage("Генерация проектов")
 
 	projectTitles := []string{
@@ -341,7 +341,57 @@ func (s *testDataService) generate(ctx context.Context) {
 	completed += tdTotalProjects
 	s.setProgress(completed)
 
-	// ── 5. Slots ─────────────────────────────────────────────────────────────
+	// ── 6. Favorites ─────────────────────────────────────────────────────────
+	s.setStage("Генерация избранного")
+
+	favoriteModels := make([]models.UserFavoriteIdea, 0, tdTotalUsers)
+	usedIdeaFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
+	ideaFavoriteCounts := make(map[uuid.UUID]int, tdTotalIdeas)
+
+	for i := 0; i < tdTotalUsers/2; i++ {
+		if ctx.Err() != nil {
+			s.finish(fmt.Errorf("отменено"))
+			return
+		}
+
+		userID := userIDs[i]
+		if usedIdeaFavorites[userID] == nil {
+			usedIdeaFavorites[userID] = make(map[uuid.UUID]bool)
+		}
+
+		favoriteCount := rng.Intn(4) + 1 // 1 to 4 favorites
+		for j := 0; j < favoriteCount; j++ {
+			ideaID := ideaIDs[rng.Intn(len(ideaIDs))]
+			if usedIdeaFavorites[userID][ideaID] {
+				continue
+			}
+			usedIdeaFavorites[userID][ideaID] = true
+			ideaFavoriteCounts[ideaID]++
+			favoriteModels = append(favoriteModels, models.UserFavoriteIdea{
+				UserID: userID,
+				IdeaID: ideaID,
+			})
+		}
+	}
+
+	if len(favoriteModels) > 0 {
+		if err := s.db.WithContext(ctx).CreateInBatches(favoriteModels, 200).Error; err != nil {
+			s.finish(err)
+			return
+		}
+
+		for ideaID, favoritesCount := range ideaFavoriteCounts {
+			if err := s.db.WithContext(ctx).
+				Model(&models.Idea{}).
+				Where("id = ?", ideaID).
+				Update("favorites_count", favoritesCount).Error; err != nil {
+				s.finish(err)
+				return
+			}
+		}
+	}
+
+	// ── 7. Slots ─────────────────────────────────────────────────────────────
 	s.setStage("Генерация слотов")
 
 	slotTitles := []string{

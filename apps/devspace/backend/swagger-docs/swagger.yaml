@@ -589,11 +589,29 @@ paths:
                       format: uuid
                 - name: search
                   in: query
-                  description: Поиск по заголовку и описанию
+                  description: Поиск по заголовку, описанию, содержанию и категории
                   required: false
                   schema:
                       type: string
+                - name: views
+                  in: query
+                  description: Сортировка по кол-ву просмотров
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
                 - name: favorites
+                  in: query
+                  description: Сортировка по кол-ву добавлений в избранное
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: is_favorite
                   in: query
                   description: >-
                       Показать только избранные идеи текущего пользователя (требует
@@ -707,9 +725,12 @@ paths:
                         application/json:
                             schema:
                                 allOf:
-                                    - $ref: "#/components/schemas/Idea"
+                                    - $ref: "#/components/schemas/IdeaBlock"
                                     - type: object
                                       properties:
+                                          content:
+                                              type: string
+                                              example: Текст\n --- \n - 1
                                           views_count:
                                               type: integer
                                               example: 150
@@ -717,6 +738,8 @@ paths:
                                               type: integer
                                               example: 25
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "404":
                     description: Идея не найдена
                     headers: {}
@@ -758,8 +781,22 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/Idea"
+                                allOf:
+                                    - $ref: "#/components/schemas/IdeaBlock"
+                                    - type: object
+                                      properties:
+                                          content:
+                                              type: string
+                                              example: Текст\n --- \n - 1
+                                          views_count:
+                                              type: integer
+                                              example: 150
+                                          favorites_count:
+                                              type: integer
+                                              example: 25
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -796,6 +833,8 @@ paths:
                 "204":
                     description: Идея успешно удалена
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -838,6 +877,8 @@ paths:
                                         type: boolean
                                         description: Текущее состояние (true - в избранном)
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -1974,6 +2015,47 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        IdeaBlock:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                author_id:
+                    type: string
+                    format: uuid
+                is_author:
+                    type: boolean
+                is_favorite:
+                    type: boolean
+                title:
+                    type: string
+                description:
+                    type: string
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
+                category:
+                    type: string
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+            required:
+                - id
+                - author_id
+                - is_author
+                - is_favorite
+                - title
+                - description
+                - views_count
+                - favorites_count
+                - category
+                - created_at
+                - updated_at
         GetIdeasResponse:
             type: object
             properties:
@@ -1983,7 +2065,7 @@ components:
                 ideas:
                     type: array
                     items:
-                        $ref: "#/components/schemas/Idea"
+                        $ref: "#/components/schemas/IdeaBlock"
             required:
                 - total
                 - ideas

@@ -1,15 +1,48 @@
 package dto
 
 import (
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
+	"time"
+
 	"github.com/google/uuid"
 )
 
 type GetIdeasRequest struct {
-	AuthorId *uuid.UUID `form:"author_id"`
-	Search   *string    `form:"search"`
-	StartAt  *uint      `form:"start_at"`
-	Limit    *uint      `form:"limit"`
+	AuthorId   *QueryUUID `form:"author_id"`
+	Search     *string    `form:"search"`
+	StartAt    *uint      `form:"start_at"`
+	Limit      *uint      `form:"limit"`
+	Views      *string    `form:"views" binding:"omitempty,oneof=asc desc"`
+	Favorites  *string    `form:"favorites" binding:"omitempty,oneof=asc desc"`
+	IsFavorite bool       `form:"is_favorite"`
+}
+
+type IdeaBlock struct {
+	ID             uuid.UUID `json:"id"`
+	AuthorID       uuid.UUID `json:"author_id"`
+	IsAuthor       bool      `json:"is_author"`
+	IsFavorite     bool      `json:"is_favorite"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	ViewsCount     uint      `json:"views_count"`
+	FavoritesCount uint      `json:"favorites_count"`
+	Category       string    `json:"category"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type GetIdeaResponse struct {
+	ID             uuid.UUID `json:"id"`
+	AuthorID       uuid.UUID `json:"author_id"`
+	IsAuthor       bool      `json:"is_author"`
+	IsFavorite     bool      `json:"is_favorite"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Content        *string   `json:"content"`
+	ViewsCount     uint      `json:"views_count"`
+	FavoritesCount uint      `json:"favorites_count"`
+	Category       string    `json:"category"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type CreateIdeaRequest struct {
@@ -25,6 +58,10 @@ type UpdateIdeaRequest struct {
 }
 
 type GetIdeasResponse struct {
-	Total int64         `json:"total"`
-	Ideas []models.Idea `json:"ideas"`
+	Total int64       `json:"total"`
+	Ideas []IdeaBlock `json:"ideas"`
+}
+
+type ToggleFavoriteResponse struct {
+	IsFavorite bool `json:"is_favorite"`
 }

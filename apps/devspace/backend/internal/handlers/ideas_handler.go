@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/services"
 	"github.com/gin-gonic/gin"
@@ -15,77 +16,80 @@ import (
 type ideaHandler struct {
 	ideaService services.IdeaService
 	db          *gorm.DB
+	config      *config.Config
 }
 
-func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB) ideaHandler {
-	return ideaHandler{ideaService: ideaService, db: db}
+func NewIdeaHandler(ideaService services.IdeaService, db *gorm.DB, config *config.Config) ideaHandler {
+	return ideaHandler{ideaService: ideaService, db: db, config: config}
 }
 
-func (ih *ideaHandler) GetIdeas(ctx *gin.Context) {
-	var req dto.GetIdeasRequest
-
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.Status(http.StatusBadRequest)
+func (ih *ideaHandler) GetIdeas(c *gin.Context) {
+	var query dto.GetIdeasRequest
+	if err := c.ShouldBindQuery(&query); err != nil {
+		log.Println("Ошибка ShouldBindQuery: ", err)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	ideasResponse, dbErr := services.GetIdeasList(req, ih.db)
-
-	if dbErr != nil {
-		// Find не возвращает ошибку при ненахождении записей, следовательно он вернет только ошибку БД
-		ctx.Status(http.StatusInternalServerError)
+	ideasResponse, err := ih.ideaService.GetIdeas(&query, ih.config, c)
+	if err != nil {
+		if errors.Is(err, services.ErrUnauthorized) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, ideasResponse)
+	c.JSON(http.StatusOK, ideasResponse)
 }
 
-func (ih *ideaHandler) AddIdea(ctx *gin.Context) {
+func (ih *ideaHandler) CreateIdea(c *gin.Context) {
 	var req dto.CreateIdeaRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.Status(http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	userID, _ := ctx.Get("userID")
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
 
 	// разыменовываем any, т.к там 100% uuid
-	idea, err := services.CreateIdea(req, userID.(uuid.UUID), ih.db)
+	idea, err := ih.ideaService.CreateIdea(&req, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			ctx.JSON(http.StatusConflict, gin.H{"code": http.StatusConflict, "error": "Идея с таким названием уже существует"})
-		} else {
-			ctx.Status(http.StatusInternalServerError)
-			log.Println("Ошибка записи идеи в БД: " + err.Error())
+		if errors.Is(err, services.ErrIdeaConflict) {
+			c.Status(http.StatusConflict)
+			return
 		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, idea)
+	c.JSON(http.StatusCreated, idea)
 }
 
-func (ih *ideaHandler) GetIdeaByID(ctx *gin.Context) {
-	id := ctx.Param("id")
-
-	converted, parseError := uuid.Parse(id)
-
+func (ih *ideaHandler) GetIdeaByID(c *gin.Context) {
+	ideaIDStr := c.Param("ideaID")
+	ideaID, parseError := uuid.Parse(ideaIDStr)
 	if parseError != nil {
-		ctx.Status(http.StatusBadRequest)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	idea, dbErr := services.GetIdeaByID(converted, ih.db)
-	if dbErr != nil {
-		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.Status(http.StatusNotFound)
-		} else {
-			ctx.Status(http.StatusInternalServerError)
-			log.Println("Ошибка получения идеи из БД по uuid: " + dbErr.Error())
+	idea, err := ih.ideaService.GetIdeaByID(ideaID, ih.config, c)
+	if err != nil {
+		if errors.Is(err, services.ErrIdeaNotFound) {
+			c.Status(http.StatusNotFound)
+			return
 		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, idea)
+	c.JSON(http.StatusOK, idea)
 }
 
 func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
@@ -94,7 +98,8 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrIdeaNotFound.Error()})
+		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	userID, err := getUserId(c)
@@ -117,7 +122,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 		return
 	}
 
-	idea, err := h.ideaService.UpdateIdeaByID(ideaID, userID, &payload)
+	ideaResponse, err := h.ideaService.UpdateIdeaByID(ideaID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotAuthor) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -135,48 +140,75 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, idea)
+	c.JSON(http.StatusOK, ideaResponse)
 }
-func (ih *ideaHandler) DeleteIdeaByID(ctx *gin.Context) {
-	rawID := ctx.Param("id")
-	ideaID, parseErr := uuid.Parse(rawID)
+func (ih *ideaHandler) DeleteIdeaByID(c *gin.Context) {
+	ideaIDStr := c.Param("ideaID")
 
-	if parseErr != nil {
-		ctx.Status(http.StatusBadRequest)
+	ideaID, err := uuid.Parse(ideaIDStr)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
 	//это защищенный путь, ID 100% существует
-	userID := ctx.MustGet("userID").(uuid.UUID)
+	userID := c.MustGet("userID").(uuid.UUID)
 
 	canDelete, dbErr := services.CheckRightsOnIdea(ideaID, userID, ih.db)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Запись с таким id не существует"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Запись с таким id не существует"})
 			return
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка получения прав пользователя на удаление записи: " + dbErr.Error())
 		}
 		return
 	}
 
 	if !canDelete {
-		ctx.Status(http.StatusForbidden)
+		c.Status(http.StatusForbidden)
 		return
 	}
 
 	dbErr = services.DeleteIdeaByID(ideaID, ih.db)
 	if dbErr != nil {
 		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "идеи с таким ID не существует"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "идеи с таким ID не существует"})
 		} else {
-			ctx.Status(http.StatusInternalServerError)
+			c.Status(http.StatusInternalServerError)
 			log.Println("Ошибка удаления записи: " + dbErr.Error())
 		}
 		return
 	}
 
-	ctx.Status(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
+}
+
+func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {
+	ideaIDStr := c.Param("ideaID")
+	ideaID, err := uuid.Parse(ideaIDStr)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	toggleFavoriteResponse, err := ih.ideaService.ToggleFavorite(ideaID, userID)
+	if err != nil {
+		if errors.Is(err, services.ErrIdeaNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, toggleFavoriteResponse)
 }

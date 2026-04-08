@@ -3,95 +3,81 @@ package services
 import (
 	"errors"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type IdeaService interface {
-	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error)
+	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error)
+	CreateIdea(req *dto.CreateIdeaRequest, authorId uuid.UUID) (*dto.GetIdeaResponse, error)
+	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
+	GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error)
+	ToggleFavorite(ideaID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error)
 }
 
 type ideaService struct {
-	repo repository.IdeaRepository
+	ideaRepo repository.IdeaRepository
+	userRepo repository.UserRepository
 }
 
-func NewIdeaService(repo repository.IdeaRepository) IdeaService {
-	return &ideaService{repo: repo}
+func NewIdeaService(ideaRepo repository.IdeaRepository, userRepo repository.UserRepository) IdeaService {
+	return &ideaService{ideaRepo: ideaRepo, userRepo: userRepo}
 }
 
-func GetIdeasList(req dto.GetIdeasRequest, db *gorm.DB) (*dto.GetIdeasResponse, error) {
-	query := db.Model(&models.Idea{})
-	var ideas []models.Idea
-
-	if req.Search != nil {
-		query = query.Where("title ILIKE ?", "%"+(*req.Search)+"%")
+func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error) {
+	userID, statusCode := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
+	if query.IsFavorite {
+		// не зарегистрированный пользователь не может получить список избранных
+		if statusCode != 0 {
+			return nil, ErrUnauthorized
+		}
 	}
 
-	if req.AuthorId != nil {
-		query = query.Where("author_id = ?", *req.AuthorId)
-	}
-
-	var total int64
-	if err := query.Count(&total).Error; err != nil {
+	ideasBlock, total, err := s.ideaRepo.GetIdeas(query, userID)
+	if err != nil {
 		return nil, ErrInternal
 	}
 
-	if req.StartAt != nil {
-		query = query.Offset(int(*req.StartAt))
-	}
-
-	if req.Limit != nil {
-		query = query.Limit(int(*req.Limit))
-	}
-
-	res := query.Find(&ideas)
-
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideas}
+	ideasResponse := dto.GetIdeasResponse{Total: total, Ideas: ideasBlock}
 	return &ideasResponse, nil
 }
 
-func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*models.Idea, error) {
-	idea := models.Idea{AuthorID: authorId, Title: req.Title, Description: req.Description}
-
-	if req.Content != nil {
-		idea.Content = req.Content
+func (s *ideaService) CreateIdea(req *dto.CreateIdeaRequest, authorId uuid.UUID) (*dto.GetIdeaResponse, error) {
+	createdIdea, err := s.ideaRepo.CreateIdea(req, authorId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrIdeaConflict
+		}
+		return nil, ErrInternal
 	}
 
-	if req.Category != nil {
-		idea.Category = *req.Category
-	}
-
-	// в ходе create gorm скорректирует нужные поля у сущности, вроде id
-	res := db.Create(&idea)
-
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return &idea, nil
+	return createdIdea, nil
 }
 
-func GetIdeaByID(id uuid.UUID, db *gorm.DB) (*models.Idea, error) {
-	var idea models.Idea
+func (s *ideaService) GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error) {
+	// получаем userID, если зарегистрирован пользователей для доп информации о идее
+	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
-	res := db.Where("id = ?", id).First(&idea)
-
-	if res.Error != nil {
-		return nil, res.Error
+	ideaResponse, err := s.ideaRepo.GetIdeaByIDIncr(ideaID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIdeaNotFound
+		}
+		return nil, ErrInternal
 	}
-	return &idea, nil
+
+	return ideaResponse, nil
 }
 
-func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*models.Idea, error) {
+func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error) {
 	// является ли пользователь владельцем данной идеи
-	isUserIdeaAuthor, err := s.repo.IsUserIdeaAuthor(ideaID, userID)
+	isUserIdeaAuthor, err := s.ideaRepo.IsUserIdeaAuthor(ideaID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -100,28 +86,18 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 	}
 
 	// обновление идеи по ID
-	rowsAffected, err := s.repo.UpdateIdeaByID(ideaID, updateRequest)
+	updatedIdea, err := s.ideaRepo.UpdateIdeaByID(ideaID, userID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrIdeaConflict
 		}
-		return nil, ErrInternal
-	}
-
-	if rowsAffected == 0 {
-		return nil, ErrIdeaNotFound
-	}
-
-	// получаем обновленную идею для возвращения
-	idea, err := s.repo.GetIdeaByID(ideaID)
-	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrIdeaNotFound
 		}
 		return nil, ErrInternal
 	}
 
-	return idea, nil
+	return updatedIdea, nil
 }
 
 func CheckRightsOnIdea(ideaID uuid.UUID, userID uuid.UUID, db *gorm.DB) (bool, error) {
@@ -161,4 +137,18 @@ func DeleteIdeaByID(ideaID uuid.UUID, db *gorm.DB) error {
 		return gorm.ErrRecordNotFound
 	}
 	return nil
+}
+
+func (s *ideaService) ToggleFavorite(ideaID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error) {
+	isFavorite, err := s.ideaRepo.ToggleFavorite(ideaID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIdeaNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	toggleFavoriteResponse := dto.ToggleFavoriteResponse{IsFavorite: isFavorite}
+
+	return &toggleFavoriteResponse, nil
 }
