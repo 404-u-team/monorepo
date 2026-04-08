@@ -189,12 +189,14 @@ func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {
 		return
 	}
 
-	isFavorite, err := ih.ideaService.ToggleFavorite(ideaID, ih.config, c)
+	userID, err := getUserId(c)
 	if err != nil {
-		if errors.Is(err, services.ErrUnauthorized) {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	toggleFavoriteResponse, err := ih.ideaService.ToggleFavorite(ideaID, userID)
+	if err != nil {
 		if errors.Is(err, services.ErrIdeaNotFound) {
 			c.Status(http.StatusNotFound)
 			return
@@ -203,6 +205,5 @@ func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {
 		return
 	}
 
-	toggleFavoriteResponse := dto.ToggleFavoriteResponse{IsFavorite: isFavorite}
 	c.JSON(http.StatusOK, toggleFavoriteResponse)
 }
