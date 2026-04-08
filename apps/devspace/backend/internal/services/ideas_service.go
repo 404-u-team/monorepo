@@ -30,8 +30,7 @@ func NewIdeaService(ideaRepo repository.IdeaRepository, userRepo repository.User
 }
 
 func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error) {
-	var userID uuid.UUID
-	var statusCode int
+	userID, statusCode := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 	if query.IsFavorite {
 		userID, statusCode = middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
