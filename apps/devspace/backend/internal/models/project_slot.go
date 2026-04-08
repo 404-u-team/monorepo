@@ -23,8 +23,9 @@ type ProjectSlot struct {
 	Status            string     `gorm:"column:status; not null" json:"status"`
 	CreatedAt         time.Time  `gorm:"column:created_at; not null" json:"created_at"`
 
-	Project Project `gorm:"foreignKey:ProjectID" json:"-"`
-	User    User    `gorm:"foreignKey:UserID" json:"-"`
+	Project         Project          `gorm:"foreignKey:ProjectID" json:"-"`
+	User            User             `gorm:"foreignKey:UserID" json:"-"`
+	ProjectRequests []ProjectRequest `gorm:"foreignKey:SlotID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
 func (ps *ProjectSlot) TableName() string { return "Project_Slot" }

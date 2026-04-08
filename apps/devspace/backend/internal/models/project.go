@@ -19,7 +19,7 @@ type Project struct {
 
 	Leader       User          `gorm:"foreignKey:LeaderID" json:"-"`
 	Idea         Idea          `gorm:"foreignKey:IdeaID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
-	ProjectSlots []ProjectSlot `gorm:"foreignKey:ProjectID" json:"-"`
+	ProjectSlots []ProjectSlot `gorm:"foreignKey:ProjectID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
 func (p *Project) TableName() string { return "Project" }
