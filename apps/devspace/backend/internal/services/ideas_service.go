@@ -32,8 +32,6 @@ func NewIdeaService(ideaRepo repository.IdeaRepository, userRepo repository.User
 func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error) {
 	userID, statusCode := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 	if query.IsFavorite {
-		userID, statusCode = middleware.GetUserID(config.JWTSecret, s.userRepo, c)
-
 		// не зарегистрированный пользователь не может получить список избранных
 		if statusCode != 0 {
 			return nil, ErrUnauthorized
