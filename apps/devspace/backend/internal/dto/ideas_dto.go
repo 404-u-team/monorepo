@@ -53,8 +53,9 @@ type CreateIdeaRequest struct {
 }
 
 type UpdateIdeaRequest struct {
-	Title       *string `json:"title" binding:"min=3,max=255"`
-	Description *string `json:"description" binding:"min=3,max=255"`
+	Title       *string `json:"title" binding:"omitempty,min=3,max=255"`
+	Description *string `json:"description" binding:"omitempty,max=255"`
+	Content     *string `json:"content" binding:"omitempty,max=10000"`
 }
 
 type GetIdeasResponse struct {

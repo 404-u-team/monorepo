@@ -47,6 +47,7 @@ func (r *ideaRepository) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest 
 		args = append(args, *updateRequest.Description)
 		argIndex++
 	}
+	setParts = append(setParts, "updated_at = NOW()")
 
 	// Добавляем параметры для is_author, JOIN и WHERE
 	args = append(args, userID, userID, ideaID) // три последних параметра
@@ -111,8 +112,8 @@ func (r *ideaRepository) CreateIdea(req *dto.CreateIdeaRequest, authorID uuid.UU
 	}
 
 	result := r.conn.Raw(`
-		INSERT INTO "Idea" (author_id, title, description, content, category, views_count, favorites_count)
-        VALUES (?, ?, ?, ?, ?, 0, 0)
+		INSERT INTO "Idea" (author_id, title, description, content, category, views_count, favorites_count, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, 0, 0, NOW(), NOW())
         RETURNING
             id,
             author_id,
