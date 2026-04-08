@@ -96,6 +96,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	userID, err := getUserId(c)
@@ -118,7 +119,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 		return
 	}
 
-	idea, err := h.ideaService.UpdateIdeaByID(ideaID, userID, &payload)
+	ideaResponse, err := h.ideaService.UpdateIdeaByID(ideaID, userID, &payload)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotAuthor) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -136,7 +137,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, idea)
+	c.JSON(http.StatusOK, ideaResponse)
 }
 func (ih *ideaHandler) DeleteIdeaByID(c *gin.Context) {
 	ideaIDStr := c.Param("ideaID")
@@ -144,6 +145,7 @@ func (ih *ideaHandler) DeleteIdeaByID(c *gin.Context) {
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	//это защищенный путь, ID 100% существует

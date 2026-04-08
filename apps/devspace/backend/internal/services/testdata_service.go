@@ -342,6 +342,7 @@ func (s *testDataService) generate(ctx context.Context) {
 
 	favoriteModels := make([]models.UserFavoriteIdea, 0, tdTotalUsers)
 	usedIdeaFavorites := make(map[uuid.UUID]map[uuid.UUID]bool)
+	ideaFavoriteCounts := make(map[uuid.UUID]int, tdTotalIdeas)
 
 	for i := 0; i < tdTotalUsers/2; i++ {
 		if ctx.Err() != nil {
@@ -361,6 +362,7 @@ func (s *testDataService) generate(ctx context.Context) {
 				continue
 			}
 			usedIdeaFavorites[userID][ideaID] = true
+			ideaFavoriteCounts[ideaID]++
 			favoriteModels = append(favoriteModels, models.UserFavoriteIdea{
 				UserID: userID,
 				IdeaID: ideaID,
@@ -372,6 +374,16 @@ func (s *testDataService) generate(ctx context.Context) {
 		if err := s.db.WithContext(ctx).CreateInBatches(favoriteModels, 200).Error; err != nil {
 			s.finish(err)
 			return
+		}
+
+		for ideaID, favoritesCount := range ideaFavoriteCounts {
+			if err := s.db.WithContext(ctx).
+				Model(&models.Idea{}).
+				Where("id = ?", ideaID).
+				Update("favorites_count", favoritesCount).Error; err != nil {
+				s.finish(err)
+				return
+			}
 		}
 	}
 

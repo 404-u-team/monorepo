@@ -256,7 +256,7 @@ func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) 
 		SELECT action FROM incremented
 		UNION ALL
 		SELECT 'n' WHERE NOT (SELECT exists FROM idea_exists);
-	`, userID, ideaID, userID, ideaID).First(&result).Error
+	`, ideaID, userID, ideaID, userID, ideaID).First(&result).Error
 
 	if err != nil {
 		log.Println("Произошла ошибка при toggle favorite idea: ", err)

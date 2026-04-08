@@ -589,7 +589,7 @@ paths:
                       format: uuid
                 - name: search
                   in: query
-                  description: Поиск по заголовку и описанию
+                  description: Поиск по заголовку, описанию, содержанию и категории
                   required: false
                   schema:
                       type: string
@@ -725,9 +725,12 @@ paths:
                         application/json:
                             schema:
                                 allOf:
-                                    - $ref: "#/components/schemas/Idea"
+                                    - $ref: "#/components/schemas/IdeaBlock"
                                     - type: object
                                       properties:
+                                          content:
+                                              type: string
+                                              example: Текст\n --- \n - 1
                                           views_count:
                                               type: integer
                                               example: 150
@@ -778,7 +781,19 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/Idea"
+                                allOf:
+                                    - $ref: "#/components/schemas/IdeaBlock"
+                                    - type: object
+                                      properties:
+                                          content:
+                                              type: string
+                                              example: Текст\n --- \n - 1
+                                          views_count:
+                                              type: integer
+                                              example: 150
+                                          favorites_count:
+                                              type: integer
+                                              example: 25
                     headers: {}
                 "400":
                     description: Ошибка в запросе
