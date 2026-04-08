@@ -735,6 +735,8 @@ paths:
                                               type: integer
                                               example: 25
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "404":
                     description: Идея не найдена
                     headers: {}
@@ -778,6 +780,8 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Idea"
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -814,6 +818,8 @@ paths:
                 "204":
                     description: Идея успешно удалена
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -856,6 +862,8 @@ paths:
                                         type: boolean
                                         description: Текущее состояние (true - в избранном)
                     headers: {}
+                "400":
+                    description: Ошибка в запросе
                 "401":
                     description: Не авторизован
                     headers: {}

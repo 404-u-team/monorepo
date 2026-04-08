@@ -65,23 +65,20 @@ func (ih *ideaHandler) AddIdea(c *gin.Context) {
 }
 
 func (ih *ideaHandler) GetIdeaByID(c *gin.Context) {
-	id := c.Param("id")
-
-	converted, parseError := uuid.Parse(id)
-
+	ideaIDStr := c.Param("ideaID")
+	ideaID, parseError := uuid.Parse(ideaIDStr)
 	if parseError != nil {
 		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	idea, dbErr := ih.ideaService.GetIdeaByID(converted, ih.config, c)
-	if dbErr != nil {
-		if errors.Is(dbErr, gorm.ErrRecordNotFound) {
+	idea, err := ih.ideaService.GetIdeaByID(ideaID, ih.config, c)
+	if err != nil {
+		if errors.Is(err, services.ErrIdeaNotFound) {
 			c.Status(http.StatusNotFound)
-		} else {
-			c.Status(http.StatusInternalServerError)
-			log.Println("Ошибка получения идеи из БД по uuid: " + dbErr.Error())
+			return
 		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
@@ -94,7 +91,7 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrIdeaNotFound.Error()})
+		c.Status(http.StatusBadRequest)
 	}
 
 	userID, err := getUserId(c)
@@ -138,12 +135,11 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 	c.JSON(http.StatusOK, idea)
 }
 func (ih *ideaHandler) DeleteIdeaByID(c *gin.Context) {
-	rawID := c.Param("id")
-	ideaID, parseErr := uuid.Parse(rawID)
+	ideaIDStr := c.Param("ideaID")
 
-	if parseErr != nil {
+	ideaID, err := uuid.Parse(ideaIDStr)
+	if err != nil {
 		c.Status(http.StatusBadRequest)
-		return
 	}
 
 	//это защищенный путь, ID 100% существует

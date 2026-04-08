@@ -83,7 +83,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 		api.GET("/projects/:projectID/slots", slotHandler.GetSlots)
 
 		api.GET("/ideas", ideaHandler.GetIdeas)
-		api.GET("/ideas/:id", ideaHandler.GetIdeaByID)
+		api.GET("/ideas/:ideaID", ideaHandler.GetIdeaByID)
 		api.POST("/ideas/:ideaID/favorite", ideaHandler.ToggleFavorite)
 
 		// тестовые данные (dev-only)
@@ -118,7 +118,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
 
 			protected.POST("/ideas", ideaHandler.AddIdea)
-			protected.DELETE("/ideas/:id", ideaHandler.DeleteIdeaByID)
+			protected.DELETE("/ideas/:ideaID", ideaHandler.DeleteIdeaByID)
 			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
 		}
 

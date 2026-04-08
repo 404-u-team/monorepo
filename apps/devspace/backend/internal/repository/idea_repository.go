@@ -126,7 +126,7 @@ func (r *ideaRepository) GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) 
 	}
 
 	if query.AuthorId != nil {
-		result = result.Where("author_id = ?", *query.AuthorId)
+		result = result.Where("author_id = ?", query.AuthorId.UUID())
 	}
 
 	if query.IsFavorite {
