@@ -116,7 +116,7 @@ func SetupRoutes(dbConn *gorm.DB, config *config.Config) *gin.Engine {
 			protected.POST("/users/me/skills", skillHandler.AddSkillToSelf)
 			protected.DELETE("/users/me/skills/:id", skillHandler.DeleteSelfSkill)
 
-			protected.POST("/ideas", ideaHandler.AddIdea)
+			protected.POST("/ideas", ideaHandler.CreateIdea)
 			protected.DELETE("/ideas/:ideaID", ideaHandler.DeleteIdeaByID)
 			protected.PUT("/ideas/:ideaID", ideaHandler.UpdateIdeaByID)
 			protected.POST("/ideas/:ideaID/favorite", ideaHandler.ToggleFavorite)

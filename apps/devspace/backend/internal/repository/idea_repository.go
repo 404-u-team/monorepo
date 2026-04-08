@@ -15,6 +15,7 @@ import (
 type IdeaRepository interface {
 	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error)
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
+	CreateIdea(req *dto.CreateIdeaRequest, authorID uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeas(query *dto.GetIdeasRequest, userID uuid.UUID) ([]dto.IdeaBlock, int64, error)
@@ -97,6 +98,46 @@ func (r *ideaRepository) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest 
 	}
 
 	return &updatedIdeaResponse, nil
+}
+
+func (r *ideaRepository) CreateIdea(req *dto.CreateIdeaRequest, authorID uuid.UUID) (*dto.GetIdeaResponse, error) {
+	args := []interface{}{authorID, req.Title, req.Description, nil, nil, authorID}
+
+	if req.Content != nil {
+		args[3] = *req.Content
+	}
+	if req.Category != nil {
+		args[4] = *req.Category
+	}
+
+	result := r.conn.Raw(`
+		INSERT INTO "Idea" (author_id, title, description, content, category, views_count, favorites_count)
+        VALUES (?, ?, ?, ?, ?, 0, 0)
+        RETURNING
+            id,
+            author_id,
+            author_id = ? AS is_author,
+            FALSE AS is_favorite,
+            title,
+            description,
+            content,
+            views_count,
+            favorites_count,
+            category,
+            created_at,
+            updated_at
+	`, args...)
+
+	var createdIdea dto.GetIdeaResponse
+	if err := result.First(&createdIdea).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, gorm.ErrDuplicatedKey
+		}
+		log.Println("Ошибка при создании идеи: ", err)
+		return nil, err
+	}
+
+	return &createdIdea, nil
 }
 
 func (r *ideaRepository) IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error) {

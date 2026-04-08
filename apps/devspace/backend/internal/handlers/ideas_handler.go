@@ -44,24 +44,27 @@ func (ih *ideaHandler) GetIdeas(c *gin.Context) {
 	c.JSON(http.StatusOK, ideasResponse)
 }
 
-func (ih *ideaHandler) AddIdea(c *gin.Context) {
+func (ih *ideaHandler) CreateIdea(c *gin.Context) {
 	var req dto.CreateIdeaRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	userID, _ := c.Get("userID")
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
 
 	// разыменовываем any, т.к там 100% uuid
-	idea, err := services.CreateIdea(req, userID.(uuid.UUID), ih.db)
+	idea, err := ih.ideaService.CreateIdea(&req, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			c.JSON(http.StatusConflict, gin.H{"code": http.StatusConflict, "error": "Идея с таким названием уже существует"})
-		} else {
-			c.Status(http.StatusInternalServerError)
-			log.Println("Ошибка записи идеи в БД: " + err.Error())
+		if errors.Is(err, services.ErrIdeaConflict) {
+			c.Status(http.StatusConflict)
+			return
 		}
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 

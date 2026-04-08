@@ -15,6 +15,7 @@ import (
 
 type IdeaService interface {
 	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error)
+	CreateIdea(req *dto.CreateIdeaRequest, authorId uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeas(query *dto.GetIdeasRequest, config *config.Config, c *gin.Context) (*dto.GetIdeasResponse, error)
 	GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error)
 	ToggleFavorite(ideaID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error)
@@ -47,25 +48,16 @@ func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config
 	return &ideasResponse, nil
 }
 
-func CreateIdea(req dto.CreateIdeaRequest, authorId uuid.UUID, db *gorm.DB) (*models.Idea, error) {
-	idea := models.Idea{AuthorID: authorId, Title: req.Title, Description: req.Description}
-
-	if req.Content != nil {
-		idea.Content = req.Content
+func (s *ideaService) CreateIdea(req *dto.CreateIdeaRequest, authorId uuid.UUID) (*dto.GetIdeaResponse, error) {
+	createdIdea, err := s.ideaRepo.CreateIdea(req, authorId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrIdeaConflict
+		}
+		return nil, ErrInternal
 	}
 
-	if req.Category != nil {
-		idea.Category = *req.Category
-	}
-
-	// в ходе create gorm скорректирует нужные поля у сущности, вроде id
-	res := db.Create(&idea)
-
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return &idea, nil
+	return createdIdea, nil
 }
 
 func (s *ideaService) GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetIdeaResponse, error) {

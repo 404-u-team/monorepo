@@ -14,7 +14,7 @@ type Idea struct {
 	Content        *string   `gorm:"column:content" json:"content"`
 	ViewsCount     uint      `gorm:"column:views_count; not null" json:"views_count"`
 	FavoritesCount uint      `gorm:"column:favorites_count; not null" json:"favorites_count"`
-	Category       string    `gorm:"column:category; not null" json:"category"`
+	Category       string    `gorm:"column:category" json:"category"`
 	CreatedAt      time.Time `gorm:"column:created_at; not null" json:"created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at; not null" json:"updated_at"`
 
