@@ -36,9 +36,9 @@ func (s *ideaService) GetIdeas(query *dto.GetIdeasRequest, config *config.Config
 	if query.IsFavorite {
 		userID, statusCode = middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
-		// у незарегистрированного пользователя не может быть любимых идей
+		// не зарегистрированный пользователь не может получить список избранных
 		if statusCode != 0 {
-			return &dto.GetIdeasResponse{Total: 0, Ideas: []dto.IdeaBlock{}}, nil
+			return nil, ErrUnauthorized
 		}
 	}
 
@@ -172,6 +172,9 @@ func (s *ideaService) ToggleFavorite(ideaID uuid.UUID, config *config.Config, c 
 
 	isFavorite, err := s.ideaRepo.ToggleFavorite(ideaID, userID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, ErrIdeaNotFound
+		}
 		return false, ErrInternal
 	}
 

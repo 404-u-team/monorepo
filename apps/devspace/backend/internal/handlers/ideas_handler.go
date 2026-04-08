@@ -33,6 +33,10 @@ func (ih *ideaHandler) GetIdeas(c *gin.Context) {
 
 	ideasResponse, err := ih.ideaService.GetIdeas(&query, ih.config, c)
 	if err != nil {
+		if errors.Is(err, services.ErrUnauthorized) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -181,12 +185,20 @@ func (ih *ideaHandler) ToggleFavorite(c *gin.Context) {
 	ideaIDStr := c.Param("ideaID")
 	ideaID, err := uuid.Parse(ideaIDStr)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
 	isFavorite, err := ih.ideaService.ToggleFavorite(ideaID, ih.config, c)
 	if err != nil {
+		if errors.Is(err, services.ErrUnauthorized) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		if errors.Is(err, services.ErrIdeaNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}

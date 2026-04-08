@@ -175,40 +175,54 @@ func (r *ideaRepository) ToggleFavorite(ideaID, userID uuid.UUID) (bool, error) 
 	// создаем транзакцию, у которой есть два исхода
 	// 		1. Если есть строчка с idea_id = true – удаляем строчку
 	// 		2. Если не нашли ничего, то создаем новую строчку
-	var isFavorite bool // произошло удаление или создание
+	var result string // d - deleted, i - inserted, n - not found
 	err := r.conn.Raw(`
 		WITH
+		idea_exists AS (SELECT EXISTS(SELECT 1 FROM "Idea" WHERE id = ?) AS exists),
 		deleted AS (
 			DELETE FROM "User_Favorite_Idea"
-			WHERE user_id = ? AND idea_id = ?
+			WHERE user_id = ? AND idea_id = ? AND (SELECT exists FROM idea_exists)
 			RETURNING idea_id
 		),
 		decremented AS (
 			UPDATE "Idea"
 			SET favorites_count = favorites_count - 1
 			WHERE id IN (SELECT idea_id FROM deleted)
-			RETURNING FALSE AS action
+			RETURNING 'd' AS action
 		),
 		inserted AS (
 			INSERT INTO "User_Favorite_Idea" (user_id, idea_id)
 			SELECT ?, ?
-			WHERE NOT EXISTS (SELECT 1 FROM deleted)
+			WHERE (SELECT exists FROM idea_exists)
+			AND NOT EXISTS (SELECT 1 FROM deleted)
 			RETURNING idea_id
 		),
 		incremented AS (
 			UPDATE "Idea"
 			SET favorites_count = favorites_count + 1
 			WHERE id IN (SELECT idea_id FROM inserted)
-			RETURNING TRUE AS action
+			RETURNING 'i' AS action
 		)
 		SELECT action FROM decremented
 		UNION ALL
-		SELECT action FROM incremented;	
-	`, userID, ideaID, userID, ideaID).Scan(&isFavorite).Error
+		SELECT action FROM incremented
+		UNION ALL
+		SELECT 'n' WHERE NOT (SELECT exists FROM idea_exists);
+	`, userID, ideaID, userID, ideaID).First(&result).Error
 
 	if err != nil {
 		log.Println("Произошла ошибка при toggle favorite idea: ", err)
 		return false, err
+	}
+
+	// не существует идея
+	if result == "n" {
+		return false, gorm.ErrRecordNotFound
+	}
+
+	var isFavorite bool
+	if result == "i" {
+		isFavorite = true
 	}
 
 	return isFavorite, nil
