@@ -76,6 +76,11 @@ func (s *ideaService) GetIdeaByID(ideaID uuid.UUID, config *config.Config, c *gi
 }
 
 func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error) {
+	// проверка, что есть что изменять
+	if updateRequest.Title == nil && updateRequest.Description == nil && updateRequest.Content == nil {
+		return nil, ErrEmptyPayload
+	}
+	
 	// является ли пользователь владельцем данной идеи
 	isUserIdeaAuthor, err := s.ideaRepo.IsUserIdeaAuthor(ideaID, userID)
 	if err != nil {

@@ -136,6 +136,10 @@ func (h *ideaHandler) UpdateIdeaByID(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		if errors.Is(err, services.ErrEmptyPayload) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}
