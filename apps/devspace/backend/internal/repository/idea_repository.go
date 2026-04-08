@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -10,7 +13,7 @@ import (
 )
 
 type IdeaRepository interface {
-	UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error)
+	UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error)
 	IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error)
 	GetIdeaByID(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
 	GetIdeaByIDIncr(ideaID, userID uuid.UUID) (*dto.GetIdeaResponse, error)
@@ -27,28 +30,73 @@ func NewIdeaRepository(conn *gorm.DB) IdeaRepository {
 }
 
 // обновить данные идеи, возвращает кол-во измененных строк и ошибку
-func (r *ideaRepository) UpdateIdeaByID(ideaID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (int, error) {
-	updates := map[string]interface{}{}
+func (r *ideaRepository) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dto.UpdateIdeaRequest) (*dto.GetIdeaResponse, error) {
+	// Строим SET часть динамически
+	setParts := []string{}
+	args := []interface{}{}
+	argIndex := 1
 
 	if updateRequest.Title != nil {
-		updates["title"] = *updateRequest.Title
+		setParts = append(setParts, fmt.Sprintf("title = $%d", argIndex))
+		args = append(args, *updateRequest.Title)
+		argIndex++
 	}
-
 	if updateRequest.Description != nil {
-		updates["description"] = *updateRequest.Description
+		setParts = append(setParts, fmt.Sprintf("description = $%d", argIndex))
+		args = append(args, *updateRequest.Description)
+		argIndex++
 	}
 
-	result := r.conn.Model(&models.Idea{}).Where("id = ?", ideaID).Updates(updates)
-	if result.Error != nil {
-		log.Println("Ошибка при обновлении идеи по ID: ", result.Error)
-		return 0, result.Error
+	// Добавляем параметры для is_author, JOIN и WHERE
+	args = append(args, userID, userID, ideaID) // три последних параметра
+	setClause := strings.Join(setParts, ", ")
+
+	query := fmt.Sprintf(`
+		UPDATE "Idea" i
+		SET %s
+		FROM (
+			SELECT 
+				i2.id,
+				i2.author_id = $%d AS is_author,
+				COALESCE(uf.idea_id IS NOT NULL, false) AS is_favorite
+			FROM "Idea" i2
+			LEFT JOIN "User_Favorite_Idea" uf 
+				ON uf.idea_id = i2.id AND uf.user_id = $%d
+			WHERE i2.id = $%d
+		) AS sub
+		WHERE i.id = sub.id
+		RETURNING 
+			i.id,
+			i.author_id,
+			sub.is_author,
+			sub.is_favorite,
+			i.title,
+			i.description,
+			i.content,
+			i.views_count,
+			i.favorites_count,
+			i.category,
+			i.created_at,
+			i.updated_at
+	`, setClause, argIndex, argIndex+1, argIndex+2) // смещение для трёх последних параметров
+
+	var updatedIdeaResponse dto.GetIdeaResponse
+	result := r.conn.Raw(query, args...)
+
+	if err := result.Scan(&updatedIdeaResponse).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		log.Println("Ошибка при обновлении идеи:", err)
+		return nil, err
 	}
 
+	// была ли строка обновлена
 	if result.RowsAffected == 0 {
-		return 0, nil
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return int(result.RowsAffected), nil
+	return &updatedIdeaResponse, nil
 }
 
 func (r *ideaRepository) IsUserIdeaAuthor(ideaID, userID uuid.UUID) (bool, error) {

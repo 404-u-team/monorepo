@@ -98,28 +98,18 @@ func (s *ideaService) UpdateIdeaByID(ideaID, userID uuid.UUID, updateRequest *dt
 	}
 
 	// обновление идеи по ID
-	rowsAffected, err := s.ideaRepo.UpdateIdeaByID(ideaID, updateRequest)
+	updatedIdea, err := s.ideaRepo.UpdateIdeaByID(ideaID, userID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrIdeaConflict
 		}
-		return nil, ErrInternal
-	}
-
-	if rowsAffected == 0 {
-		return nil, ErrIdeaNotFound
-	}
-
-	// получаем обновленную идею для возвращения
-	ideaResponse, err := s.ideaRepo.GetIdeaByID(ideaID, uuid.Nil)
-	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrIdeaNotFound
 		}
 		return nil, ErrInternal
 	}
 
-	return ideaResponse, nil
+	return updatedIdea, nil
 }
 
 func CheckRightsOnIdea(ideaID uuid.UUID, userID uuid.UUID, db *gorm.DB) (bool, error) {

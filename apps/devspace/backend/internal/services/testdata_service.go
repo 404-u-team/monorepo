@@ -363,7 +363,7 @@ func (s *testDataService) generate(ctx context.Context) {
 			usedIdeaFavorites[userID][ideaID] = true
 			favoriteModels = append(favoriteModels, models.UserFavoriteIdea{
 				UserID: userID,
-				IdeaID: &ideaID,
+				IdeaID: ideaID,
 			})
 		}
 	}
