@@ -38,7 +38,7 @@ type UpdateUserRequest struct {
 	Nickname  *string      `json:"nickname" binding:"omitempty,min=3,max=50"`
 	MainRole  OptionalUUID `json:"main_role"`
 	AvatarUrl *string      `json:"avatar_url"`
-	Bio       *string      `json:"bio" binding:"omitempty,min=3,max=255"`
+	Bio       *string      `json:"bio" binding:"omitempty,max=255"`
 }
 
 type GetUsersRequest struct {
