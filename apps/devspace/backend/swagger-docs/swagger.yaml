@@ -972,6 +972,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/GetProjectsResponse"
+                            example:
+                                total: 2
+                                projects:
+                                    - id: 550e8400-e29b-41d4-a716-446655440000
+                                      leader_id: 11111111-2222-3333-4444-555555555555
+                                      is_leader: true
+                                      is_favorite: false
+                                      title: AI Language Learning App
+                                      description: Разработка мобильного приложения для изучения языков с AI.
+                                      status: open
+                                      idea_id: 66666666-7777-8888-9999-000000000000
+                                      created_at: "2024-01-15T10:30:00Z"
+                                      updated_at: "2024-01-16T11:45:00Z"
                     headers: {}
                 "400":
                     description: Ошибка query параметров
@@ -2075,16 +2088,21 @@ components:
                 id:
                     type: string
                     format: uuid
+                leader_id:
+                    type: string
+                    format: uuid
+                is_leader:
+                    type: boolean
+                is_favorite:
+                    type: boolean
                 title:
                     type: string
                 description:
                     type: string
+                    nullable: true
                 content:
                     type: string
                     nullable: true
-                leader_id:
-                    type: string
-                    format: uuid
                 status:
                     type: string
                     enum:
@@ -2100,6 +2118,37 @@ components:
                 updated_at:
                     type: string
                     format: date-time
+        ProjectBlock:
+            id:
+                type: string
+                format: uuid
+            leader_id:
+                type: string
+                format: uuid
+            is_leader:
+                type: boolean
+            is_favorite:
+                type: boolean
+            title:
+                type: string
+            description:
+                type: string
+                nullable: true
+            status:
+                type: string
+                enum:
+                    - open
+                    - closed
+            idea_id:
+                type: string
+                format: uuid
+                nullable: true
+            created_at:
+                type: string
+                format: date-time
+            updated_at:
+                type: string
+                format: date-time
         GetProjectsResponse:
             type: object
             properties:
@@ -2109,7 +2158,7 @@ components:
                 projects:
                     type: array
                     items:
-                        $ref: "#/components/schemas/Project"
+                        $ref: "#/components/schemas/ProjectBlock"
             required:
                 - total
                 - projects
