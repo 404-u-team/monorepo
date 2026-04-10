@@ -35,7 +35,12 @@ const STATUS_LABEL: Record<IProject["status"], string> = {
   closed: "Closed",
 };
 
-export function ProjectCard({ projectId, to, fromRoute, className }: ProjectCardProps): JSX.Element {
+export function ProjectCard({
+  projectId,
+  to,
+  fromRoute,
+  className,
+}: ProjectCardProps): JSX.Element {
   const [project, setProject] = useState<IProjectDetailResponse | undefined>(undefined);
   const [slotUsers, setSlotUsers] = useState<SlotUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);

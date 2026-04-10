@@ -3,10 +3,10 @@ import { Plus } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type JSX, useCallback } from "react";
 
-import { fetchSkills } from "@/entities/skill";
 import { ProjectCard } from "@/entities/project";
-import { useStore } from "@/shared/lib/store";
+import { fetchSkills } from "@/entities/skill";
 import { setPageSize, PAGE_SIZE_OPTIONS, type PageSize } from "@/shared/lib/pageSize";
+import { useStore } from "@/shared/lib/store";
 import {
   Dropdown,
   DataListLayout,
@@ -38,7 +38,10 @@ const statusOptions = [
   { label: "Закрытые", value: "closed" },
 ];
 
-const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({ label: `${String(n)} / стр.`, value: String(n) }));
+const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({
+  label: `${String(n)} / стр.`,
+  value: String(n),
+}));
 
 export const ProjectList = observer(function ProjectList({
   projects,
@@ -185,7 +188,12 @@ export const ProjectList = observer(function ProjectList({
       onPageChange={handlePageChange}
     >
       {projects.map((project) => (
-        <ProjectCard key={project.id} projectId={project.id} to={`/project/${project.id}`} fromRoute="/projects" />
+        <ProjectCard
+          key={project.id}
+          projectId={project.id}
+          to={`/project/${project.id}`}
+          fromRoute="/projects"
+        />
       ))}
     </DataListLayout>
   );

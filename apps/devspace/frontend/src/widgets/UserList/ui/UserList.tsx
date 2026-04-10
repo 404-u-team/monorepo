@@ -28,7 +28,10 @@ export interface UserListProps {
   total: number;
 }
 
-const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({ label: `${String(n)} / стр.`, value: String(n) }));
+const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({
+  label: `${String(n)} / стр.`,
+  value: String(n),
+}));
 
 export function UserList({ users, totalPages, total }: UserListProps): JSX.Element {
   const searchParameters: SearchParameters = useSearch({ strict: false });

@@ -94,9 +94,7 @@ export function DataListLayout({
             </div>
           )}
 
-          {total !== undefined && (
-            <p className={styles.totalCount}>Найдено: {total}</p>
-          )}
+          {total !== undefined && <p className={styles.totalCount}>Найдено: {total}</p>}
 
           {hasPagination && (
             <div className={styles.pagination}>

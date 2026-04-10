@@ -163,7 +163,12 @@ function SkillsTab(): JSX.Element {
             placeholder="Frontend, Backend…"
           />
         </div>
-        <Button onClick={() => { void handleAddCategory(); }} disabled={isAddingCategory || newCategoryName.trim() === ""}>
+        <Button
+          onClick={() => {
+            void handleAddCategory();
+          }}
+          disabled={isAddingCategory || newCategoryName.trim() === ""}
+        >
           <Plus size={16} />
           Добавить
         </Button>
@@ -202,12 +207,16 @@ function SkillsTab(): JSX.Element {
           >
             <option value="">Выберите категорию</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
         </div>
         <Button
-          onClick={() => { void handleAddSkill(); }}
+          onClick={() => {
+            void handleAddSkill();
+          }}
           disabled={isAddingSkill || newSkillName.trim() === "" || newSkillParentId === ""}
         >
           <Plus size={16} />
@@ -235,7 +244,9 @@ function SkillsTab(): JSX.Element {
                 <div className={styles.rowActions}>
                   <Button
                     variant="outline"
-                    onClick={() => { confirmDelete(cat.id, cat.name, true); }}
+                    onClick={() => {
+                      confirmDelete(cat.id, cat.name, true);
+                    }}
                     style={{ padding: "4px 8px" }}
                     aria-label="Удалить категорию"
                   >
@@ -252,7 +263,9 @@ function SkillsTab(): JSX.Element {
                       <div className={styles.rowActions}>
                         <Button
                           variant="outline"
-                          onClick={() => { confirmDelete(child.id, child.name, false); }}
+                          onClick={() => {
+                            confirmDelete(child.id, child.name, false);
+                          }}
                           style={{ padding: "4px 8px" }}
                           aria-label="Удалить навык"
                         >
@@ -279,8 +292,12 @@ function SkillsTab(): JSX.Element {
         severity="danger"
         confirmLabel="Удалить"
         cancelLabel="Отмена"
-        onConfirm={() => { void handleDelete(); }}
-        onCancel={() => { setDeletingId(undefined); }}
+        onConfirm={() => {
+          void handleDelete();
+        }}
+        onCancel={() => {
+          setDeletingId(undefined);
+        }}
       />
     </div>
   );
@@ -301,7 +318,11 @@ function IdeasTab(): JSX.Element {
   const load = useCallback(async (p: number, q: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await fetchIdeas({ start_at: (p - 1) * PAGE_LIMIT, limit: PAGE_LIMIT, search: q || undefined });
+      const result = await fetchIdeas({
+        start_at: (p - 1) * PAGE_LIMIT,
+        limit: PAGE_LIMIT,
+        search: q || undefined,
+      });
       setIdeas(result.items);
       setTotal(result.total);
     } finally {
@@ -309,7 +330,9 @@ function IdeasTab(): JSX.Element {
     }
   }, []);
 
-  useEffect(() => { void load(page, search); }, [load, page, search]);
+  useEffect(() => {
+    void load(page, search);
+  }, [load, page, search]);
 
   const handleSearch = (value: string): void => {
     setSearch(value);
@@ -345,30 +368,38 @@ function IdeasTab(): JSX.Element {
           <span />
         </div>
         {isLoading && (
-          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>Загрузка…</div>
+          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>
+            Загрузка…
+          </div>
         )}
         {!isLoading && ideas.length === 0 && (
-          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>Ничего не найдено</div>
-        )}
-        {!isLoading && ideas.length > 0 && ideas.map((idea) => (
-          <div key={idea.id} className={clsx(styles.tableRow, styles.ideasGrid)}>
-            <span className={styles.cellTitle}>{idea.title}</span>
-            <span className={styles.cellSecondary}>{idea.author_id.slice(0, 8)}…</span>
-            <span className={styles.cellSecondary}>
-              {new Date(idea.created_at).toLocaleDateString("ru")}
-            </span>
-            <div className={styles.cellActions}>
-              <Button
-                variant="outline"
-                onClick={() => { setDeletingId(idea.id); }}
-                style={{ padding: "4px 8px" }}
-                aria-label="Удалить идею"
-              >
-                <Trash2 size={14} />
-              </Button>
-            </div>
+          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>
+            Ничего не найдено
           </div>
-        ))}
+        )}
+        {!isLoading &&
+          ideas.length > 0 &&
+          ideas.map((idea) => (
+            <div key={idea.id} className={clsx(styles.tableRow, styles.ideasGrid)}>
+              <span className={styles.cellTitle}>{idea.title}</span>
+              <span className={styles.cellSecondary}>{idea.author_id.slice(0, 8)}…</span>
+              <span className={styles.cellSecondary}>
+                {new Date(idea.created_at).toLocaleDateString("ru")}
+              </span>
+              <div className={styles.cellActions}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDeletingId(idea.id);
+                  }}
+                  style={{ padding: "4px 8px" }}
+                  aria-label="Удалить идею"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </div>
+          ))}
       </div>
 
       {totalPages > 1 && (
@@ -385,8 +416,12 @@ function IdeasTab(): JSX.Element {
         confirmLabel="Удалить"
         cancelLabel="Отмена"
         isLoading={isDeleting}
-        onConfirm={() => { void handleDelete(); }}
-        onCancel={() => { setDeletingId(undefined); }}
+        onConfirm={() => {
+          void handleDelete();
+        }}
+        onCancel={() => {
+          setDeletingId(undefined);
+        }}
       />
     </div>
   );
@@ -407,7 +442,11 @@ function ProjectsTab(): JSX.Element {
   const load = useCallback(async (p: number, q: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const result = await fetchProjects({ start_at: (p - 1) * PAGE_LIMIT, limit: PAGE_LIMIT, search: q || undefined });
+      const result = await fetchProjects({
+        start_at: (p - 1) * PAGE_LIMIT,
+        limit: PAGE_LIMIT,
+        search: q || undefined,
+      });
       setProjects(result.items);
       setTotal(result.total);
     } finally {
@@ -415,7 +454,9 @@ function ProjectsTab(): JSX.Element {
     }
   }, []);
 
-  useEffect(() => { void load(page, search); }, [load, page, search]);
+  useEffect(() => {
+    void load(page, search);
+  }, [load, page, search]);
 
   const handleSearch = (value: string): void => {
     setSearch(value);
@@ -451,32 +492,42 @@ function ProjectsTab(): JSX.Element {
           <span />
         </div>
         {isLoading && (
-          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>Загрузка…</div>
+          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>
+            Загрузка…
+          </div>
         )}
         {!isLoading && projects.length === 0 && (
-          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>Ничего не найдено</div>
-        )}
-        {!isLoading && projects.length > 0 && projects.map((project) => (
-          <div key={project.id} className={clsx(styles.tableRow, styles.projectsGrid)}>
-            <span className={styles.cellTitle}>{project.title}</span>
-            <span className={styles.cellSecondary}>{project.leader_id.slice(0, 8)}…</span>
-            <span>
-              <span className={project.status === "open" ? styles.statusOpen : styles.statusClosed}>
-                {project.status === "open" ? "Открыт" : "Закрыт"}
-              </span>
-            </span>
-            <div className={styles.cellActions}>
-              <Button
-                variant="outline"
-                onClick={() => { setDeletingId(project.id); }}
-                style={{ padding: "4px 8px" }}
-                aria-label="Удалить проект"
-              >
-                <Trash2 size={14} />
-              </Button>
-            </div>
+          <div style={{ padding: "24px", textAlign: "center", color: "var(--text--secondary)" }}>
+            Ничего не найдено
           </div>
-        ))}
+        )}
+        {!isLoading &&
+          projects.length > 0 &&
+          projects.map((project) => (
+            <div key={project.id} className={clsx(styles.tableRow, styles.projectsGrid)}>
+              <span className={styles.cellTitle}>{project.title}</span>
+              <span className={styles.cellSecondary}>{project.leader_id.slice(0, 8)}…</span>
+              <span>
+                <span
+                  className={project.status === "open" ? styles.statusOpen : styles.statusClosed}
+                >
+                  {project.status === "open" ? "Открыт" : "Закрыт"}
+                </span>
+              </span>
+              <div className={styles.cellActions}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDeletingId(project.id);
+                  }}
+                  style={{ padding: "4px 8px" }}
+                  aria-label="Удалить проект"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </div>
+          ))}
       </div>
 
       {totalPages > 1 && (
@@ -493,8 +544,12 @@ function ProjectsTab(): JSX.Element {
         confirmLabel="Удалить"
         cancelLabel="Отмена"
         isLoading={isDeleting}
-        onConfirm={() => { void handleDelete(); }}
-        onCancel={() => { setDeletingId(undefined); }}
+        onConfirm={() => {
+          void handleDelete();
+        }}
+        onCancel={() => {
+          setDeletingId(undefined);
+        }}
       />
     </div>
   );

@@ -19,10 +19,14 @@ type BarAction =
 
 function barReducer(_state: BarState, action: BarAction): BarState {
   switch (action.type) {
-    case "loading_start": return { phase: "loading", width: 0 };
-    case "advance": return { ..._state, width: action.width };
-    case "complete": return { phase: "completing", width: 100 };
-    case "reset": return { phase: "idle", width: 0 };
+    case "loading_start":
+      return { phase: "loading", width: 0 };
+    case "advance":
+      return { ..._state, width: action.width };
+    case "complete":
+      return { phase: "completing", width: 100 };
+    case "reset":
+      return { phase: "idle", width: 0 };
   }
 }
 
@@ -45,14 +49,24 @@ export function PageLoader(): JSX.Element | undefined {
     if (isLoading) {
       clearTimers();
       dispatch({ type: "loading_start" });
-      schedule(() => { dispatch({ type: "advance", width: 20 }); }, 30);
-      schedule(() => { dispatch({ type: "advance", width: 50 }); }, 300);
-      schedule(() => { dispatch({ type: "advance", width: 72 }); }, 900);
-      schedule(() => { dispatch({ type: "advance", width: 85 }); }, 2000);
+      schedule(() => {
+        dispatch({ type: "advance", width: 20 });
+      }, 30);
+      schedule(() => {
+        dispatch({ type: "advance", width: 50 });
+      }, 300);
+      schedule(() => {
+        dispatch({ type: "advance", width: 72 });
+      }, 900);
+      schedule(() => {
+        dispatch({ type: "advance", width: 85 });
+      }, 2000);
     } else if (phase === "loading") {
       clearTimers();
       dispatch({ type: "complete" });
-      schedule(() => { dispatch({ type: "reset" }); }, 450);
+      schedule(() => {
+        dispatch({ type: "reset" });
+      }, 450);
     }
 
     return clearTimers;

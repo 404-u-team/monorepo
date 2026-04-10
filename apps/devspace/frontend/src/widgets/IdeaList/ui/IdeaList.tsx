@@ -4,8 +4,8 @@ import { observer } from "mobx-react-lite";
 import { type JSX } from "react";
 
 import { IdeaCard } from "@/entities/idea";
-import { useStore } from "@/shared/lib/store";
 import { setPageSize, PAGE_SIZE_OPTIONS, type PageSize } from "@/shared/lib/pageSize";
+import { useStore } from "@/shared/lib/store";
 import { DataListLayout, Button, Dropdown } from "@/shared/ui";
 
 type SortOrder = "asc" | "desc";

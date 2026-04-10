@@ -101,7 +101,12 @@ export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element
         {ideas.length > 0 ? (
           <div className={styles.itemList}>
             {ideas.map((idea) => (
-              <Link key={idea.id} to="/idea/$ideaId" params={{ ideaId: idea.id }} className={styles.itemCard}>
+              <Link
+                key={idea.id}
+                to="/idea/$ideaId"
+                params={{ ideaId: idea.id }}
+                className={styles.itemCard}
+              >
                 <span className={styles.itemTitle}>{idea.title}</span>
                 {idea.category !== undefined && idea.category !== "" && (
                   <Badge className={styles.itemBadge}>{idea.category}</Badge>
@@ -120,7 +125,12 @@ export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element
         {projects.length > 0 ? (
           <div className={styles.itemList}>
             {projects.map((project) => (
-              <Link key={project.id} to="/project/$projectId" params={{ projectId: project.id }} className={styles.itemCard}>
+              <Link
+                key={project.id}
+                to="/project/$projectId"
+                params={{ projectId: project.id }}
+                className={styles.itemCard}
+              >
                 <div className={styles.itemCardHeader}>
                   <span className={styles.itemTitle}>{project.title}</span>
                   <Badge className={styles[project.status]}>

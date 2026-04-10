@@ -39,7 +39,9 @@ export const Route = createFileRoute("/projects")({
       limit: Number(search.limit) || undefined,
     };
   },
-  loaderDeps: ({ search: { page, search, status, open_slots, slots_skills, min_people, max_people, limit } }) => ({
+  loaderDeps: ({
+    search: { page, search, status, open_slots, slots_skills, min_people, max_people, limit },
+  }) => ({
     page,
     search,
     status,

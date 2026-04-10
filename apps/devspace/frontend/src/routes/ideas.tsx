@@ -16,8 +16,7 @@ export interface IdeaSearch {
 
 export const Route = createFileRoute("/ideas")({
   validateSearch: (search: Record<string, unknown>): IdeaSearch => {
-    const views =
-      search.views === "asc" || search.views === "desc" ? search.views : undefined;
+    const views = search.views === "asc" || search.views === "desc" ? search.views : undefined;
     const favorites =
       search.favorites === "asc" || search.favorites === "desc" ? search.favorites : undefined;
     return {
