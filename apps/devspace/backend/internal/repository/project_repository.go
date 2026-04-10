@@ -19,6 +19,7 @@ type ProjectRepository interface {
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
 	DeleteProjectByID(projectID uuid.UUID) (int, error)
 	IsUserProjectLeader(projectID, userID uuid.UUID) (bool, error)
+	WithTx(tx *gorm.DB) ProjectRepository
 }
 
 type projectRepository struct {
@@ -27,6 +28,10 @@ type projectRepository struct {
 
 func NewProjectRepository(conn *gorm.DB) ProjectRepository {
 	return &projectRepository{conn: conn}
+}
+
+func (r *projectRepository) WithTx(tx *gorm.DB) ProjectRepository {
+	return &projectRepository{conn: tx}
 }
 
 func (r *projectRepository) IsProjectExistsByTitle(title string) (bool, error) {
@@ -49,7 +54,9 @@ func (r *projectRepository) CreateProject(project *models.Project) error {
 		return err
 	}
 	if count == 0 {
-		return fmt.Errorf("не найден пользователей с таким ID, невозможно создать проекта")
+		err := fmt.Errorf("не найден пользователей с таким ID, невозможно создать проекта")
+		log.Println("Ошибка при создании проекта (не найден пользователей с таким ID): ", err)
+		return err
 	}
 
 	result := r.conn.Create(project)
@@ -134,6 +141,7 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 			`, len(skills)).Scan(&projectIDs)
 		}
 		if subquery.Error != nil {
+			log.Println("Ошибка при фильтрации проектов по навыкам слотов: ", subquery.Error)
 			return nil, 0, subquery.Error
 		}
 
@@ -159,6 +167,7 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 
 	var total int64
 	if err := result.Count(&total).Error; err != nil {
+		log.Println("Ошибка при подсчете количества проектов: ", err)
 		return nil, 0, err
 	}
 
@@ -245,6 +254,7 @@ func (r *projectRepository) UpdateProjectbyID(projectID uuid.UUID, updateRequest
 func (r *projectRepository) DeleteProjectByID(projectID uuid.UUID) (int, error) {
 	result := r.conn.Delete(&models.Project{}, "id = ?", projectID)
 	if result.Error != nil {
+		log.Println("Ошибка при удалении проекта: ", result.Error)
 		return 0, result.Error
 	}
 	return int(result.RowsAffected), nil

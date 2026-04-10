@@ -20,6 +20,7 @@ type SlotRepository interface {
 	IsSlotExists(slotID uuid.UUID) (bool, error)
 	IsSlotOpen(slotID uuid.UUID) (bool, error)
 	PutUserIntoSlot(slotID, userID uuid.UUID) error
+	WithTx(tx *gorm.DB) SlotRepository
 }
 
 type slotRepository struct {
@@ -28,6 +29,10 @@ type slotRepository struct {
 
 func NewSlotRepository(conn *gorm.DB) SlotRepository {
 	return &slotRepository{conn: conn}
+}
+
+func (r *slotRepository) WithTx(tx *gorm.DB) SlotRepository {
+	return &slotRepository{conn: tx}
 }
 
 func (r *slotRepository) GetSlots(projectID uuid.UUID) ([]models.ProjectSlot, error) {
@@ -163,7 +168,7 @@ func (r *slotRepository) IsSlotOpen(slotID uuid.UUID) (bool, error) {
 }
 
 func (r *slotRepository) PutUserIntoSlot(slotID, userID uuid.UUID) error {
-	updates := map[string]string{"user_id": userID.String(), "status": "closed"}
+	updates := map[string]interface{}{"user_id": userID.String(), "status": "closed"}
 
 	result := r.conn.Model(&models.ProjectSlot{}).Where("id = ?", slotID).Updates(updates)
 	if result.Error != nil {
