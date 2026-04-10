@@ -39,3 +39,6 @@ var ErrSkillNotFound = errors.New("навык не найден")
 
 var ErrMainRoleNotFound = errors.New("навык main role не найден")
 var ErrMainRoleIsNotRoot = errors.New("навык main role должен быть первого уровня")
+
+var ErrTestDataGenerationAlreadyRunning = errors.New("генерация данных уже запущена")
+var ErrTestDataGenerationCancelled = errors.New("отменено")

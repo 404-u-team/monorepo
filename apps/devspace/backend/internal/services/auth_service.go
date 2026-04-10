@@ -49,6 +49,9 @@ func (s *authService) Register(payload *dto.RegisterRequest, config *config.Conf
 	// create user with hashed password
 	userID, err := s.repo.CreateUser(payload)
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrUserExists
+		}
 		return nil, ErrInternal
 	}
 

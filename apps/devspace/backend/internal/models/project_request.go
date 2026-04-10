@@ -15,7 +15,7 @@ type ProjectRequest struct {
 	CoverLetter string    `gorm:"column:cover_letter; not null" json:"cover_letter"`
 	CreatedAt   time.Time `gorm:"column:created_at; not null" json:"created_at"`
 
-	Slot ProjectSlot `gorm:"foreignKey:SlotID" json:"-"`
+	Slot ProjectSlot `gorm:"foreignKey:SlotID;constraint:OnDelete:CASCADE" json:"-"`
 	User User        `gorm:"foreignKey:UserID" json:"-"`
 }
 

@@ -56,7 +56,7 @@ func (s *testDataService) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.status.Running {
-		return fmt.Errorf("генерация данных уже запущена")
+		return ErrTestDataGenerationAlreadyRunning
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
@@ -141,7 +141,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	childModels := make([]models.SkillCategory, 0, childCount)
 	for i, parentID := range rootIDs {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 		pid := parentID
@@ -221,7 +221,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	userSkillModels := make([]models.UserSkill, 0, usersWithSkills*maxSkillsPerUser)
 	for i := 0; i < usersWithSkills; i++ {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 		userID := userIDs[i]
@@ -266,7 +266,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	ideaModels := make([]models.Idea, tdTotalIdeas)
 	for i := 0; i < tdTotalIdeas; i++ {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 		id := uuid.New()
@@ -309,7 +309,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	projectModels := make([]models.Project, tdTotalProjects)
 	for i := 0; i < tdTotalProjects; i++ {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 		id := uuid.New()
@@ -350,7 +350,7 @@ func (s *testDataService) generate(ctx context.Context) {
 
 	for i := 0; i < tdTotalUsers/2; i++ {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 
@@ -408,7 +408,7 @@ func (s *testDataService) generate(ctx context.Context) {
 	slotModels := make([]models.ProjectSlot, 0, tdTotalProjects*2)
 	for i, projectID := range projectIDs {
 		if ctx.Err() != nil {
-			s.finish(fmt.Errorf("отменено"))
+			s.finish(ErrTestDataGenerationCancelled)
 			return
 		}
 		// Distribution:

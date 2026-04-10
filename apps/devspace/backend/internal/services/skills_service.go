@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"math"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
 	"github.com/google/uuid"
@@ -44,30 +43,6 @@ func GetSkills(query dto.SkillCategoriesListQuery, db *gorm.DB) ([]dto.SkillCate
 	skillCategoryResponse := repository.BuildSkillTree(skills)
 
 	return skillCategoryResponse, nil
-}
-
-func CutIntoPages(skills []models.SkillCategory, pages int) ([][]models.SkillCategory, error) {
-
-	if pages == 0 {
-		return nil, errors.New("0 страниц")
-	}
-
-	if len(skills) == 0 {
-		return [][]models.SkillCategory{}, nil
-	}
-	skillsPerPage := int(math.Ceil(float64(len(skills)) / float64(pages)))
-
-	splittedByPages := make([][]models.SkillCategory, pages)
-
-	cursor := 0
-	for idx, elem := range skills {
-		if (idx+1)%skillsPerPage == 0 {
-			cursor++
-		}
-		splittedByPages[cursor] = append(splittedByPages[cursor], elem)
-	}
-
-	return splittedByPages, nil
 }
 
 func GetSkillById(id uuid.UUID, db *gorm.DB) (*models.SkillCategory, error) {

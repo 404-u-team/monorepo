@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"log"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
@@ -53,7 +52,6 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 		project.Content = payload.Content
 	}
 	if err := s.repo.CreateProject(project); err != nil {
-		log.Println("Ошибка при создании проекта: ", err)
 		return nil, ErrInternal
 	}
 

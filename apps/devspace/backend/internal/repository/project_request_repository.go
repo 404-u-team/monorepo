@@ -10,11 +10,13 @@ import (
 
 type ProjectRequestRepository interface {
 	CreateProjectRequest(projectRequest *models.ProjectRequest) error
-	UpdateProjectRequest(requestID uuid.UUID, status string) (int, error)
+	UpdateProjectRequestStatus(requestID uuid.UUID, status string) (int, error)
 	GetProjectIDByRequestID(requestID uuid.UUID) (uuid.UUID, error)
 	GetProjectRequestByID(requestID uuid.UUID) (*models.ProjectRequest, error)
 	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error)
 	GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error)
+	WithTx(tx *gorm.DB) ProjectRequestRepository
+	Transaction(fn func(tx *gorm.DB) error) error
 }
 
 type projectRequestRepository struct {
@@ -23,6 +25,19 @@ type projectRequestRepository struct {
 
 func NewProjectRequestRepository(conn *gorm.DB) ProjectRequestRepository {
 	return &projectRequestRepository{conn: conn}
+}
+
+func (r *projectRequestRepository) WithTx(tx *gorm.DB) ProjectRequestRepository {
+	return &projectRequestRepository{conn: tx}
+}
+
+func (r *projectRequestRepository) Transaction(fn func(tx *gorm.DB) error) error {
+	err := r.conn.Transaction(fn)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *projectRequestRepository) CreateProjectRequest(projectRequest *models.ProjectRequest) error {
@@ -35,11 +50,12 @@ func (r *projectRequestRepository) CreateProjectRequest(projectRequest *models.P
 	return nil
 }
 
-func (r *projectRequestRepository) UpdateProjectRequest(requestID uuid.UUID, status string) (int, error) {
-	updates := map[string]string{"status": status}
+func (r *projectRequestRepository) UpdateProjectRequestStatus(requestID uuid.UUID, status string) (int, error) {
+	updates := map[string]interface{}{"status": status}
 
 	result := r.conn.Model(&models.ProjectRequest{}).Where("id = ?", requestID).Updates(updates)
 	if result.Error != nil {
+		log.Println("Ошибка при обновлении project request: ", result.Error)
 		return 0, result.Error
 	}
 
@@ -51,19 +67,25 @@ func (r *projectRequestRepository) UpdateProjectRequest(requestID uuid.UUID, sta
 }
 
 func (r *projectRequestRepository) GetProjectIDByRequestID(requestID uuid.UUID) (uuid.UUID, error) {
-	var slotID uuid.UUID
-	result := r.conn.Model(&models.ProjectRequest{}).Select("slot_id").Where("id = ?", requestID).First(&slotID)
+	var slotIDStruct struct {
+		SlotID uuid.UUID
+	}
+	result := r.conn.Model(&models.ProjectRequest{}).Select("slot_id").Where("id = ?", requestID).First(&slotIDStruct)
 	if result.Error != nil {
+		log.Println("Ошибка при получении projectID через requestID (slot_id part): ", result.Error)
 		return uuid.Nil, result.Error
 	}
 
-	var projectID uuid.UUID
-	result = r.conn.Model(&models.ProjectSlot{}).Select("project_id").Where("id = ?", slotID).First(&projectID)
+	var projectIDStruct struct {
+		ProjectID uuid.UUID
+	}
+	result = r.conn.Model(&models.ProjectSlot{}).Select("project_id").Where("id = ?", slotIDStruct.SlotID).First(&projectIDStruct)
 	if result.Error != nil {
+		log.Println("Ошибка при получении projectID через requestID (project_id part): ", result.Error)
 		return uuid.Nil, result.Error
 	}
 
-	return projectID, nil
+	return projectIDStruct.ProjectID, nil
 }
 
 func (r *projectRequestRepository) GetProjectRequestByID(requestID uuid.UUID) (*models.ProjectRequest, error) {
@@ -96,6 +118,7 @@ func (r *projectRequestRepository) GetProjectRequests(projectID uuid.UUID, slotI
 
 	result = result.Find(&requests)
 	if result.Error != nil {
+		log.Println("Ошибка при получении списка заявок проекта: ", result.Error)
 		return nil, result.Error
 	}
 
@@ -108,6 +131,7 @@ func (r *projectRequestRepository) GetUserRequests(userID uuid.UUID) ([]models.P
 	result := r.conn.Model(&models.ProjectRequest{}).Where("user_id = ?", userID).Where("type = ?", "apply").Find(&requests)
 
 	if result.Error != nil {
+		log.Println("Ошибка при получении заявок пользователя: ", result.Error)
 		return nil, result.Error
 	}
 
