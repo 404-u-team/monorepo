@@ -51,7 +51,7 @@ func (s *slotService) CreateSlot(projectID, userID uuid.UUID, payload *dto.Creat
 	}
 
 	// есть ли такой проект
-	_, err = s.projectRepo.GetProjectByID(projectID, uuid.Nil)
+	_, err = s.projectRepo.GetProjectByID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrProjectNotFound
