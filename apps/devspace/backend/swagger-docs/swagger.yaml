@@ -2119,36 +2119,38 @@ components:
                     type: string
                     format: date-time
         ProjectBlock:
-            id:
-                type: string
-                format: uuid
-            leader_id:
-                type: string
-                format: uuid
-            is_leader:
-                type: boolean
-            is_favorite:
-                type: boolean
-            title:
-                type: string
-            description:
-                type: string
-                nullable: true
-            status:
-                type: string
-                enum:
-                    - open
-                    - closed
-            idea_id:
-                type: string
-                format: uuid
-                nullable: true
-            created_at:
-                type: string
-                format: date-time
-            updated_at:
-                type: string
-                format: date-time
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                leader_id:
+                    type: string
+                    format: uuid
+                is_leader:
+                    type: boolean
+                is_favorite:
+                    type: boolean
+                title:
+                    type: string
+                description:
+                    type: string
+                    nullable: true
+                status:
+                    type: string
+                    enum:
+                        - open
+                        - closed
+                idea_id:
+                    type: string
+                    format: uuid
+                    nullable: true
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
         GetProjectsResponse:
             type: object
             properties:
