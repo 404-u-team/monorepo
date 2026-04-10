@@ -10,16 +10,18 @@ type SkillCategoriesListQuery struct {
 }
 
 type SkillCategoryAddRequest struct {
-	ParentId *uuid.UUID `json:"parent_id"`
+	ParentID *uuid.UUID `json:"parent_id"`
 	Name     string     `json:"name"`
+	Icon     *string    `json:"icon"`
+	Color    *string    `json:"color" binding:"omitempty,min=7,max=7"`
 }
 
 type SkillCategoryResponse struct {
 	ID       uuid.UUID               `json:"id"`
 	ParentID *uuid.UUID              `json:"parent_id"`
 	Name     string                  `json:"name"`
-	Icon     string                  `json:"icon"`
-	Color    string                  `json:"color"`
+	Icon     *string                 `json:"icon"`
+	Color    *string                 `json:"color"`
 	Children []SkillCategoryResponse `json:"children"`
 }
 

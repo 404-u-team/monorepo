@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -123,11 +124,16 @@ func (s *testDataService) generate(ctx context.Context) {
 
 	rootNames := tdRootSkillNames()
 	rootIDs := make([]uuid.UUID, tdRootSkills)
+	rootIcons := make([]*string, tdRootSkills)
+	rootColors := make([]*string, tdRootSkills)
 	rootModels := make([]models.SkillCategory, tdRootSkills)
 	for i := 0; i < tdRootSkills; i++ {
 		id := uuid.New()
+		icon, color := tdSimpleIconForRootSkill(rootNames[i])
 		rootIDs[i] = id
-		rootModels[i] = models.SkillCategory{ID: id, Name: rootNames[i]}
+		rootIcons[i] = icon
+		rootColors[i] = color
+		rootModels[i] = models.SkillCategory{ID: id, Name: rootNames[i], Icon: icon, Color: color}
 	}
 	if err := s.db.WithContext(ctx).CreateInBatches(rootModels, 100).Error; err != nil {
 		s.finish(err)
@@ -150,6 +156,8 @@ func (s *testDataService) generate(ctx context.Context) {
 				ID:       uuid.New(),
 				ParentID: &pid,
 				Name:     fmt.Sprintf("%s / Навык %d", rootNames[i], j+1),
+				Icon:     rootIcons[i],
+				Color:    rootColors[i],
 			})
 		}
 	}
@@ -556,4 +564,53 @@ func tdRootSkillNames() []string {
 		}
 	}
 	return names
+}
+
+func tdSimpleIconForRootSkill(rootName string) (*string, *string) {
+	const fallbackIcon = "https://simpleicons.org/icons/python.svg"
+	const fallbackColor = "#3776AB"
+
+	base := rootName
+	if idx := strings.Index(base, " (группа "); idx >= 0 {
+		base = base[:idx]
+	}
+
+	type iconSpec struct {
+		slug  string
+		color string
+	}
+
+	iconByBase := map[string]iconSpec{
+		"Backend Development":     {slug: "go", color: "#00ADD8"},
+		"Frontend Development":    {slug: "javascript", color: "#F7DF1E"},
+		"Mobile Development":      {slug: "kotlin", color: "#7F52FF"},
+		"DevOps":                  {slug: "docker", color: "#2496ED"},
+		"Machine Learning":        {slug: "tensorflow", color: "#FF6F00"},
+		"Data Science":            {slug: "pandas", color: "#150458"},
+		"Cloud Computing":         {slug: "googlecloud", color: "#4285F4"},
+		"Database Administration": {slug: "postgresql", color: "#4169E1"},
+		"Cybersecurity":           {slug: "letsencrypt", color: "#003A70"},
+		"Testing & QA":            {slug: "pytest", color: "#0A9EDC"},
+		"UI/UX Design":            {slug: "figma", color: "#F24E1E"},
+		"Product Management":      {slug: "jira", color: "#0052CC"},
+		"Game Development":        {slug: "unity", color: "#000000"},
+		"Blockchain":              {slug: "ethereum", color: "#3C3C3D"},
+		"Embedded Systems":        {slug: "arduino", color: "#00878F"},
+		"AR/VR Development":       {slug: "oculus", color: "#1C1E20"},
+		"Technical Writing":       {slug: "markdown", color: "#000000"},
+		"Scrum & Agile":           {slug: "jira", color: "#0052CC"},
+		"System Architecture":     {slug: "graphql", color: "#E10098"},
+		"Open Source":             {slug: "github", color: "#181717"},
+	}
+
+	spec, ok := iconByBase[base]
+	if !ok || spec.slug == "" {
+		return tdStringPtr(fallbackIcon), tdStringPtr(fallbackColor)
+	}
+
+	return tdStringPtr("https://simpleicons.org/icons/" + spec.slug + ".svg"), tdStringPtr(spec.color)
+}
+
+func tdStringPtr(s string) *string {
+	return &s
 }

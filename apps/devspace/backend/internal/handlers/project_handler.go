@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -15,11 +16,13 @@ import (
 
 type projectHandler struct {
 	projectService services.ProjectService
+	config         *config.Config
 }
 
-func NewProjectHandler(projectService services.ProjectService) *projectHandler {
+func NewProjectHandler(projectService services.ProjectService, config *config.Config) *projectHandler {
 	return &projectHandler{
 		projectService: projectService,
+		config:         config,
 	}
 }
 
@@ -65,7 +68,7 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 		return
 	}
 
-	projectsResponse, err := h.projectService.GetProjects(&query)
+	projectsResponse, err := h.projectService.GetProjects(&query, h.config, c)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -75,15 +78,14 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 }
 
 func (h *projectHandler) GetProjectByID(c *gin.Context) {
-	projectIDStr := c.Param("projectID")
-
-	projectID, err := uuid.Parse(projectIDStr)
+	// получение projectID из параметров
+	projectID, err := getProjectID(c)
 	if err != nil {
-		c.Status(http.StatusNotFound)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	project, err := h.projectService.GetProjectByID(projectID)
+	projectResponse, err := h.projectService.GetProjectByID(projectID, h.config, c)
 	if err != nil {
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.Status(http.StatusNotFound)
@@ -93,14 +95,14 @@ func (h *projectHandler) GetProjectByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, project)
+	c.JSON(http.StatusOK, projectResponse)
 }
 
 func (h *projectHandler) UpdateProjectByID(c *gin.Context) {
 	// получение projectID из параметров
 	projectID, err := getProjectID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
@@ -149,7 +151,7 @@ func (h *projectHandler) DeleteProjectByID(c *gin.Context) {
 	// получение projectID из параметров
 	projectID, err := getProjectID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": services.ErrProjectNotFound.Error()})
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
@@ -189,4 +191,30 @@ func getProjectID(c *gin.Context) (uuid.UUID, error) {
 	}
 
 	return projectID, nil
+}
+
+func (h *projectHandler) ToggleFavorite(c *gin.Context) {
+	projectID, err := getProjectID(c)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID, err := getUserId(c)
+	if err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	toggleFavoriteResponse, err := h.projectService.ToggleFavorite(projectID, userID)
+	if err != nil {
+		if errors.Is(err, services.ErrProjectNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, toggleFavoriteResponse)
 }
