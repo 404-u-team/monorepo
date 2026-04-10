@@ -26,3 +26,4 @@ export {
 } from "./SkillMultiSelect/SkillMultiSelect";
 export { Logo, type LogoProps } from "./Logo/Logo";
 export { UserAvatar, type UserAvatarProps } from "./UserAvatar/UserAvatar";
+export { PageLoader } from "./PageLoader/PageLoader";

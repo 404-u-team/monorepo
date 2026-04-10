@@ -1,0 +1,283 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text--primary);
+  margin: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--border--divider);
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text--secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--text--primary);
+  }
+
+  &.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text--primary);
+  margin: 0;
+}
+
+// ── Skills tree ──────────────────────────────────────────────
+.skillTree {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.categoryBlock {
+  border: 1px solid var(--border--divider);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.categoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--bg--surface);
+  gap: 12px;
+}
+
+.categoryName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text--primary);
+}
+
+.categoryDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.categoryInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.childList {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.childRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  gap: 10px;
+
+  &:hover {
+    background-color: var(--bg--surface);
+  }
+}
+
+.childName {
+  font-size: 14px;
+  color: var(--text--primary);
+  flex: 1;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+// ── Add form ──────────────────────────────────────────────
+.addForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px;
+  background-color: var(--bg--surface);
+  border: 1px solid var(--border--divider);
+  border-radius: 10px;
+  align-items: flex-end;
+}
+
+.addFormTitle {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text--secondary);
+  margin: 0 0 4px;
+}
+
+.addFormField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 160px;
+
+  label {
+    font-size: 12px;
+    color: var(--text--secondary);
+  }
+}
+
+// ── Table ──────────────────────────────────────────────
+.table {
+  border: 1px solid var(--border--divider);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  padding: 10px 16px;
+  background-color: var(--bg--surface);
+  border-bottom: 1px solid var(--border--divider);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  gap: 12px;
+}
+
+.tableRow {
+  display: grid;
+  padding: 12px 16px;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border--divider);
+  transition: background-color 0.1s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--bg--surface);
+  }
+}
+
+.ideasGrid {
+  grid-template-columns: 1fr 180px 130px 80px;
+}
+
+.projectsGrid {
+  grid-template-columns: 1fr 180px 90px 80px;
+}
+
+.cellTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text--primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellSecondary {
+  font-size: 13px;
+  color: var(--text--secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.statusOpen {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--status--success);
+  background-color: color-mix(in srgb, var(--status--success) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.statusClosed {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text--secondary);
+  background-color: var(--bg--surface);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.searchRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.noAccess {
+  text-align: center;
+  padding: 80px 24px;
+  color: var(--text--secondary);
+}
+
+.noAccessTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text--primary);
+  margin: 0 0 12px;
+}

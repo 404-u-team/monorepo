@@ -9,6 +9,8 @@ interface RawIdea {
   content?: string;
   category?: string;
   author_id: string;
+  is_author?: boolean;
+  is_favorite?: boolean;
   created_at: string;
   updated_at: string;
   views_count?: number;
@@ -23,6 +25,8 @@ function mapIdea(data: RawIdea): IIdea {
     content: data.content,
     category: data.category,
     author_id: data.author_id,
+    is_author: data.is_author,
+    is_favorite: data.is_favorite,
     created_at: data.created_at,
     updated_at: data.updated_at,
     views_count: data.views_count ?? 0,
@@ -45,7 +49,9 @@ export interface FetchIdeasParameters {
   limit?: number | undefined;
   search?: string | undefined;
   author_id?: string | undefined;
-  favorites?: boolean | undefined;
+  is_favorite?: boolean | undefined;
+  views?: "asc" | "desc" | undefined;
+  favorites?: "asc" | "desc" | undefined;
 }
 
 export interface PaginatedIdeas {
@@ -55,17 +61,21 @@ export interface PaginatedIdeas {
   hasMore: boolean;
 }
 
+interface GetIdeasResponse {
+  total: number;
+  ideas: RawIdea[];
+}
+
 export async function fetchIdeas(parameters?: FetchIdeasParameters): Promise<PaginatedIdeas> {
   const limit = parameters?.limit ?? 20;
   const startAt = parameters?.start_at ?? 0;
-  const response = await apiClient.get<RawIdea[]>("/ideas", { params: parameters });
+  const response = await apiClient.get<GetIdeasResponse>("/ideas", { params: parameters });
 
-  const items = response.data.map((item) => mapIdea(item));
+  const { total, ideas } = response.data;
+  const items = ideas.map((item) => mapIdea(item));
 
-  const hasMore = items.length >= limit;
-  const currentPage = Math.floor(startAt / limit) + 1;
-  const totalPages = hasMore ? currentPage + 1 : currentPage;
-  const total = startAt + items.length + (hasMore ? 1 : 0);
+  const totalPages = Math.ceil(total / limit) || 1;
+  const hasMore = startAt + items.length < total;
 
   return {
     items,

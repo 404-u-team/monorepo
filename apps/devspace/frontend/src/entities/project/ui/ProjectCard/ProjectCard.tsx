@@ -20,6 +20,7 @@ import styles from "./ProjectCard.module.scss";
 export interface ProjectCardProps {
   projectId: string;
   to?: string | undefined;
+  fromRoute?: string | undefined;
   className?: string | undefined;
 }
 
@@ -34,7 +35,12 @@ const STATUS_LABEL: Record<IProject["status"], string> = {
   closed: "Closed",
 };
 
-export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX.Element {
+export function ProjectCard({
+  projectId,
+  to,
+  fromRoute,
+  className,
+}: ProjectCardProps): JSX.Element {
   const [project, setProject] = useState<IProjectDetailResponse | undefined>(undefined);
   const [slotUsers, setSlotUsers] = useState<SlotUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,7 +97,8 @@ export function ProjectCard({ projectId, to, className }: ProjectCardProps): JSX
   }
 
   const Wrapper = to !== undefined ? Link : "article";
-  const wrapperProps = to !== undefined ? { to } : {};
+  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
+  const wrapperProps = to !== undefined ? { to, state: linkState } : {};
 
   return (
     <Wrapper

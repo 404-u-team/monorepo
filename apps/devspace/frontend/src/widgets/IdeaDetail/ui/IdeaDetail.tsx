@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "@tanstack/react-router";
+import { useParams, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
 import { Heart, Eye, ArrowLeft, Rocket, Pencil, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState, useRef, type JSX } from "react";
@@ -15,6 +15,9 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
   const { ideaId } = useParams({ from: "/idea/$ideaId" });
   const { userStore } = useStore() as unknown as { userStore: UserStore };
   const navigate = useNavigate();
+  const location = useLocation();
+  const router = useRouter();
+  const backTo = (location.state as { backTo?: string } | null)?.backTo;
 
   const [idea, setIdea] = useState<IIdea | undefined>(undefined);
   const [author, setAuthor] = useState<IUserResponse | undefined>(undefined);
@@ -140,10 +143,18 @@ export const IdeaDetail = observer(function IdeaDetail(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Link to="/ideas" className={styles.backLink}>
-        <ArrowLeft size={16} />
-        Назад к списку
-      </Link>
+      {backTo !== undefined && (
+        <button
+          type="button"
+          className={styles.backLink}
+          onClick={() => {
+            router.history.back();
+          }}
+        >
+          <ArrowLeft size={16} />
+          Назад к списку
+        </button>
+      )}
 
       <header className={styles.header}>
         <div className={styles.titleWrapper}>

@@ -18,3 +18,15 @@ export async function fetchSkillById(skillId: string): Promise<ISkill> {
   const response = await apiClient.get<ISkill>(`/skills/${skillId}`);
   return response.data;
 }
+
+export async function createSkill(data: {
+  name: string;
+  parent_id?: string | undefined;
+}): Promise<ISkill> {
+  const response = await apiClient.post<ISkill>("/skills", data);
+  return response.data;
+}
+
+export async function deleteSkill(skillId: string, cascade = false): Promise<void> {
+  await apiClient.delete(`/skills/${skillId}`, { params: cascade ? { cascade: true } : undefined });
+}

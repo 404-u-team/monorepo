@@ -4,8 +4,10 @@ import { type JSX, useCallback } from "react";
 import { fetchSkills } from "@/entities/skill";
 import { UserCard } from "@/entities/user";
 import type { IUserResponse } from "@/entities/user";
+import { setPageSize, PAGE_SIZE_OPTIONS, type PageSize } from "@/shared/lib/pageSize";
 import {
   DataListLayout,
+  Dropdown,
   SkillSearch,
   SkillMultiSelect,
   type SkillSearchOption,
@@ -17,14 +19,21 @@ interface SearchParameters {
   search?: string | undefined;
   main_role?: string | undefined;
   skills?: string[] | undefined;
+  limit?: number | undefined;
 }
 
 export interface UserListProps {
   users: IUserResponse[];
   totalPages: number;
+  total: number;
 }
 
-export function UserList({ users, totalPages }: UserListProps): JSX.Element {
+const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({
+  label: `${String(n)} / стр.`,
+  value: String(n),
+}));
+
+export function UserList({ users, totalPages, total }: UserListProps): JSX.Element {
   const searchParameters: SearchParameters = useSearch({ strict: false });
   const navigate = useNavigate({ from: "/community" });
 
@@ -65,6 +74,15 @@ export function UserList({ users, totalPages }: UserListProps): JSX.Element {
     });
   };
 
+  const handlePageSizeChange = (value: string): void => {
+    const size = Number(value) as PageSize;
+    setPageSize(size);
+    void navigate({
+      search: (previous: SearchParameters) => ({ ...previous, limit: size, page: 1 }),
+    });
+  };
+
+  // Root-level skills (main roles) — no parent_id means root skills per API
   const loadRoles = useCallback(async (query: string): Promise<SkillSearchOption[]> => {
     const skills = await fetchSkills({ search: query || undefined, limit: 20 });
     return skills
@@ -72,6 +90,7 @@ export function UserList({ users, totalPages }: UserListProps): JSX.Element {
       .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
   }, []);
 
+  // Child skills for the skills filter
   const loadSkills = useCallback(async (query: string): Promise<SkillMultiSelectOption[]> => {
     const skills = await fetchSkills({ search: query || undefined, limit: 30 });
     return skills
@@ -79,18 +98,18 @@ export function UserList({ users, totalPages }: UserListProps): JSX.Element {
       .map((skill) => ({ id: skill.id, name: skill.name, color: skill.color }));
   }, []);
 
-  // Build current SkillSearchOption for main_role from URL (need id; name unknown — show empty or fetch)
   const mainRoleValue: SkillSearchOption | undefined =
     searchParameters.main_role !== undefined && searchParameters.main_role !== ""
       ? { id: searchParameters.main_role, name: searchParameters.main_role, color: undefined }
       : undefined;
 
-  // Build current SkillMultiSelectOption[] for skills from URL
   const skillsValue: SkillMultiSelectOption[] = (searchParameters.skills ?? []).map((id) => ({
     id,
     name: id,
     color: undefined,
   }));
+
+  const currentLimit = searchParameters.limit ?? 20;
 
   const filtersNode = (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -116,21 +135,31 @@ export function UserList({ users, totalPages }: UserListProps): JSX.Element {
     </div>
   );
 
+  const controlsNode = (
+    <Dropdown
+      options={pageSizeOptions}
+      value={String(currentLimit)}
+      onChange={handlePageSizeChange}
+    />
+  );
+
   return (
     <DataListLayout
       title="Сообщество"
       subtitle="Найдите специалистов и единомышленников для совместной работы"
       searchValue={(searchParameters as Record<string, string>).search ?? ""}
       onSearchChange={handleSearch}
+      controlsNode={controlsNode}
       filtersNode={filtersNode}
       isEmpty={users.length === 0}
       emptyMessage="Пользователи не найдены"
       currentPage={Number((searchParameters as Record<string, string>).page) || 1}
       totalPages={totalPages}
+      total={total}
       onPageChange={handlePageChange}
     >
       {users.map((user) => (
-        <UserCard key={user.id} id={user.id} to={`/users/${user.id}`} />
+        <UserCard key={user.id} id={user.id} to={`/users/${user.id}`} fromRoute="/community" />
       ))}
     </DataListLayout>
   );

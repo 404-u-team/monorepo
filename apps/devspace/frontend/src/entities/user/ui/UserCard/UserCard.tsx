@@ -16,6 +16,7 @@ import styles from "./UserCard.module.scss";
 export interface UserCardProps {
   id: string;
   to?: string | undefined;
+  fromRoute?: string | undefined;
   className?: string | undefined;
   project_id?: string | undefined;
   slot_id?: string | undefined;
@@ -25,6 +26,7 @@ export interface UserCardProps {
 export function UserCard({
   id,
   to,
+  fromRoute,
   className,
   project_id,
   slot_id,
@@ -85,7 +87,8 @@ export function UserCard({
   }
 
   const Wrapper = to !== undefined ? Link : "article";
-  const wrapperProps = to !== undefined ? { to } : {};
+  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
+  const wrapperProps = to !== undefined ? { to, state: linkState } : {};
 
   const skills = user.skills;
 

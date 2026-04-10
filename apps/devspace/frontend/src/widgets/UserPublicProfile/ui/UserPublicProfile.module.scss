@@ -98,3 +98,83 @@
   color: var(--text--disabled);
   font-style: italic;
 }
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text--secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--text--primary);
+  }
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background-color: var(--bg--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border--divider);
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--border--hover);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+  }
+}
+
+.itemCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.itemTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text--primary);
+}
+
+.itemBadge {
+  flex-shrink: 0;
+}
+
+.itemDescription {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text--secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.open {
+  background-color: color-mix(in srgb, var(--status--success) 15%, transparent);
+  color: var(--status--success);
+}
+
+.closed {
+  background-color: color-mix(in srgb, var(--text--disabled) 15%, transparent);
+  color: var(--text--secondary);
+}

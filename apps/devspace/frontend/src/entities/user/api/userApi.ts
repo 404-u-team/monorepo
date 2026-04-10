@@ -17,30 +17,31 @@ export interface PaginatedUsers {
   hasMore: boolean;
 }
 
+interface GetUsersResponse {
+  total: number;
+  profiles: IUserResponse[];
+}
+
 export async function fetchUsers(parameters?: FetchUsersParameters): Promise<PaginatedUsers> {
   const limit = parameters?.limit ?? 20;
   const startAt = parameters?.start_at ?? 0;
 
-  // Backend expects "username" query parameter, not "search"
-  const { search, skills, ...rest } = parameters ?? {};
-  const apiParameters: Record<string, unknown> = { ...rest, username: search };
-  // skills[] must be passed as repeated query params: skills=a&skills=b
+  const { skills, ...rest } = parameters ?? {};
+  const apiParameters: Record<string, unknown> = { ...rest };
   if (skills && skills.length > 0) {
     apiParameters.skills = skills;
   }
 
-  const response = await apiClient.get<IUserResponse[]>("/users", {
+  const response = await apiClient.get<GetUsersResponse>("/users", {
     params: apiParameters,
     paramsSerializer: { indexes: false },
   });
-  const items = response.data;
+  const { total, profiles } = response.data;
 
-  const hasMore = items.length >= limit;
-  const currentPage = Math.floor(startAt / limit) + 1;
-  const totalPages = hasMore ? currentPage + 1 : currentPage;
-  const total = startAt + items.length + (hasMore ? 1 : 0);
+  const totalPages = Math.ceil(total / limit) || 1;
+  const hasMore = startAt + profiles.length < total;
 
-  return { items, total, totalPages, hasMore };
+  return { items: profiles, total, totalPages, hasMore };
 }
 
 export interface InviteToSlotParameters {
