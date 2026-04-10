@@ -462,15 +462,6 @@ paths:
                                 name:
                                     type: string
                                     description: название
-                                icon:
-                                    type: string
-                                    format: uri
-                                    description: ссылка на иконку
-                                    nullabele: true
-                                color:
-                                    type: string
-                                    description: цвет навыка в hex (#000000)
-                                    nullabele: true
                                 parent_id:
                                     type: string
                                     description: >-
@@ -990,8 +981,6 @@ paths:
                                       is_favorite: false
                                       title: AI Language Learning App
                                       description: Разработка мобильного приложения для изучения языков с AI.
-                                      views_count: 23
-                                      favorites_count: 4
                                       status: open
                                       idea_id: 66666666-7777-8888-9999-000000000000
                                       created_at: "2024-01-15T10:30:00Z"
@@ -1175,9 +1164,6 @@ paths:
                 "204":
                     description: Проект успешно удален
                     headers: {}
-                "400":
-                    description: Некорректный project_id
-                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -1189,47 +1175,6 @@ paths:
                     headers: {}
                 "409":
                     description: Проект нельзя удалить, пока существуют связанные слоты
-                    headers: {}
-                "500":
-                    description: Внутренняя ошибка сервера
-                    headers: {}
-            security:
-                - BearerAuth: []
-    /projects/{project_id}/favorite:
-        post:
-            summary: Добавить/убрать проект из избранного
-            deprecated: false
-            description: Переключает состояние избранного для текущего пользователя.
-            tags:
-                - Проекты
-            parameters:
-                - name: project_id
-                  in: path
-                  description: ID проекта
-                  required: true
-                  schema:
-                      type: string
-                      format: uuid
-            responses:
-                "200":
-                    description: Состояние изменено
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    is_favorite:
-                                        type: boolean
-                                        description: Текущее состояние (true - в избранном)
-                    headers: {}
-                "400":
-                    description: Некорректный project_id
-                    headers: {}
-                "401":
-                    description: Не авторизован
-                    headers: {}
-                "404":
-                    description: Проект не найден
                     headers: {}
                 "500":
                     description: Внутренняя ошибка сервера
@@ -2016,11 +1961,8 @@ components:
                     type: string
                 icon:
                     type: string
-                    format: uri
-                    nullabele: true
                 color:
                     type: string
-                    nullabele: true
                 skills:
                     type: array
                     items:
@@ -2052,11 +1994,8 @@ components:
                     type: string
                 icon:
                     type: string
-                    format: uri
-                    nullabele: true
                 color:
                     type: string
-                    nullabele: true
                 children:
                     type: array
                     items:
@@ -2161,10 +2100,6 @@ components:
                 description:
                     type: string
                     nullable: true
-                views_count:
-                    type: integer
-                favorites_count:
-                    type: integer
                 content:
                     type: string
                     nullable: true
@@ -2201,10 +2136,6 @@ components:
                 description:
                     type: string
                     nullable: true
-                views_count:
-                    type: integer
-                favorites_count:
-                    type: integer
                 status:
                     type: string
                     enum:

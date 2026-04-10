@@ -84,7 +84,7 @@ func (ch *skillsHandler) CreateSkill(context *gin.Context) {
 	var dbErr error
 	var skill *models.SkillCategory
 
-	skill, dbErr = services.CreateSkill(&req, ch.db)
+	skill, dbErr = services.CreateSkill(req.Name, req.ParentId, ch.db)
 	if dbErr != nil {
 		//Навык с таким именем уже есть
 		if errors.Is(dbErr, gorm.ErrDuplicatedKey) {
