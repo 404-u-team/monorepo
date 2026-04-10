@@ -81,18 +81,9 @@ export const IdeaCard = observer(function IdeaCard({
   }
 
   const targetHref = href ?? (ideaId !== "" ? `/idea/${ideaId}` : undefined);
-  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomWrapper = (targetHref !== undefined ? Link : "article") as any;
-  const wrapperProps =
-    targetHref !== undefined
-      ? { to: targetHref, ...(linkState !== undefined ? { state: linkState } : {}) }
-      : {};
-  return (
-    <CustomWrapper
-      {...(wrapperProps as any)}
-      className={clsx(styles.card, targetHref !== undefined && styles.link, className)}
-    >
+
+  const cardContent = (
+    <>
       <div className={styles.imageWrapper}>
         <div className={styles.imagePlaceholder} />
         {idea.category !== undefined && idea.category !== "" && (
@@ -136,6 +127,22 @@ export const IdeaCard = observer(function IdeaCard({
           <IconCounter icon={<Eye size={16} />} count={idea.views_count} />
         </div>
       </div>
-    </CustomWrapper>
+    </>
   );
+
+  if (targetHref !== undefined) {
+    return (
+      <Link
+        to={targetHref}
+        {...(fromRoute !== undefined
+          ? { state: (previous) => ({ ...previous, backTo: fromRoute }) }
+          : {})}
+        className={clsx(styles.card, styles.link, className)}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return <article className={clsx(styles.card, className)}>{cardContent}</article>;
 });

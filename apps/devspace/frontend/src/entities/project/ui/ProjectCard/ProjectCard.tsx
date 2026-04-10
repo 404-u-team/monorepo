@@ -96,19 +96,8 @@ export function ProjectCard({
     }
   }
 
-  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomWrapper = (to !== undefined ? Link : "article") as any;
-  const wrapperProps =
-    to !== undefined
-      ? { to, ...(linkState !== undefined ? { state: linkState } : {}) }
-      : {};
-
-  return (
-    <CustomWrapper
-      {...wrapperProps}
-      className={clsx(styles.card, to !== undefined && styles.link, className)}
-    >
+  const cardContent = (
+    <>
       <div className={styles.imageWrapper}>
         <div className={styles.imagePlaceholder} />
         <Badge className={clsx(styles.statusBadge, styles[project.status])}>
@@ -170,6 +159,22 @@ export function ProjectCard({
           </div>
         )}
       </div>
-    </CustomWrapper>
+    </>
   );
+
+  if (to !== undefined) {
+    return (
+      <Link
+        to={to}
+        {...(fromRoute !== undefined
+          ? { state: (previous) => ({ ...previous, backTo: fromRoute }) }
+          : {})}
+        className={clsx(styles.card, styles.link, className)}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return <article className={clsx(styles.card, className)}>{cardContent}</article>;
 }

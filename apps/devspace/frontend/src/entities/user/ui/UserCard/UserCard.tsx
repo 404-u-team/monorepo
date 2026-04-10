@@ -86,21 +86,10 @@ export function UserCard({
     return <UserCardSkeleton className={className} />;
   }
 
-  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const CustomWrapper = (to !== undefined ? Link : "article") as any;
-  const wrapperProps =
-    to !== undefined
-      ? { to, ...(linkState !== undefined ? { state: linkState } : {}) }
-      : {};
-
   const skills = user.skills;
 
-  return (
-    <CustomWrapper
-      {...wrapperProps}
-      className={clsx(styles.card, to !== undefined && styles.link, className)}
-    >
+  const cardContent = (
+    <>
       <div className={styles.header}>
         <UserAvatar
           avatarUrl={user.avatar_url}
@@ -154,8 +143,24 @@ export function UserCard({
           />
         )}
       </div>
-    </CustomWrapper>
+    </>
   );
+
+  if (to !== undefined) {
+    return (
+      <Link
+        to={to}
+        {...(fromRoute !== undefined
+          ? { state: (previous) => ({ ...previous, backTo: fromRoute }) }
+          : {})}
+        className={clsx(styles.card, styles.link, className)}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return <article className={clsx(styles.card, className)}>{cardContent}</article>;
 }
 
 export default UserCard;

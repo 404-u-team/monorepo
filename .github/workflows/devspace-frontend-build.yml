@@ -45,7 +45,7 @@ jobs:
       - name: Run frontend builder
         if: steps.filter.outputs.frontend == 'true'
         working-directory: apps/devspace/frontend
-        run: bun build
+        run: bun run build
 
       - name: Skip build
         if: steps.filter.outputs.frontend == 'false'
