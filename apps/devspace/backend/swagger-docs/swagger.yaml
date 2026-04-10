@@ -1166,6 +1166,9 @@ paths:
                 "204":
                     description: Проект успешно удален
                     headers: {}
+                "400":
+                    description: Некорректный project_id
+                    headers: {}
                 "401":
                     description: Не авторизован
                     headers: {}
@@ -1177,6 +1180,47 @@ paths:
                     headers: {}
                 "409":
                     description: Проект нельзя удалить, пока существуют связанные слоты
+                    headers: {}
+                "500":
+                    description: Внутренняя ошибка сервера
+                    headers: {}
+            security:
+                - BearerAuth: []
+    /projects/{project_id}/favorite:
+        post:
+            summary: Добавить/убрать проект из избранного
+            deprecated: false
+            description: Переключает состояние избранного для текущего пользователя.
+            tags:
+                - Проекты
+            parameters:
+                - name: project_id
+                  in: path
+                  description: ID проекта
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                "200":
+                    description: Состояние изменено
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    is_favorite:
+                                        type: boolean
+                                        description: Текущее состояние (true - в избранном)
+                    headers: {}
+                "400":
+                    description: Некорректный project_id
+                    headers: {}
+                "401":
+                    description: Не авторизован
+                    headers: {}
+                "404":
+                    description: Проект не найден
                     headers: {}
                 "500":
                     description: Внутренняя ошибка сервера

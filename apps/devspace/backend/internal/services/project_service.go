@@ -19,6 +19,7 @@ type ProjectService interface {
 	GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*dto.GetProjectResponse, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
+	ToggleFavorite(projectID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error)
 }
 
 type projectService struct {
@@ -84,7 +85,7 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID, config *config.Conf
 	// получаем userID, если зарегистрирован пользователей для доп информации о идее
 	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
 
-	projectResponse, err := s.projectRepo.GetProjectByID(projectID, userID)
+	projectResponse, err := s.projectRepo.GetProjectByIDIncr(projectID, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrProjectNotFound
@@ -150,4 +151,18 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (s *projectService) ToggleFavorite(projectID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error) {
+	isFavorite, err := s.projectRepo.ToggleFavorite(projectID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	toggleFavoriteResponse := dto.ToggleFavoriteResponse{IsFavorite: isFavorite}
+
+	return &toggleFavoriteResponse, nil
 }
