@@ -14,9 +14,9 @@ import (
 )
 
 type ProjectService interface {
-	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
+	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*dto.GetProjectResponse, error)
 	GetProjects(query *dto.GetProjectsQuery, config *config.Config, c *gin.Context) (*dto.GetProjectsResponse, error)
-	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
+	GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error)
 	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
 }
@@ -30,7 +30,7 @@ func NewProjectService(projectRepo repository.ProjectRepository, userRepo reposi
 	return &projectService{projectRepo: projectRepo, userRepo: userRepo}
 }
 
-func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error) {
+func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*dto.GetProjectResponse, error) {
 	// проверка на наличие уже проекта с таким названием
 	exists, err := s.projectRepo.IsProjectExistsByTitle(payload.Title)
 	if err != nil {
@@ -55,11 +55,16 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	if payload.Content != nil {
 		project.Content = payload.Content
 	}
-	if err := s.projectRepo.CreateProject(project); err != nil {
+
+	projectResponse, err := s.projectRepo.CreateProject(project)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrProjectConflict
+		}
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
 func (s *projectService) GetProjects(query *dto.GetProjectsQuery, config *config.Config, c *gin.Context) (*dto.GetProjectsResponse, error) {
@@ -75,8 +80,11 @@ func (s *projectService) GetProjects(query *dto.GetProjectsQuery, config *config
 	return &projectsResponse, nil
 }
 
-func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
-	project, err := s.projectRepo.GetProjectByID(projectID)
+func (s *projectService) GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error) {
+	// получаем userID, если зарегистрирован пользователей для доп информации о идее
+	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
+
+	projectResponse, err := s.projectRepo.GetProjectByID(projectID, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrProjectNotFound
@@ -84,7 +92,7 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
 func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error) {

@@ -79,7 +79,6 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 
 func (h *projectHandler) GetProjectByID(c *gin.Context) {
 	projectIDStr := c.Param("projectID")
-
 	projectID, err := uuid.Parse(projectIDStr)
 	if err != nil {
 		c.Status(http.StatusNotFound)

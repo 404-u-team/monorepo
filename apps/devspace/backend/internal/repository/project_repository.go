@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -12,9 +13,9 @@ import (
 
 type ProjectRepository interface {
 	IsProjectExistsByTitle(title string) (bool, error)
-	CreateProject(project *models.Project) error
+	CreateProject(project *models.Project) (*dto.GetProjectResponse, error)
 	GetProjects(query *dto.GetProjectsQuery, userID uuid.UUID) ([]dto.ProjectBlock, int64, error)
-	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
+	GetProjectByID(projectID, userID uuid.UUID) (*dto.GetProjectResponse, error)
 	GetProjectByTitle(title string) (*models.Project, error)
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
 	DeleteProjectByID(projectID uuid.UUID) (int, error)
@@ -45,27 +46,36 @@ func (r *projectRepository) IsProjectExistsByTitle(title string) (bool, error) {
 	return count > 0, nil
 }
 
-func (r *projectRepository) CreateProject(project *models.Project) error {
+func (r *projectRepository) CreateProject(project *models.Project) (*dto.GetProjectResponse, error) {
 	var count int64
 	if err := r.conn.Model(&models.User{}).
 		Where("id = ?", project.LeaderID).
 		Count(&count).Error; err != nil {
 		log.Println("Ошибка при проверке наличия проекта: ", err)
-		return err
+		return nil, err
 	}
 	if count == 0 {
 		err := fmt.Errorf("не найден пользователь с таким ID, невозможно создать проект")
 		log.Println("Ошибка при создании проекта (не найден пользователь с таким ID): ", err)
-		return err
+		return nil, err
 	}
 
 	result := r.conn.Create(project)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return nil, gorm.ErrDuplicatedKey
+		}
 		log.Println("Ошибка при создании проекта: ", result.Error)
-		return result.Error
+		return nil, result.Error
 	}
 
-	return nil
+	projectResponse, err := r.GetProjectByID(project.ID, project.LeaderID)
+	if err != nil {
+		log.Println("Ошибка при создании проекта (получение projectResponse): ", result.Error)
+		return nil, result.Error
+	}
+
+	return projectResponse, nil
 }
 
 func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery, userID uuid.UUID) ([]dto.ProjectBlock, int64, error) {
@@ -199,15 +209,19 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery, userID uuid
 	return projects, total, nil
 }
 
-func (r *projectRepository) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
-	var project models.Project
-	result := r.conn.First(&project, "id = ?", projectID)
-	if result.Error != nil {
+func (r *projectRepository) GetProjectByID(projectID, userID uuid.UUID) (*dto.GetProjectResponse, error) {
+	var projectResponse dto.GetProjectResponse
+	result := r.conn.Table("Idea").Select(`id, leader_id, is_leader = ? AS is_leader, COALESCE("User_Favorite_Project".project_id IS NOT NULL, false) AS is_favorite, 
+		title, description, content, views_count, favorites_count, status, created_at, updated_at`, userID).
+		Joins(`LEFT JOIN "User_Favorite_Idea" ON "User_Favorite_Idea".idea_id = "Idea".id AND "User_Favorite_Idea".user_id = ?`, userID).
+		Where("id = ?", projectID)
+
+	if err := result.First(&projectResponse).Error; err != nil {
 		log.Println("Ошибка при получении проекта по ID: ", result.Error)
 		return nil, result.Error
 	}
 
-	return &project, nil
+	return &projectResponse, nil
 }
 
 func (r *projectRepository) GetProjectByTitle(title string) (*models.Project, error) {
