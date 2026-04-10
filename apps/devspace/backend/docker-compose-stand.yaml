@@ -28,6 +28,8 @@ services:
             - .env.stand
         ports:
             - "8900:8900"
+        expose:
+          - '8900'
 
 volumes:
     db_data:
