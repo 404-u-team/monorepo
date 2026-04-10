@@ -85,7 +85,7 @@ func (h *projectHandler) GetProjectByID(c *gin.Context) {
 		return
 	}
 
-	project, err := h.projectService.GetProjectByID(projectID)
+	projectResponse, err := h.projectService.GetProjectByID(projectID, h.config, c)
 	if err != nil {
 		if errors.Is(err, services.ErrProjectNotFound) {
 			c.Status(http.StatusNotFound)
@@ -95,7 +95,7 @@ func (h *projectHandler) GetProjectByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, project)
+	c.JSON(http.StatusOK, projectResponse)
 }
 
 func (h *projectHandler) UpdateProjectByID(c *gin.Context) {

@@ -17,7 +17,7 @@ type ProjectService interface {
 	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*dto.GetProjectResponse, error)
 	GetProjects(query *dto.GetProjectsQuery, config *config.Config, c *gin.Context) (*dto.GetProjectsResponse, error)
 	GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error)
-	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
+	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*dto.GetProjectResponse, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
 }
 
@@ -95,7 +95,7 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID, config *config.Conf
 	return projectResponse, nil
 }
 
-func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error) {
+func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*dto.GetProjectResponse, error) {
 	// является ли пользователь владельцем данного проекта
 	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
@@ -119,12 +119,12 @@ func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRe
 	}
 
 	// получаем обновленный проект для возвращения
-	project, err := s.projectRepo.GetProjectByID(projectID)
+	projectResponse, err := s.projectRepo.GetProjectByID(projectID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
 func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
