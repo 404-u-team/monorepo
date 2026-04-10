@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
@@ -15,11 +16,13 @@ import (
 
 type projectHandler struct {
 	projectService services.ProjectService
+	config         *config.Config
 }
 
-func NewProjectHandler(projectService services.ProjectService) *projectHandler {
+func NewProjectHandler(projectService services.ProjectService, config *config.Config) *projectHandler {
 	return &projectHandler{
 		projectService: projectService,
+		config:         config,
 	}
 }
 
@@ -65,7 +68,7 @@ func (h *projectHandler) GetProjects(c *gin.Context) {
 		return
 	}
 
-	projectsResponse, err := h.projectService.GetProjects(&query)
+	projectsResponse, err := h.projectService.GetProjects(&query, h.config, c)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

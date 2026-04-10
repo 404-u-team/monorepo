@@ -13,7 +13,7 @@ import (
 type ProjectRepository interface {
 	IsProjectExistsByTitle(title string) (bool, error)
 	CreateProject(project *models.Project) error
-	GetProjects(query *dto.GetProjectsQuery) ([]models.Project, int64, error)
+	GetProjects(query *dto.GetProjectsQuery, userID uuid.UUID) ([]dto.ProjectBlock, int64, error)
 	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
 	GetProjectByTitle(title string) (*models.Project, error)
 	UpdateProjectbyID(projectID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (int, error)
@@ -68,9 +68,12 @@ func (r *projectRepository) CreateProject(project *models.Project) error {
 	return nil
 }
 
-func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.Project, int64, error) {
-	var projects []models.Project
-	result := r.conn.Model(&models.Project{})
+func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery, userID uuid.UUID) ([]dto.ProjectBlock, int64, error) {
+	result := r.conn.Table("Project").
+		Select(`id, leader_id, is_leader = ? AS is_leader, COALESCE("User_Favorite_Project".project_id IS NOT NULL, false) AS is_favorite, 
+		title, description, views_count, favorites_count, status, created_at, updated_at`, userID).
+		Joins(`LEFT JOIN "User_Favorite_Project" ON "User_Favorite_Project".project_id = "Project".id AND "User_Favorite_Project".user_id = ?`, userID)
+
 	if query.Status != nil {
 		if *query.Status == "open" || *query.Status == "closed" {
 			result = result.Where("status = ?", *query.Status)
@@ -96,7 +99,7 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 
 	if query.SlotsSkills != nil {
 		if len(*query.SlotsSkills) == 0 {
-			return []models.Project{}, 0, nil
+			return []dto.ProjectBlock{}, 0, nil
 		}
 
 		// находим через subquery список id проектов у которых есть
@@ -148,7 +151,7 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 		if len(projectIDs) > 0 {
 			result = result.Where("id IN ?", projectIDs)
 		} else {
-			return []models.Project{}, 0, nil
+			return []dto.ProjectBlock{}, 0, nil
 		}
 	}
 
@@ -186,6 +189,7 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery) ([]models.P
 		result = result.Limit(50)
 	}
 
+	var projects []dto.ProjectBlock
 	result = result.Find(&projects)
 	if result.Error != nil {
 		log.Println("Ошибка при получения списка проектов: ", result.Error)

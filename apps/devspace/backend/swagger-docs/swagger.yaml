@@ -981,6 +981,8 @@ paths:
                                       is_favorite: false
                                       title: AI Language Learning App
                                       description: Разработка мобильного приложения для изучения языков с AI.
+                                      views_count: 23
+                                      favorites_count: 4
                                       status: open
                                       idea_id: 66666666-7777-8888-9999-000000000000
                                       created_at: "2024-01-15T10:30:00Z"
@@ -2100,6 +2102,10 @@ components:
                 description:
                     type: string
                     nullable: true
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
                 content:
                     type: string
                     nullable: true
@@ -2136,6 +2142,10 @@ components:
                 description:
                     type: string
                     nullable: true
+                views_count:
+                    type: integer
+                favorites_count:
+                    type: integer
                 status:
                     type: string
                     enum:
