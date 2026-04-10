@@ -27,7 +27,7 @@ services:
         env_file:
             - .env.stand
         ports:
-            - "8080:8080"
+            - "8900:8900"
 
 volumes:
     db_data:
