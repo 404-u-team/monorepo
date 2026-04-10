@@ -81,13 +81,16 @@ export const IdeaCard = observer(function IdeaCard({
   }
 
   const targetHref = href ?? (ideaId !== "" ? `/idea/${ideaId}` : undefined);
-  const Wrapper = targetHref !== undefined ? Link : "article";
   const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  const wrapperProps = targetHref !== undefined ? { to: targetHref, state: linkState } : {};
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const CustomWrapper = (targetHref !== undefined ? Link : "article") as any;
+  const wrapperProps =
+    targetHref !== undefined
+      ? { to: targetHref, ...(linkState !== undefined ? { state: linkState } : {}) }
+      : {};
   return (
-    <Wrapper
-      {...wrapperProps}
+    <CustomWrapper
+      {...(wrapperProps as any)}
       className={clsx(styles.card, targetHref !== undefined && styles.link, className)}
     >
       <div className={styles.imageWrapper}>
@@ -133,6 +136,6 @@ export const IdeaCard = observer(function IdeaCard({
           <IconCounter icon={<Eye size={16} />} count={idea.views_count} />
         </div>
       </div>
-    </Wrapper>
+    </CustomWrapper>
   );
 });

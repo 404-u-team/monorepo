@@ -92,6 +92,7 @@ export const Default: Story = {
   args: {
     projects: [{ id: "1" } as IProject, { id: "2" } as IProject],
     totalPages: 5,
+    total: 10,
   },
 };
 
@@ -99,5 +100,6 @@ export const Empty: Story = {
   args: {
     projects: [],
     totalPages: 0,
+    total: 0,
   },
 };

@@ -1,0 +1,52 @@
+name: Devspace Frontend Builder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'apps/devspace/frontend/**'
+
+jobs:
+  build-frontend:
+    name: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect frontend changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/devspace/frontend/**'
+
+      - name: Setup Bun
+        if: steps.filter.outputs.frontend == 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun dependencies
+        if: steps.filter.outputs.frontend == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('apps/devspace/frontend/bun.lock*') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        if: steps.filter.outputs.frontend == 'true'
+        working-directory: apps/devspace/frontend
+        run: bun install
+
+      - name: Run frontend builder
+        if: steps.filter.outputs.frontend == 'true'
+        working-directory: apps/devspace/frontend
+        run: bun build
+
+      - name: Skip build
+        if: steps.filter.outputs.frontend == 'false'
+        run: echo "No frontend changes, skipping."
