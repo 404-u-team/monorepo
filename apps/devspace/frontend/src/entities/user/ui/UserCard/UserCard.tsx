@@ -86,17 +86,10 @@ export function UserCard({
     return <UserCardSkeleton className={className} />;
   }
 
-  const Wrapper = to !== undefined ? Link : "article";
-  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  const wrapperProps = to !== undefined ? { to, state: linkState } : {};
-
   const skills = user.skills;
 
-  return (
-    <Wrapper
-      {...wrapperProps}
-      className={clsx(styles.card, to !== undefined && styles.link, className)}
-    >
+  const cardContent = (
+    <>
       <div className={styles.header}>
         <UserAvatar
           avatarUrl={user.avatar_url}
@@ -150,8 +143,24 @@ export function UserCard({
           />
         )}
       </div>
-    </Wrapper>
+    </>
   );
+
+  if (to !== undefined) {
+    return (
+      <Link
+        to={to}
+        {...(fromRoute !== undefined
+          ? { state: (previous) => ({ ...previous, backTo: fromRoute }) }
+          : {})}
+        className={clsx(styles.card, styles.link, className)}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return <article className={clsx(styles.card, className)}>{cardContent}</article>;
 }
 
 export default UserCard;

@@ -6,5 +6,5 @@
   "semi": true,
   "singleQuote": false,
   "sortImports": true,
-  "endOfLine": "lf"
+  "endOfLine": "crlf"
 }

@@ -519,7 +519,7 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
             </div>
           )}
 
-          {project.content !== null && project.content !== "" && (
+          {project.content !== null && project.content !== undefined && project.content !== "" && (
             <div className={styles.descriptionSection}>
               <h2 className={styles.sectionTitle}>Содержание</h2>
               <MdRenderer source={project.content} />

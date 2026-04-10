@@ -87,6 +87,7 @@ export const Default: Story = {
   args: {
     ideas: MOCK_IDEAS,
     totalPages: 5,
+    total: MOCK_IDEAS.length,
   },
 };
 
@@ -94,5 +95,6 @@ export const Empty: Story = {
   args: {
     ideas: [],
     totalPages: 0,
+    total: 0,
   },
 };

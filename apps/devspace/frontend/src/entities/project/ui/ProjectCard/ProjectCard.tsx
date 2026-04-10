@@ -96,15 +96,8 @@ export function ProjectCard({
     }
   }
 
-  const Wrapper = to !== undefined ? Link : "article";
-  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
-  const wrapperProps = to !== undefined ? { to, state: linkState } : {};
-
-  return (
-    <Wrapper
-      {...wrapperProps}
-      className={clsx(styles.card, to !== undefined && styles.link, className)}
-    >
+  const cardContent = (
+    <>
       <div className={styles.imageWrapper}>
         <div className={styles.imagePlaceholder} />
         <Badge className={clsx(styles.statusBadge, styles[project.status])}>
@@ -166,6 +159,22 @@ export function ProjectCard({
           </div>
         )}
       </div>
-    </Wrapper>
+    </>
   );
+
+  if (to !== undefined) {
+    return (
+      <Link
+        to={to}
+        {...(fromRoute !== undefined
+          ? { state: (previous) => ({ ...previous, backTo: fromRoute }) }
+          : {})}
+        className={clsx(styles.card, styles.link, className)}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return <article className={clsx(styles.card, className)}>{cardContent}</article>;
 }
