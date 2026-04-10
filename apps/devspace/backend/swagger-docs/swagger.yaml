@@ -464,10 +464,13 @@ paths:
                                     description: название
                                 icon:
                                     type: string
+                                    format: uri
                                     description: ссылка на иконку
+                                    nullabele: true
                                 color:
                                     type: string
                                     description: цвет навыка в hex (#000000)
+                                    nullabele: true
                                 parent_id:
                                     type: string
                                     description: >-
@@ -2013,8 +2016,11 @@ components:
                     type: string
                 icon:
                     type: string
+                    format: uri
+                    nullabele: true
                 color:
                     type: string
+                    nullabele: true
                 skills:
                     type: array
                     items:
@@ -2046,8 +2052,11 @@ components:
                     type: string
                 icon:
                     type: string
+                    format: uri
+                    nullabele: true
                 color:
                     type: string
+                    nullabele: true
                 children:
                     type: array
                     items:
