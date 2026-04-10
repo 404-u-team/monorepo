@@ -3,32 +3,37 @@ package services
 import (
 	"errors"
 
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/config"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/dto"
+	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/middleware"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type ProjectService interface {
-	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error)
-	GetProjects(query *dto.GetProjectsQuery) (*dto.GetProjectsResponse, error)
-	GetProjectByID(projectID uuid.UUID) (*models.Project, error)
-	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error)
+	CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*dto.GetProjectResponse, error)
+	GetProjects(query *dto.GetProjectsQuery, config *config.Config, c *gin.Context) (*dto.GetProjectsResponse, error)
+	GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error)
+	UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*dto.GetProjectResponse, error)
 	DeleteProjectByID(projectID, userID uuid.UUID) error
+	ToggleFavorite(projectID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error)
 }
 
 type projectService struct {
-	repo repository.ProjectRepository
+	projectRepo repository.ProjectRepository
+	userRepo    repository.UserRepository
 }
 
-func NewProjectService(repo repository.ProjectRepository) ProjectService {
-	return &projectService{repo: repo}
+func NewProjectService(projectRepo repository.ProjectRepository, userRepo repository.UserRepository) ProjectService {
+	return &projectService{projectRepo: projectRepo, userRepo: userRepo}
 }
 
-func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*models.Project, error) {
+func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leaderID uuid.UUID) (*dto.GetProjectResponse, error) {
 	// проверка на наличие уже проекта с таким названием
-	exists, err := s.repo.IsProjectExistsByTitle(payload.Title)
+	exists, err := s.projectRepo.IsProjectExistsByTitle(payload.Title)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -51,26 +56,36 @@ func (s *projectService) CreateProject(payload *dto.CreateProjectRequest, leader
 	if payload.Content != nil {
 		project.Content = payload.Content
 	}
-	if err := s.repo.CreateProject(project); err != nil {
+
+	projectResponse, err := s.projectRepo.CreateProject(project)
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrProjectConflict
+		}
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
-func (s *projectService) GetProjects(query *dto.GetProjectsQuery) (*dto.GetProjectsResponse, error) {
-	projects, total, err := s.repo.GetProjects(query)
+func (s *projectService) GetProjects(query *dto.GetProjectsQuery, config *config.Config, c *gin.Context) (*dto.GetProjectsResponse, error) {
+	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
+
+	projectsBlock, total, err := s.projectRepo.GetProjects(query, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	projectsResponse := dto.GetProjectsResponse{Total: total, Projects: projects}
+	projectsResponse := dto.GetProjectsResponse{Total: total, Projects: projectsBlock}
 
 	return &projectsResponse, nil
 }
 
-func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, error) {
-	project, err := s.repo.GetProjectByID(projectID)
+func (s *projectService) GetProjectByID(projectID uuid.UUID, config *config.Config, c *gin.Context) (*dto.GetProjectResponse, error) {
+	// получаем userID, если зарегистрирован пользователей для доп информации о идее
+	userID, _ := middleware.GetUserID(config.JWTSecret, s.userRepo, c)
+
+	projectResponse, err := s.projectRepo.GetProjectByIDIncr(projectID, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrProjectNotFound
@@ -78,12 +93,12 @@ func (s *projectService) GetProjectByID(projectID uuid.UUID) (*models.Project, e
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
-func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*models.Project, error) {
+func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRequest *dto.UpdateProjectRequest) (*dto.GetProjectResponse, error) {
 	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
@@ -92,7 +107,7 @@ func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRe
 	}
 
 	// обновление проекта по ID
-	rowsAffected, err := s.repo.UpdateProjectbyID(projectID, updateRequest)
+	rowsAffected, err := s.projectRepo.UpdateProjectbyID(projectID, updateRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrProjectConflict
@@ -105,17 +120,17 @@ func (s *projectService) UpdateProjectByID(projectID, userID uuid.UUID, updateRe
 	}
 
 	// получаем обновленный проект для возвращения
-	project, err := s.repo.GetProjectByID(projectID)
+	projectResponse, err := s.projectRepo.GetProjectByID(projectID, userID)
 	if err != nil {
 		return nil, ErrInternal
 	}
 
-	return project, nil
+	return projectResponse, nil
 }
 
 func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	// является ли пользователь владельцем данного проекта
-	isUserProjectLeader, err := s.repo.IsUserProjectLeader(projectID, userID)
+	isUserProjectLeader, err := s.projectRepo.IsUserProjectLeader(projectID, userID)
 	if err != nil {
 		return ErrInternal
 	}
@@ -124,7 +139,7 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	}
 
 	// удаление проекта по ID
-	status, err := s.repo.DeleteProjectByID(projectID)
+	status, err := s.projectRepo.DeleteProjectByID(projectID)
 	if err != nil {
 		return ErrInternal
 	}
@@ -136,4 +151,18 @@ func (s *projectService) DeleteProjectByID(projectID, userID uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (s *projectService) ToggleFavorite(projectID, userID uuid.UUID) (*dto.ToggleFavoriteResponse, error) {
+	isFavorite, err := s.projectRepo.ToggleFavorite(projectID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrProjectNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	toggleFavoriteResponse := dto.ToggleFavoriteResponse{IsFavorite: isFavorite}
+
+	return &toggleFavoriteResponse, nil
 }

@@ -18,7 +18,7 @@ func Migrate(connection *gorm.DB) {
 		log.Fatalln("Произошла ошибка при добавления расширения в момент миграции: ", err)
 	}
 
-	if err := connection.AutoMigrate(&models.User{}, &models.Idea{}, &models.Notification{}, &models.Project{}, &models.SkillCategory{}, &models.UserSkill{}, &models.Chat{}, &models.ProjectSlot{}, &models.ProjectRequest{}, &models.Message{}, &models.ChatMember{}, &models.UserFavoriteIdea{}); err != nil {
+	if err := connection.AutoMigrate(&models.User{}, &models.Idea{}, &models.Notification{}, &models.Project{}, &models.SkillCategory{}, &models.UserSkill{}, &models.Chat{}, &models.ProjectSlot{}, &models.ProjectRequest{}, &models.Message{}, &models.ChatMember{}, &models.UserFavoriteIdea{}), &models.UserFavoriteProject{}; err != nil {
 		log.Fatalln("Произошла ошибка при миграции: ", err)
 	}
 }

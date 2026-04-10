@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
-	"github.com/404-u-team/monorepo/apps/devspace/backend/internal/models"
 	"github.com/google/uuid"
 )
 
@@ -36,9 +36,41 @@ type UpdateProjectRequest struct {
 	Content     *string `json:"content"`
 }
 
+type ProjectBlock struct {
+	ID             uuid.UUID  `json:"id"`
+	LeaderID       uuid.UUID  `json:"leader_id"`
+	IsLeader       bool       `json:"is_leader"`
+	IsFavorite     bool       `json:"is_favorite"`
+	Title          string     `json:"title"`
+	Description    *string    `json:"description"`
+	ViewsCount     uint       `json:"views_count"`
+	FavoritesCount uint       `json:"favorites_count"`
+	Status         string     `json:"status"`
+	IdeaID         *uuid.UUID `json:"idea_id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+}
+
 type GetProjectsResponse struct {
-	Total    int64            `json:"total"`
-	Projects []models.Project `json:"projects"`
+	Total    int64          `json:"total"`
+	Projects []ProjectBlock `json:"projects"`
+}
+
+type GetProjectResponse struct {
+	ID             uuid.UUID         `json:"id"`
+	LeaderID       uuid.UUID         `json:"leader_id"`
+	IsLeader       bool              `json:"is_leader"`
+	IsFavorite     bool              `json:"is_favorite"`
+	Title          string            `json:"title"`
+	Description    *string           `json:"description"`
+	Content        *string           `json:"content"`
+	ViewsCount     uint              `json:"views_count"`
+	FavoritesCount uint              `json:"favorites_count"`
+	Status         string            `json:"status"`
+	IdeaID         *uuid.UUID        `json:"idea_id"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UpdatedAt      time.Time         `json:"updated_at"`
+	Slots          []GetSlotResponse `json:"slots"`
 }
 
 // QueryUUID supports form/query binding when value is either plain UUID
