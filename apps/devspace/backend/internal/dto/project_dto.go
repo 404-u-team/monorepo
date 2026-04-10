@@ -37,16 +37,18 @@ type UpdateProjectRequest struct {
 }
 
 type ProjectBlock struct {
-	ID          uuid.UUID  `json:"id"`
-	LeaderID    uuid.UUID  `json:"leader_id"`
-	IsLeader    bool       `json:"is_leader"`
-	IsFavorite  bool       `json:"is_favorite"`
-	Title       string     `json:"title"`
-	Description *string    `json:"description"`
-	Status      string     `json:"status"`
-	IdeaID      *uuid.UUID `json:"idea_id"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID             uuid.UUID  `json:"id"`
+	LeaderID       uuid.UUID  `json:"leader_id"`
+	IsLeader       bool       `json:"is_leader"`
+	IsFavorite     bool       `json:"is_favorite"`
+	Title          string     `json:"title"`
+	Description    *string    `json:"description"`
+	ViewsCount     uint       `json:"views_count"`
+	FavoritesCount uint       `json:"favorites_count"`
+	Status         string     `json:"status"`
+	IdeaID         *uuid.UUID `json:"idea_id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
 type GetProjectsResponse struct {

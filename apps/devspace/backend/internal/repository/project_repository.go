@@ -73,8 +73,8 @@ func (r *projectRepository) CreateProject(project *models.Project) (*dto.GetProj
 
 	projectResponse, err := r.GetProjectByID(project.ID, project.LeaderID)
 	if err != nil {
-		log.Println("Ошибка при создании проекта (получение projectResponse): ", result.Error)
-		return nil, result.Error
+		log.Println("Ошибка при создании проекта (получение projectResponse): ", err)
+		return nil, err
 	}
 
 	return projectResponse, nil
@@ -83,7 +83,7 @@ func (r *projectRepository) CreateProject(project *models.Project) (*dto.GetProj
 func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery, userID uuid.UUID) ([]dto.ProjectBlock, int64, error) {
 	result := r.conn.Table("Project").
 		Select(`id, leader_id, leader_id = ? AS is_leader, COALESCE("User_Favorite_Project".project_id IS NOT NULL, false) AS is_favorite, 
-		title, description, views_count, favorites_count, status, created_at, updated_at`, userID).
+		title, description, views_count, favorites_count, status, idea_id, created_at, updated_at`, userID).
 		Joins(`LEFT JOIN "User_Favorite_Project" ON "User_Favorite_Project".project_id = "Project".id AND "User_Favorite_Project".user_id = ?`, userID)
 
 	if query.Status != nil {
@@ -219,8 +219,8 @@ func (r *projectRepository) GetProjectByID(projectID, userID uuid.UUID) (*dto.Ge
 		Where("id = ?", projectID)
 
 	if err := result.First(&projectResponse).Error; err != nil {
-		log.Println("Ошибка при получении проекта по ID: ", result.Error)
-		return nil, result.Error
+		log.Println("Ошибка при получении проекта по ID: ", err)
+		return nil, err
 	}
 
 	slots, err := r.loadProjectSlots(projectID)

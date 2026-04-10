@@ -462,6 +462,12 @@ paths:
                                 name:
                                     type: string
                                     description: название
+                                icon:
+                                    type: string
+                                    description: ссылка на иконку
+                                color:
+                                    type: string
+                                    description: цвет навыка в hex (#000000)
                                 parent_id:
                                     type: string
                                     description: >-
