@@ -10,7 +10,7 @@ import (
 
 type ProjectRequestRepository interface {
 	CreateProjectRequest(projectRequest *models.ProjectRequest) error
-	UpdateProjectRequest(requestID uuid.UUID, status string) (int, error)
+	UpdateProjectRequestStatus(requestID uuid.UUID, status string) (int, error)
 	GetProjectIDByRequestID(requestID uuid.UUID) (uuid.UUID, error)
 	GetProjectRequestByID(requestID uuid.UUID) (*models.ProjectRequest, error)
 	GetProjectRequests(projectID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error)
@@ -34,7 +34,6 @@ func (r *projectRequestRepository) WithTx(tx *gorm.DB) ProjectRequestRepository 
 func (r *projectRequestRepository) Transaction(fn func(tx *gorm.DB) error) error {
 	err := r.conn.Transaction(fn)
 	if err != nil {
-		log.Println("Ошибка при выполнении транзакции project request repository: ", err)
 		return err
 	}
 
@@ -51,7 +50,7 @@ func (r *projectRequestRepository) CreateProjectRequest(projectRequest *models.P
 	return nil
 }
 
-func (r *projectRequestRepository) UpdateProjectRequest(requestID uuid.UUID, status string) (int, error) {
+func (r *projectRequestRepository) UpdateProjectRequestStatus(requestID uuid.UUID, status string) (int, error) {
 	updates := map[string]interface{}{"status": status}
 
 	result := r.conn.Model(&models.ProjectRequest{}).Where("id = ?", requestID).Updates(updates)

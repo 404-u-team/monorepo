@@ -54,8 +54,8 @@ func (r *projectRepository) CreateProject(project *models.Project) error {
 		return err
 	}
 	if count == 0 {
-		err := fmt.Errorf("не найден пользователей с таким ID, невозможно создать проекта")
-		log.Println("Ошибка при создании проекта (не найден пользователей с таким ID): ", err)
+		err := fmt.Errorf("не найден пользователь с таким ID, невозможно создать проект")
+		log.Println("Ошибка при создании проекта (не найден пользователь с таким ID): ", err)
 		return err
 	}
 

@@ -15,7 +15,7 @@ import (
 type ProjectRequestService interface {
 	CreateProjectRequestApply(payload *dto.CreateProjectRequestApplyRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
 	CreateProjectRequestInvite(payload *dto.CreateProjectRequestInviteRequest, slotID, userID, projectID uuid.UUID) (*models.ProjectRequest, error)
-	UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error)
+	UpdateProjectRequestStatus(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error)
 	GetProjectRequests(projectID, userID uuid.UUID, slotID *uuid.UUID, status *string) ([]models.ProjectRequest, error)
 	GetUserRequests(userID uuid.UUID) ([]models.ProjectRequest, error)
 }
@@ -151,7 +151,7 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 		SlotID: slotID,
 		UserID: payloadUserID,
 		Type:   "invite",
-		Status: "open",
+		Status: "pending",
 	}
 	if payload.CoverLetter != nil {
 		projectRequest.CoverLetter = *payload.CoverLetter
@@ -168,7 +168,7 @@ func (s *projectRequestService) CreateProjectRequestInvite(payload *dto.CreatePr
 	return &projectRequest, nil
 }
 
-func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error) {
+func (s *projectRequestService) UpdateProjectRequestStatus(requestID, userID uuid.UUID, status string) (*models.ProjectRequest, error) {
 	var updatedProjectRequest *models.ProjectRequest
 
 	err := s.projectRequestRepo.Transaction(func(tx *gorm.DB) error {
@@ -215,7 +215,7 @@ func (s *projectRequestService) UpdateProjectRequest(requestID, userID uuid.UUID
 		}
 
 		// обновление заявки
-		rowsAffected, err := projectRequestRepo.UpdateProjectRequest(requestID, status)
+		rowsAffected, err := projectRequestRepo.UpdateProjectRequestStatus(requestID, status)
 		if err != nil {
 			return fmt.Errorf("%w: update project request failed: %v", ErrInternal, err)
 		}
