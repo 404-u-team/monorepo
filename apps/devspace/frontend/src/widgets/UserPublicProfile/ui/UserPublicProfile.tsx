@@ -1,5 +1,11 @@
-import { type JSX } from "react";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useState, type JSX } from "react";
 
+import { fetchIdeas } from "@/entities/idea";
+import type { IIdea } from "@/entities/idea";
+import { fetchProjects } from "@/entities/project";
+import type { IProject } from "@/entities/project";
 import type { IUserResponse } from "@/entities/user";
 import { isValidMainRole } from "@/entities/user/model/IUserResponse";
 import { Badge, Skeleton, UserAvatar } from "@/shared/ui";
@@ -12,9 +18,44 @@ export interface UserPublicProfileProps {
 
 export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element {
   const mainRoleName = isValidMainRole(user.main_role) ? user.main_role.name : undefined;
+  const location = useLocation();
+  const router = useRouter();
+  const backTo = (location.state as { backTo?: string } | null)?.backTo;
+
+  const [ideas, setIdeas] = useState<IIdea[]>([]);
+  const [projects, setProjects] = useState<IProject[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetchIdeas({ author_id: user.id, limit: 6 }).then((result) => {
+      if (!cancelled) setIdeas(result.items);
+    });
+
+    void fetchProjects({ leader_id: user.id, limit: 6 }).then((result) => {
+      if (!cancelled) setProjects(result.items);
+    });
+
+    return (): void => {
+      cancelled = true;
+    };
+  }, [user.id]);
 
   return (
     <div className={styles.wrapper}>
+      {backTo !== undefined && (
+        <button
+          type="button"
+          className={styles.backLink}
+          onClick={() => {
+            router.history.back();
+          }}
+        >
+          <ArrowLeft size={16} />
+          Назад к списку
+        </button>
+      )}
+
       <div className={styles.header}>
         <UserAvatar
           avatarUrl={user.avatar_url}
@@ -52,6 +93,48 @@ export function UserPublicProfile({ user }: UserPublicProfileProps): JSX.Element
           </div>
         ) : (
           <p className={styles.emptyHint}>Навыки пока не добавлены</p>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Идеи</h2>
+        {ideas.length > 0 ? (
+          <div className={styles.itemList}>
+            {ideas.map((idea) => (
+              <Link key={idea.id} to="/idea/$ideaId" params={{ ideaId: idea.id }} className={styles.itemCard}>
+                <span className={styles.itemTitle}>{idea.title}</span>
+                {idea.category !== undefined && idea.category !== "" && (
+                  <Badge className={styles.itemBadge}>{idea.category}</Badge>
+                )}
+                <p className={styles.itemDescription}>{idea.description}</p>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.emptyHint}>Идей пока нет</p>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Проекты</h2>
+        {projects.length > 0 ? (
+          <div className={styles.itemList}>
+            {projects.map((project) => (
+              <Link key={project.id} to="/project/$projectId" params={{ projectId: project.id }} className={styles.itemCard}>
+                <div className={styles.itemCardHeader}>
+                  <span className={styles.itemTitle}>{project.title}</span>
+                  <Badge className={styles[project.status]}>
+                    {project.status === "open" ? "Открыт" : "Закрыт"}
+                  </Badge>
+                </div>
+                {project.description !== "" && (
+                  <p className={styles.itemDescription}>{project.description}</p>
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.emptyHint}>Проектов пока нет</p>
         )}
       </section>
     </div>

@@ -1,0 +1,9 @@
+.main {
+  transition: filter 0.2s ease;
+}
+
+.blurred {
+  filter: blur(3px);
+  pointer-events: none;
+  user-select: none;
+}

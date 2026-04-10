@@ -17,12 +17,14 @@ import styles from "./IdeaCard.module.scss";
 export interface IdeaCardProps {
   ideaId: string;
   href?: string | undefined;
+  fromRoute?: string | undefined;
   className?: string | undefined;
 }
 
 export const IdeaCard = observer(function IdeaCard({
   ideaId,
   href,
+  fromRoute,
   className,
 }: IdeaCardProps): JSX.Element {
   const { userStore } = useStore();
@@ -41,6 +43,7 @@ export const IdeaCard = observer(function IdeaCard({
         const ideaData = await fetchIdeaById(ideaId);
         if (cancelled) return;
         setIdea(ideaData);
+        setIsFavorite(ideaData.is_favorite ?? false);
         setFavoritesCount(ideaData.favorites_count);
 
         const authorData = await fetchUserById(ideaData.author_id);
@@ -79,7 +82,8 @@ export const IdeaCard = observer(function IdeaCard({
 
   const targetHref = href ?? (ideaId !== "" ? `/idea/${ideaId}` : undefined);
   const Wrapper = targetHref !== undefined ? Link : "article";
-  const wrapperProps = targetHref !== undefined ? { to: targetHref } : {};
+  const linkState = fromRoute !== undefined ? { backTo: fromRoute } : undefined;
+  const wrapperProps = targetHref !== undefined ? { to: targetHref, state: linkState } : {};
 
   return (
     <Wrapper

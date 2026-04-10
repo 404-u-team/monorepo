@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { fetchUsers } from "@/entities/user";
+import { getPageSize } from "@/shared/lib/pageSize";
 import { UserList } from "@/widgets/UserList";
 
 export interface CommunitySearch {
@@ -8,6 +9,7 @@ export interface CommunitySearch {
   search?: string | undefined;
   main_role?: string | undefined;
   skills?: string[] | undefined;
+  limit?: number | undefined;
 }
 
 export const Route = createFileRoute("/community")({
@@ -24,16 +26,18 @@ export const Route = createFileRoute("/community")({
       search: search.search as string | undefined,
       main_role: search.main_role as string | undefined,
       skills: skills && skills.length > 0 ? skills : undefined,
+      limit: Number(search.limit) || undefined,
     };
   },
-  loaderDeps: ({ search: { page, search, main_role, skills } }) => ({
+  loaderDeps: ({ search: { page, search, main_role, skills, limit } }) => ({
     page,
     search,
     main_role,
     skills,
+    limit,
   }),
   loader: async ({ deps }) => {
-    const limit = 20;
+    const limit = deps.limit ?? getPageSize();
     const { page, ...restDeps } = deps;
     const currentPage = page ?? 1;
     const start_at = (currentPage - 1) * limit;
@@ -48,7 +52,7 @@ function CommunityPage(): React.JSX.Element {
 
   return (
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <UserList users={data.items} totalPages={data.totalPages} />
+      <UserList users={data.items} totalPages={data.totalPages} total={data.total} />
     </div>
   );
 }

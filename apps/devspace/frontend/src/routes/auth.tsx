@@ -2,7 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { AuthForm } from "@/features/auth";
 
+export interface AuthSearch {
+  redirect?: string | undefined;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): AuthSearch => ({
+    redirect:
+      typeof search.redirect === "string" && search.redirect !== "" ? search.redirect : undefined,
+  }),
   component: AuthPage,
 });
 

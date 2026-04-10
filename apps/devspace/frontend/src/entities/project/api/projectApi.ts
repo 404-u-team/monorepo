@@ -24,6 +24,11 @@ export interface FetchProjectsParameters {
   search?: string | undefined;
   status?: "open" | "closed" | undefined;
   leader_id?: string | undefined;
+  idea_id?: string | undefined;
+  open_slots?: boolean | undefined;
+  slots_skills?: string[] | undefined;
+  min_people?: number | undefined;
+  max_people?: number | undefined;
 }
 
 export interface PaginatedProjects {
@@ -31,6 +36,11 @@ export interface PaginatedProjects {
   total: number;
   totalPages: number;
   hasMore: boolean;
+}
+
+interface GetProjectsResponse {
+  total: number;
+  projects: IProject[];
 }
 
 export async function createProject(data: {
@@ -146,20 +156,25 @@ export async function fetchProjects(
 ): Promise<PaginatedProjects> {
   const limit = parameters?.limit ?? 20;
   const startAt = parameters?.start_at ?? 0;
-  const response = await apiClient.get<IProject[]>("/projects", { params: parameters });
 
-  const items = response.data;
+  const { slots_skills, ...rest } = parameters ?? {};
+  const apiParameters: Record<string, unknown> = { ...rest };
+  if (slots_skills && slots_skills.length > 0) {
+    apiParameters.slots_skills = slots_skills;
+  }
 
-  // Backend doesn't provide x-total-count header.
-  // Detect "hasMore" heuristically: if we received exactly `limit` items, there's probably a next page.
-  const hasMore = items.length >= limit;
-  const currentPage = Math.floor(startAt / limit) + 1;
-  // totalPages is at least currentPage; if there are more items, assume at least one more page.
-  const totalPages = hasMore ? currentPage + 1 : currentPage;
-  const total = startAt + items.length + (hasMore ? 1 : 0);
+  const response = await apiClient.get<GetProjectsResponse>("/projects", {
+    params: apiParameters,
+    paramsSerializer: { indexes: false },
+  });
+
+  const { total, projects } = response.data;
+
+  const totalPages = Math.ceil(total / limit) || 1;
+  const hasMore = startAt + projects.length < total;
 
   return {
-    items,
+    items: projects,
     total,
     totalPages,
     hasMore,

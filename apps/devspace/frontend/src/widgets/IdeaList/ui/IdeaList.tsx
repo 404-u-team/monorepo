@@ -3,29 +3,52 @@ import { Plus, Star } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type JSX } from "react";
 
-import { IdeaCard, type IIdea } from "@/entities/idea";
+import { IdeaCard } from "@/entities/idea";
 import { useStore } from "@/shared/lib/store";
-import { DataListLayout, Button } from "@/shared/ui";
+import { setPageSize, PAGE_SIZE_OPTIONS, type PageSize } from "@/shared/lib/pageSize";
+import { DataListLayout, Button, Dropdown } from "@/shared/ui";
+
+type SortOrder = "asc" | "desc";
 
 interface SearchParameters {
   page?: number | undefined;
   search?: string | undefined;
-  favorites?: boolean | undefined;
+  is_favorite?: boolean | undefined;
+  views?: SortOrder | undefined;
+  favorites?: SortOrder | undefined;
+  limit?: number | undefined;
 }
 
 export interface IdeaListProps {
-  ideas: IIdea[];
+  ideas: { id: string }[];
   totalPages: number;
+  total: number;
 }
+
+const pageSizeOptions = PAGE_SIZE_OPTIONS.map((n) => ({
+  label: `${String(n)} / стр.`,
+  value: String(n),
+}));
+
+const sortViewsOptions = [
+  { label: "Просмотры: —", value: "" },
+  { label: "Просмотры: ↑", value: "asc" },
+  { label: "Просмотры: ↓", value: "desc" },
+];
+
+const sortFavoritesOptions = [
+  { label: "Избранное: —", value: "" },
+  { label: "Избранное: ↑", value: "asc" },
+  { label: "Избранное: ↓", value: "desc" },
+];
 
 export const IdeaList = observer(function IdeaList({
   ideas,
   totalPages,
+  total,
 }: IdeaListProps): JSX.Element {
   const { userStore } = useStore();
-  const searchParameters: SearchParameters = useSearch({
-    strict: false,
-  });
+  const searchParameters: SearchParameters = useSearch({ strict: false });
   const navigate = useNavigate({ from: "/ideas" });
 
   const handleSearch = (value: string): void => {
@@ -49,20 +72,67 @@ export const IdeaList = observer(function IdeaList({
     void navigate({
       search: (previous: SearchParameters) => ({
         ...previous,
-        favorites: previous.favorites === true ? undefined : true,
+        is_favorite: previous.is_favorite === true ? undefined : true,
         page: 1,
       }),
     });
   };
 
-  const isFavoritesActive = searchParameters.favorites === true;
+  const handleSortViews = (value: string): void => {
+    void navigate({
+      search: (previous: SearchParameters) => ({
+        ...previous,
+        views: value === "" ? undefined : (value as SortOrder),
+        page: 1,
+      }),
+    });
+  };
 
-  const favoritesButton = userStore.isAuthenticated ? (
-    <Button variant={isFavoritesActive ? "primary" : "outline"} onClick={handleToggleFavorites}>
-      <Star size={16} fill={isFavoritesActive ? "currentColor" : "none"} />
-      Избранное
-    </Button>
-  ) : undefined;
+  const handleSortFavorites = (value: string): void => {
+    void navigate({
+      search: (previous: SearchParameters) => ({
+        ...previous,
+        favorites: value === "" ? undefined : (value as SortOrder),
+        page: 1,
+      }),
+    });
+  };
+
+  const handlePageSizeChange = (value: string): void => {
+    const size = Number(value) as PageSize;
+    setPageSize(size);
+    void navigate({
+      search: (previous: SearchParameters) => ({ ...previous, limit: size, page: 1 }),
+    });
+  };
+
+  const isFavoritesActive = searchParameters.is_favorite === true;
+  const currentLimit = searchParameters.limit ?? 20;
+
+  const filtersNode = (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <Dropdown
+        options={sortViewsOptions}
+        value={searchParameters.views ?? ""}
+        onChange={handleSortViews}
+      />
+      <Dropdown
+        options={sortFavoritesOptions}
+        value={searchParameters.favorites ?? ""}
+        onChange={handleSortFavorites}
+      />
+      {userStore.isAuthenticated && (
+        <Button
+          variant={isFavoritesActive ? "primary" : "outline"}
+          onClick={handleToggleFavorites}
+          style={{ width: "100%" }}
+        >
+          <Star size={16} fill={isFavoritesActive ? "currentColor" : "none"} />
+          Только избранные
+        </Button>
+      )}
+    </div>
+  );
 
   const createButton = userStore.isAuthenticated ? (
     <Link to="/idea/new">
@@ -73,11 +143,15 @@ export const IdeaList = observer(function IdeaList({
     </Link>
   ) : undefined;
 
-  const controls = (
-    <>
-      {favoritesButton}
+  const controlsNode = (
+    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+      <Dropdown
+        options={pageSizeOptions}
+        value={String(currentLimit)}
+        onChange={handlePageSizeChange}
+      />
       {createButton}
-    </>
+    </div>
   );
 
   return (
@@ -86,15 +160,17 @@ export const IdeaList = observer(function IdeaList({
       subtitle="Найдите вдохновение или присоединяйтесь к реализации новой задумки"
       searchValue={(searchParameters as Record<string, string>).search ?? ""}
       onSearchChange={handleSearch}
-      controlsNode={userStore.isAuthenticated ? controls : createButton}
+      controlsNode={controlsNode}
+      filtersNode={filtersNode}
       isEmpty={ideas.length === 0}
       emptyMessage={isFavoritesActive ? "В избранном пока нет идей" : "Идеи не найдены"}
       currentPage={Number((searchParameters as Record<string, string>).page) || 1}
       totalPages={totalPages}
+      total={total}
       onPageChange={handlePageChange}
     >
       {ideas.map((idea) => (
-        <IdeaCard key={idea.id} ideaId={idea.id} />
+        <IdeaCard key={idea.id} ideaId={idea.id} fromRoute="/ideas" />
       ))}
     </DataListLayout>
   );

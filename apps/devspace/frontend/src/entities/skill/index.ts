@@ -1,2 +1,8 @@
 export type { ISkill } from "./model/ISkill";
-export { fetchSkills, fetchSkillById, type FetchSkillsParameters } from "./api/skillApi";
+export {
+  fetchSkills,
+  fetchSkillById,
+  createSkill,
+  deleteSkill,
+  type FetchSkillsParameters,
+} from "./api/skillApi";

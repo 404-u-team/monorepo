@@ -1,0 +1,47 @@
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  z-index: 9999;
+  background: var(--brand);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+
+  // Блик поверх полосы
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 45%) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  &.completing {
+    transition:
+      width 0.2s ease-out,
+      opacity 0.25s ease 0.15s;
+    opacity: 0;
+
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

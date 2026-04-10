@@ -142,6 +142,17 @@ export const Navbar = observer(function Navbar(): JSX.Element {
                         Мой профиль
                       </button>
                     )}
+                    {currentUser?.nickname === "admin" && (
+                      <button
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          void navigate({ to: "/admin" });
+                        }}
+                      >
+                        Панель администратора
+                      </button>
+                    )}
                     <div className={styles.dropdownDivider} />
                     <button
                       className={clsx(styles.dropdownItem, styles.dropdownItemDanger)}

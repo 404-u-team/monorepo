@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "@tanstack/react-router";
+import { useParams, Link, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
 import { isAxiosError } from "axios";
 import { ArrowLeft, Pencil, Trash2, Plus, X, Check, UserCheck } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -59,6 +59,9 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
   const { projectId } = useParams({ from: "/project/$projectId" });
   const { userStore } = useStore() as unknown as { userStore: UserStore };
   const navigate = useNavigate();
+  const location = useLocation();
+  const router = useRouter();
+  const backTo = (location.state as { backTo?: string } | null)?.backTo;
 
   const [project, setProject] = useState<IProjectDetailResponse | undefined>(undefined);
   const [leader, setLeader] = useState<IUserResponse | undefined>(undefined);
@@ -462,10 +465,18 @@ export const ProjectDetail = observer(function ProjectDetail(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Link to="/projects" className={styles.backLink}>
-        <ArrowLeft size={16} />
-        Назад к списку
-      </Link>
+      {backTo !== undefined && (
+        <button
+          type="button"
+          className={styles.backLink}
+          onClick={() => {
+            router.history.back();
+          }}
+        >
+          <ArrowLeft size={16} />
+          Назад к списку
+        </button>
+      )}
 
       <header className={styles.header}>
         <div className={styles.titleWrapper}>

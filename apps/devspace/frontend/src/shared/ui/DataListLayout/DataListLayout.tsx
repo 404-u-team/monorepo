@@ -31,6 +31,7 @@ export interface DataListLayoutProps {
   // Pagination
   currentPage?: number | undefined;
   totalPages?: number | undefined;
+  total?: number | undefined;
   onPageChange?: ((page: number) => void) | undefined;
 
   className?: string | undefined;
@@ -49,6 +50,7 @@ export function DataListLayout({
   emptyMessage = "Ничего не найдено",
   currentPage,
   totalPages,
+  total,
   onPageChange,
   className,
 }: DataListLayoutProps): JSX.Element {
@@ -90,6 +92,10 @@ export function DataListLayout({
             <div className={styles.empty}>
               <p>{emptyMessage}</p>
             </div>
+          )}
+
+          {total !== undefined && (
+            <p className={styles.totalCount}>Найдено: {total}</p>
           )}
 
           {hasPagination && (

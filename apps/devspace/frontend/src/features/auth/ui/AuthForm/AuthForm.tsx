@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { isAxiosError } from "axios";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -7,7 +7,7 @@ import { useState, type JSX, type SyntheticEvent } from "react";
 import type { IUser, UserStore } from "@/entities/user";
 import { apiClient } from "@/shared/api/client";
 import { useStore } from "@/shared/lib/store";
-import { Button, Input } from "@/shared/ui";
+import { Button, Input, Logo } from "@/shared/ui";
 
 import styles from "./AuthForm.module.scss";
 
@@ -49,6 +49,8 @@ type AuthMode = "login" | "register";
 export const AuthForm = observer((): JSX.Element => {
   const { userStore } = useStore() as { userStore: UserStore };
   const navigate = useNavigate();
+  const search = useSearch({ strict: false });
+  const redirectTo = (search as { redirect?: string }).redirect ?? "/";
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [nickname, setNickname] = useState("");
@@ -84,7 +86,7 @@ export const AuthForm = observer((): JSX.Element => {
       };
       userStore.setUser(user);
 
-      void navigate({ to: "/" });
+      void navigate({ to: redirectTo as "/" });
     } catch (error_: unknown) {
       if (isAxiosError(error_)) {
         const data = error_.response?.data as { message?: string } | undefined;
@@ -105,7 +107,7 @@ export const AuthForm = observer((): JSX.Element => {
   return (
     <div className={styles.container}>
       <div className={styles.logo}>
-        <img src="/DevSpaceLogo-removebg.png" alt="DevSpace Logo" className={styles.logoImage} />
+        <Logo className={styles.logoImage} height={60} />
       </div>
 
       <h1 className={styles.title}>{mode === "login" ? "Вход" : "Регистрация"}</h1>
@@ -156,7 +158,7 @@ export const AuthForm = observer((): JSX.Element => {
         <div className={styles.field}>
           <span className={styles.label}>Пароль</span>
           <Input
-            placeholder="Минимум 8 символов"
+            placeholder={mode === "register" ? "Минимум 8 символов" : "Введите пароль"}
             type={showPassword ? "text" : "password"}
             iconLeft={<Lock size={20} />}
             iconRight={
@@ -175,7 +177,7 @@ export const AuthForm = observer((): JSX.Element => {
               setPassword(event.target.value);
             }}
             required
-            minLength={8}
+            minLength={mode === "register" ? 8 : undefined}
           />
         </div>
 

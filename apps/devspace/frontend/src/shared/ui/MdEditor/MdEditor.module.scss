@@ -105,4 +105,37 @@
   :global(.w-md-editor-fullscreen) {
     z-index: 9999 !important;
   }
+
+  // Dark theme: override library's hardcoded #0d1117 / #000 backgrounds
+  // The library sets data-color-mode="dark" on our wrapper div and injects dark CSS.
+  // We must re-apply our bg token here with the same specificity level.
+  :global([data-color-mode="dark"] .w-md-editor) {
+    background-color: var(--bg--main) !important;
+    color: var(--text--primary) !important;
+  }
+
+  :global([data-color-mode="dark"] .w-md-editor-toolbar) {
+    background-color: var(--bg--surface) !important;
+    border-bottom-color: var(--border--main) !important;
+  }
+
+  :global([data-color-mode="dark"] .w-md-editor-content) {
+    background-color: var(--bg--main) !important;
+  }
+
+  :global([data-color-mode="dark"] .w-md-editor-text-pre),
+  :global([data-color-mode="dark"] .w-md-editor-text-pre > code),
+  :global([data-color-mode="dark"] .w-md-editor-text-input),
+  :global([data-color-mode="dark"] .wmde-markdown),
+  :global([data-color-mode="dark"] .wmde-markdown-var) {
+    background-color: var(--bg--main) !important;
+    color: var(--text--primary) !important;
+  }
+
+  // Inline code and code blocks in the preview area
+  :global([data-color-mode="dark"] .wmde-markdown code),
+  :global([data-color-mode="dark"] .wmde-markdown pre),
+  :global([data-color-mode="dark"] .wmde-markdown pre > code) {
+    background-color: var(--bg--surface) !important;
+  }
 }
