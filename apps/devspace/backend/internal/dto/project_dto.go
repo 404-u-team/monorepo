@@ -59,8 +59,8 @@ type GetProjectsResponse struct {
 type GetProjectResponse struct {
 	ID             uuid.UUID         `gorm:"column:id" json:"id"`
 	LeaderID       uuid.UUID         `gorm:"column:leader_id" json:"leader_id"`
-	IsLeader       bool              `json:"is_leader"`
-	IsFavorite     bool              `json:"is_favorite"`
+	IsLeader       bool              `gorm:"column:is_leader" json:"is_leader"`
+	IsFavorite     bool              `gorm:"column:is_favorite" json:"is_favorite"`
 	Title          string            `gorm:"column:title" json:"title"`
 	Description    *string           `gorm:"column:description" json:"description"`
 	Content        *string           `gorm:"column:content" json:"content"`
@@ -70,7 +70,7 @@ type GetProjectResponse struct {
 	IdeaID         *uuid.UUID        `gorm:"column:idea_id" json:"idea_id"`
 	CreatedAt      time.Time         `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt      time.Time         `gorm:"column:updated_at" json:"updated_at"`
-	Slots          []GetSlotResponse `json:"slots"`
+	Slots          []GetSlotResponse `gorm:"-" json:"slots"`
 }
 
 // QueryUUID supports form/query binding when value is either plain UUID
