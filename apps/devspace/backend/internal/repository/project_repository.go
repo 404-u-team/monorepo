@@ -238,7 +238,7 @@ func (r *projectRepository) GetProjectByIDIncr(projectID, userID uuid.UUID) (*dt
 	var projectResponse dto.GetProjectResponse
 	result := r.conn.Raw(`
 		UPDATE "Project" p
-		SET views_count = views_count + 1
+		SET views_count = COALESCE(views_count, 0) + 1
 		FROM (
 			SELECT
 				p2.id,
