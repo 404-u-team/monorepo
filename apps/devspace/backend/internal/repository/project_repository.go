@@ -214,13 +214,14 @@ func (r *projectRepository) GetProjects(query *dto.GetProjectsQuery, userID uuid
 func (r *projectRepository) GetProjectByID(projectID, userID uuid.UUID) (*dto.GetProjectResponse, error) {
 	var projectResponse dto.GetProjectResponse
 	result := r.conn.Table("Project").Select(`id, leader_id, leader_id = ? AS is_leader, COALESCE("User_Favorite_Project".project_id IS NOT NULL, false) AS is_favorite, 
-		title, description, content, views_count, favorites_count, status, idea_id, created_at, updated_at`, userID).
+		title, description, content, COALESCE(views_count, 0) AS views_count, COALESCE(favorites_count, 0) AS favorites_count, status, idea_id, created_at, updated_at`, userID).
 		Joins(`LEFT JOIN "User_Favorite_Project" ON "User_Favorite_Project".project_id = "Project".id AND "User_Favorite_Project".user_id = ?`, userID).
-		Where("id = ?", projectID)
+		Where("id = ?", projectID).
+		First(&projectResponse)
 
-	if err := result.First(&projectResponse).Error; err != nil {
-		log.Println("Ошибка при получении проекта по ID: ", err)
-		return nil, err
+	if result.Error != nil {
+		log.Println("Ошибка при получении проекта по ID: ", result.Error)
+		return nil, result.Error
 	}
 
 	slots, err := r.loadProjectSlots(projectID)
@@ -258,16 +259,17 @@ func (r *projectRepository) GetProjectByIDIncr(projectID, userID uuid.UUID) (*dt
 			p.title,
 			p.description,
 			p.content,
-			p.views_count,
-			p.favorites_count,
+			COALESCE(p.views_count, 0) AS views_count,
+			COALESCE(p.favorites_count, 0) AS favorites_count,
 			p.status,
 			p.created_at,
 			p.updated_at
-	`, userID, userID, projectID)
+	`, userID, userID, projectID).
+		First(&projectResponse)
 
-	if err := result.First(&projectResponse).Error; err != nil {
-		log.Println("Ошибка при получении проекта по ID: ", err)
-		return nil, err
+	if result.Error != nil {
+		log.Println("Ошибка при получении проекта по ID: ", result.Error)
+		return nil, result.Error
 	}
 
 	slots, err := r.loadProjectSlots(projectID)

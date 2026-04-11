@@ -57,19 +57,19 @@ type GetProjectsResponse struct {
 }
 
 type GetProjectResponse struct {
-	ID             uuid.UUID         `json:"id"`
-	LeaderID       uuid.UUID         `json:"leader_id"`
+	ID             uuid.UUID         `gorm:"column:id" json:"id"`
+	LeaderID       uuid.UUID         `gorm:"column:leader_id" json:"leader_id"`
 	IsLeader       bool              `json:"is_leader"`
 	IsFavorite     bool              `json:"is_favorite"`
-	Title          string            `json:"title"`
-	Description    *string           `json:"description"`
-	Content        *string           `json:"content"`
-	ViewsCount     uint              `json:"views_count"`
-	FavoritesCount uint              `json:"favorites_count"`
-	Status         string            `json:"status"`
-	IdeaID         *uuid.UUID        `json:"idea_id"`
-	CreatedAt      time.Time         `json:"created_at"`
-	UpdatedAt      time.Time         `json:"updated_at"`
+	Title          string            `gorm:"column:title" json:"title"`
+	Description    *string           `gorm:"column:description" json:"description"`
+	Content        *string           `gorm:"column:content" json:"content"`
+	ViewsCount     uint              `gorm:"column:views_count" json:"views_count"`
+	FavoritesCount uint              `gorm:"column:favorites_count" json:"favorites_count"`
+	Status         string            `gorm:"column:status" json:"status"`
+	IdeaID         *uuid.UUID        `gorm:"column:idea_id" json:"idea_id"`
+	CreatedAt      time.Time         `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt      time.Time         `gorm:"column:updated_at" json:"updated_at"`
 	Slots          []GetSlotResponse `json:"slots"`
 }
 
